@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-PT" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Industrial - Parque de Ativos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { dark: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' }, brand: '#3b82f6' }, fontSize: { 'xxs': '0.65rem' } } }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-track { background: #0f172a; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        .table-row-hover:hover { background-color: rgba(59, 130, 246, 0.05); }
+        
+        /* Customização dos inputs do SweetAlert */
+        .swal2-input, .swal2-select { 
+            background-color: rgba(0, 0, 0, 0.04) !important; 
+            width: 85% !important; 
+            margin: 10px auto !important; 
+            color: inherit !important;
+        }
+
+        /* Correção do contraste das opções do Select (Modo Claro) */
+        .swal2-select option {
+            background-color: #ffffff !important;
+            color: #1e293b !important;
+        }
+
+        /* Correção do contraste das opções do Select (Modo Escuro) */
+        .dark .swal2-select option {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-[#0b1120] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm transition-colors duration-300">
+
+    <aside class="w-64 bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 flex flex-col transition-colors duration-300 z-20">
+        <div class="p-6 flex items-center justify-center border-b border-slate-200 dark:border-dark-800/50">
+            <img src="../../IMG/canvas-b.png" alt="Nexus Logo" class="h-20 w-auto invert dark:invert-0 transition-all duration-300 drop-shadow-md">
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 mt-2 px-4">Painel</p>
+            <a href="menu.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-chart-pie w-5 text-center"></i> Visão Global
+            </a>
+            <a href="ativos.html" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand/10 text-brand font-medium">
+                <i class="fas fa-microchip w-5 text-center"></i> Parque de Ativos
+            </a>
+            <a href="os.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-clipboard-list w-5 text-center"></i> Ordens de Serviço
+            </a>
+            <a href="estoque.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-boxes w-5 text-center"></i> Estoque (MRO)
+            </a>
+            <a href="financeiro.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-wallet w-5 text-center"></i> Financeiro
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-200 dark:border-dark-800/50">
+            <button id="theme-toggle" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300 mb-2">
+                <i class="fas fa-sun text-amber-500 hidden dark:block w-5 text-center"></i>
+                <i class="fas fa-moon text-slate-600 block dark:hidden w-5 text-center"></i>
+                <span class="font-medium hidden md:block theme-text-btn">Modo Claro</span>
+            </button>
+
+            <a href="../../index.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300">
+                <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                <span class="font-medium">Sair</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen relative">
+        
+        <header class="h-20 bg-white dark:bg-dark-900 border-b border-slate-200 dark:border-dark-800 flex items-center justify-between px-8 z-10 transition-colors duration-300">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800 dark:text-white tracking-wide">Parque de Ativos</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Gestão de máquinas e sensores IoT</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="addAsset()" class="bg-brand hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-brand/30 flex items-center gap-2">
+                    <i class="fas fa-plus"></i> <span class="hidden sm:inline">Novo Ativo</span>
+                </button>
+
+                <div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-dark-800">
+                    <div id="user-photo" class="h-10 w-10 rounded-full bg-gradient-to-tr from-brand to-blue-400 flex items-center justify-center text-white font-bold shadow-md bg-cover bg-center"></div>
+                    <div class="hidden md:block">
+                        <p id="user-name" class="text-sm font-bold text-slate-800 dark:text-white">A carregar...</p>
+                        <p id="user-role" class="text-xs text-slate-500 dark:text-slate-400">...</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 p-8 overflow-y-auto">
+            <div class="bg-white dark:bg-dark-800 border border-slate-200 dark:border-dark-700/50 rounded-2xl shadow-sm dark:shadow-none flex flex-col transition-colors duration-300">
+                
+                <div class="p-6 border-b border-slate-200 dark:border-dark-800 flex justify-between items-center gap-4 flex-wrap">
+                    <h3 class="text-slate-800 dark:text-white font-bold"><i class="fas fa-server mr-2 text-brand"></i>Lista de Equipamentos</h3>
+                    <div class="relative w-full sm:w-64">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500"></i>
+                        <input type="text" id="searchInput" placeholder="Procurar ID ou Nome..." class="w-full bg-slate-50 dark:bg-dark-900 border border-slate-300 dark:border-dark-700 text-slate-800 dark:text-white text-sm rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:border-brand transition-colors">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[750px]">
+                        <thead>
+                            <tr class="bg-slate-100 dark:bg-dark-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
+                                <th class="px-5 py-4 font-semibold">ID Máquina</th>
+                                <th class="px-5 py-4 font-semibold">Nome / Linha</th>
+                                <th class="px-5 py-4 font-semibold">Status (IoT)</th>
+                                <th class="px-5 py-4 font-semibold">Temperatura</th>
+                                <th class="px-5 py-4 font-semibold">Responsável</th>
+                                <th class="px-5 py-4 font-semibold text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assets-list" class="divide-y divide-slate-200 dark:divide-dark-800/50">
+                            <tr><td colspan="6" class="px-5 py-8 text-center text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i> Sincronizando com Gêmeo Digital...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="../assets/js/ativos.js">
+    </script>
+</body>
+</html>
