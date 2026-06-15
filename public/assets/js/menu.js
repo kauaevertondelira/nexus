@@ -20,6 +20,42 @@ const db = getDatabase(app);
 // --- SISTEMA INTERNO DE NOTIFICAÇÕES GLOBAIS ---
 let systemNotifications = { assets: [], inventory: [] };
 
+// --- MOTOR DE ANIMAÇÃO DE ESTADOS DOS CARDS (INTERPOLAÇÃO) ---
+const cardStates = { oee: 0, ativos: 0, os: 0, stock: 0 };
+
+function animateKpi(elementId, key, targetValue) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    const startValue = cardStates[key] || 0;
+    if (startValue === targetValue) {
+        el.innerText = targetValue;
+        return;
+    }
+
+    const duration = 400; // Tempo da transição em milissegundos
+    let startTime = null;
+
+    function animation(currentTime) {
+        if (!startTime) startTime = currentTime;
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Algoritmo Easing Suave (OutQuad)
+        const easeProgress = progress * (2 - progress);
+        const currentValue = Math.floor(startValue + (targetValue - startValue) * easeProgress);
+        
+        el.innerText = currentValue;
+
+        if (progress < 1) {
+            requestAnimationFrame(animation);
+        } else {
+            cardStates[key] = targetValue;
+        }
+    }
+    requestAnimationFrame(animation);
+}
+
 function renderNotifications() {
     const listContainer = document.getElementById('notification-items');
     const badge = document.getElementById('bell-badge');
@@ -58,9 +94,12 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
     document.getElementById('user-name').innerText = "Gestor Operacional";
     document.getElementById('user-role').innerText = "Engenharia & PCM";
     document.getElementById('user-photo').innerHTML = '<i class="fas fa-user-tie text-xl"></i>';
-    document.getElementById('kpi-ativos').innerText = "18";
-    document.getElementById('kpi-os').innerText = "4";
-    document.getElementById('kpi-stock').innerText = "2";
+    
+    animateKpi('kpi-oee', 'oee', 87);
+    animateKpi('kpi-ativos', 'ativos', 18);
+    animateKpi('kpi-os', 'os', 4);
+    animateKpi('kpi-stock', 'stock', 2);
+    
     document.getElementById('critical-list').innerHTML = `
                 <div class="p-3 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl flex items-start gap-3">
                     <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
@@ -70,7 +109,6 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
                     </div>
                 </div>`;
 
-    // Popula simulação no Sininho
     systemNotifications.assets = [{ type: 'danger', icon: 'fas fa-exclamation-circle', title: 'Extrusora Principal (EXT-001)', desc: 'Sobreaquecimento do Motor (88°C)' }];
     systemNotifications.inventory = [{ type: 'warning', icon: 'fas fa-box-open', title: 'Estoque Crítico', desc: 'Componentes abaixo da quantidade mínima!' }];
     renderNotifications();
@@ -101,7 +139,7 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
         const data = snapshot.val();
         let total = 0;
         let criticalHtml = '';
-        systemNotifications.assets = []; // Limpa anteriores
+        systemNotifications.assets = []; 
 
         if (data) {
             const ativos = Object.values(data);
@@ -118,7 +156,6 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
                                     </div>
                                 </div>`;
 
-                    // Adiciona ao array do Sininho
                     systemNotifications.assets.push({
                         type: 'danger',
                         icon: 'fas fa-exclamation-circle',
@@ -128,7 +165,10 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
                 }
             });
         }
-        document.getElementById('kpi-ativos').innerText = total;
+        
+        // REATIVIDADE: Aplica contagem interpolada nos cards de Ativos e OEE
+        animateKpi('kpi-ativos', 'ativos', total);
+        animateKpi('kpi-oee', 'oee', total > 0 ? 87 : 0);
 
         const listEl = document.getElementById('critical-list');
         if (criticalHtml === '') {
@@ -143,7 +183,7 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
         renderNotifications();
     });
 
-    // 2. Contagem Real de O.S. Abertas
+    // 2. Contagem Real de O.S. Abertas + Adaptação Visual de Sobrecarga
     onValue(ref(db, 'work_orders'), (snapshot) => {
         const data = snapshot.val();
         let openOsCount = 0;
@@ -152,14 +192,25 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
                 if (os.status !== 'done') openOsCount++;
             });
         }
-        document.getElementById('kpi-os').innerText = openOsCount;
+        
+        // REATIVIDADE VISUAL: Transforma a cor do ícone se a fila do PCM acumular
+        const iconBox = document.getElementById('icon-os-box');
+        if (iconBox) {
+            if (openOsCount > 5) {
+                iconBox.className = "h-10 w-10 rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 flex items-center justify-center text-lg transition-all duration-300 group-hover:scale-110";
+            } else {
+                iconBox.className = "h-10 w-10 rounded-xl bg-amber-100 text-amber-500 dark:bg-amber-500/10 flex items-center justify-center text-lg transition-all duration-300 group-hover:scale-110";
+            }
+        }
+
+        animateKpi('kpi-os', 'os', openOsCount);
     });
 
-    // 3. Contagem Real de Estoque Crítico
+    // 3. Contagem Real de Estoque Crítico + Alerta de Ruptura Injetado no DOM
     onValue(ref(db, 'inventory'), (snapshot) => {
         const data = snapshot.val();
         let critStockCount = 0;
-        systemNotifications.inventory = []; // Limpa anteriores
+        systemNotifications.inventory = []; 
 
         if (data) {
             Object.values(data).forEach(item => {
@@ -174,7 +225,24 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
                 }
             });
         }
-        document.getElementById('kpi-stock').innerText = critStockCount;
+        
+        // REATIVIDADE VISUAL: O card ganha bordas vermelhas agressivas se houver falha de MRO
+        const cardStock = document.getElementById('card-stock');
+        const msgStock = document.getElementById('msg-stock');
+        
+        if (cardStock && msgStock) {
+            if (critStockCount > 0) {
+                cardStock.classList.add('border-red-300', 'dark:border-red-900/50', 'bg-red-50/10');
+                msgStock.className = "text-xs text-red-500 font-medium animate-pulse";
+                msgStock.innerHTML = `<i class="fas fa-exclamation-circle mr-1"></i> Ruptura iminente!`;
+            } else {
+                cardStock.classList.remove('border-red-300', 'dark:border-red-900/50', 'bg-red-50/10');
+                msgStock.className = "text-xs text-green-500 font-medium";
+                msgStock.innerHTML = `<i class="fas fa-check mr-1"></i> Níveis controlados`;
+            }
+        }
+
+        animateKpi('kpi-stock', 'stock', critStockCount);
         renderNotifications();
     });
 }
@@ -184,7 +252,7 @@ const bellBtn = document.getElementById('bell-btn');
 const dropdown = document.getElementById('notification-dropdown');
 
 bellBtn.addEventListener('click', (e) => {
-    e.stopPropagation(); // Evita fechar imediatamente ao clicar
+    e.stopPropagation(); 
     dropdown.classList.toggle('hidden');
 });
 
@@ -220,7 +288,6 @@ new Chart(ctx, {
     }
 });
 
-
 // ==========================================
 // CONTROLE DO MODO ESCURO (THEME)
 // ==========================================
@@ -233,9 +300,7 @@ function toggleTheme() {
     }
 }
 
-// Garante que o clique seja ouvido no novo ID do botão
 const themeBtn = document.getElementById('theme-toggle');
 if (themeBtn) {
     themeBtn.addEventListener('click', toggleTheme);
 }
-
