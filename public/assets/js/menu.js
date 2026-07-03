@@ -3,14 +3,14 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s",
-  authDomain: "nexus-iot-senai.firebaseapp.com",
-  databaseURL: "https://nexus-iot-senai-default-rtdb.firebaseio.com",
-  projectId: "nexus-iot-senai",
-  storageBucket: "nexus-iot-senai.firebasestorage.app",
-  messagingSenderId: "717361923500",
-  appId: "1:717361923500:web:9e55a4dcb002e049abe609",
-  measurementId: "G-JJ84BQSXJX"
+    apiKey: "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s",
+    authDomain: "nexus-iot-senai.firebaseapp.com",
+    databaseURL: "https://nexus-iot-senai-default-rtdb.firebaseio.com",
+    projectId: "nexus-iot-senai",
+    storageBucket: "nexus-iot-senai.firebasestorage.app",
+    messagingSenderId: "717361923500",
+    appId: "1:717361923500:web:9e55a4dcb002e049abe609",
+    measurementId: "G-JJ84BQSXJX"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -19,6 +19,42 @@ const db = getDatabase(app);
 
 // --- SISTEMA INTERNO DE NOTIFICAÇÕES GLOBAIS ---
 let systemNotifications = { assets: [], inventory: [] };
+
+// --- MOTOR DE ANIMAÇÃO DE ESTADOS DOS CARDS (INTERPOLAÇÃO) ---
+const cardStates = { oee: 0, ativos: 0, os: 0, stock: 0 };
+
+function animateKpi(elementId, key, targetValue) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    const startValue = cardStates[key] || 0;
+    if (startValue === targetValue) {
+        el.innerText = targetValue;
+        return;
+    }
+
+    const duration = 400; // Tempo da transição em milissegundos
+    let startTime = null;
+
+    function animation(currentTime) {
+        if (!startTime) startTime = currentTime;
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Algoritmo Easing Suave (OutQuad)
+        const easeProgress = progress * (2 - progress);
+        const currentValue = Math.floor(startValue + (targetValue - startValue) * easeProgress);
+        
+        el.innerText = currentValue;
+
+        if (progress < 1) {
+            requestAnimationFrame(animation);
+        } else {
+            cardStates[key] = targetValue;
+        }
+    }
+    requestAnimationFrame(animation);
+}
 
 function renderNotifications() {
     const listContainer = document.getElementById('notification-list');

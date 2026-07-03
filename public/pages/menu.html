@@ -79,7 +79,7 @@
                             <span id="notification-count" class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-bold">0</span>
                         </div>
                         <div id="notification-items" class="max-h-64 overflow-y-auto p-2 space-y-1">
-                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -95,11 +95,12 @@
 
         <div class="flex-1 p-8 overflow-y-auto">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white dark:bg-dark-800 p-6 rounded-2xl border border-slate-200 dark:border-dark-700/50 shadow-sm dark:shadow-none relative overflow-hidden transition-colors duration-300">
+                
+                <div id="card-oee" class="bg-white dark:bg-dark-800 p-6 rounded-2xl border border-slate-200 dark:border-dark-700/50 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden select-none">
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Saúde Geral (OEE)</p>
-                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white">87<span class="text-lg text-slate-400">%</span></h3>
+                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white"><span id="kpi-oee">0</span><span class="text-lg text-slate-400">%</span></h3>
                         </div>
                         <div class="h-10 w-10 rounded-xl bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-500 flex items-center justify-center text-lg">
                             <i class="fas fa-chart-line"></i>
@@ -108,43 +109,43 @@
                     <p class="text-xs text-green-500 font-medium"><i class="fas fa-arrow-up mr-1"></i> +2.4% vs ontem</p>
                 </div>
 
-                <div class="bg-white dark:bg-dark-800 p-6 rounded-2xl border border-slate-200 dark:border-dark-700/50 shadow-sm dark:shadow-none relative overflow-hidden transition-colors duration-300">
+                <div id="card-ativos" onclick="window.location.href='ativos.html'" class="bg-white dark:bg-dark-800 p-6 rounded-2xl border border-slate-200 dark:border-dark-700/50 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer relative overflow-hidden group select-none">
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Máquinas Ativas</p>
-                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="kpi-ativos">-</h3>
+                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="kpi-ativos">0</h3>
                         </div>
-                        <div class="h-10 w-10 rounded-xl bg-blue-100 text-brand dark:bg-brand/10 flex items-center justify-center text-lg">
+                        <div class="h-10 w-10 rounded-xl bg-blue-100 text-brand dark:bg-brand/10 flex items-center justify-center text-lg transition-transform duration-300 group-hover:scale-110">
                             <i class="fas fa-microchip"></i>
                         </div>
                     </div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Total monitorizado</p>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 transition-colors group-hover:text-brand">Aceder ao Parque de Ativos <i class="fas fa-arrow-right ml-1 text-xxs"></i></p>
                 </div>
 
-                <div class="bg-white dark:bg-dark-800 p-6 rounded-2xl border border-slate-200 dark:border-dark-700/50 shadow-sm dark:shadow-none relative overflow-hidden transition-colors duration-300">
+                <div id="card-os" onclick="window.location.href='os.html'" class="bg-white dark:bg-dark-800 p-6 rounded-2xl border border-slate-200 dark:border-dark-700/50 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer relative overflow-hidden group select-none">
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">O.S. Abertas</p>
-                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="kpi-os">-</h3>
+                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="kpi-os">0</h3>
                         </div>
-                        <div class="h-10 w-10 rounded-xl bg-amber-100 text-amber-500 dark:bg-amber-500/10 flex items-center justify-center text-lg">
+                        <div id="icon-os-box" class="h-10 w-10 rounded-xl bg-amber-100 text-amber-500 dark:bg-amber-500/10 flex items-center justify-center text-lg transition-all duration-300 group-hover:scale-110">
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                     </div>
                     <p class="text-xs text-amber-500 font-medium"><i class="fas fa-clock mr-1"></i> Em fila ou execução</p>
                 </div>
 
-                <div class="bg-white dark:bg-dark-800 p-6 rounded-2xl border border-slate-200 dark:border-dark-700/50 shadow-sm dark:shadow-none relative overflow-hidden transition-colors duration-300">
+                <div id="card-stock" onclick="window.location.href='estoque.html'" class="bg-white dark:bg-dark-800 p-6 rounded-2xl border border-slate-200 dark:border-dark-700/50 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer relative overflow-hidden group select-none">
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Stock Crítico</p>
-                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="kpi-stock">-</h3>
+                            <h3 class="text-3xl font-bold text-slate-800 dark:text-white" id="kpi-stock">0</h3>
                         </div>
-                        <div class="h-10 w-10 rounded-xl bg-red-100 text-red-500 dark:bg-red-500/10 flex items-center justify-center text-lg">
+                        <div id="icon-stock-box" class="h-10 w-10 rounded-xl bg-red-100 text-red-500 dark:bg-red-500/10 flex items-center justify-center text-lg transition-all duration-300 group-hover:scale-110">
                             <i class="fas fa-box-open"></i>
                         </div>
                     </div>
-                    <p class="text-xs text-red-500 font-medium"><i class="fas fa-exclamation-circle mr-1"></i> Peças a acabar</p>
+                    <p class="text-xs text-red-500 font-medium animate-pulse" id="msg-stock">Peças a acabar</p>
                 </div>
             </div>
 
@@ -169,7 +170,6 @@
         </div>
     </main>
 
-    <script type="module" src="../assets/js/menu.js">
-    </script>
+    <script type="module" src="../assets/js/menu.js"></script>
 </body>
 </html>
