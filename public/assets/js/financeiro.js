@@ -18,27 +18,26 @@ onAuthStateChanged(auth, (user) => {
         onValue(ref(db, 'users/' + user.uid), (snapshot) => {
             const userData = snapshot.val();
             if (userData) {
-                const cargo = userData.role || "Operador";
-
-                // 🛑 BLOQUEIO CRÍTICO DE URL PARA OPERADORES E TÉCNICOS
-                if (cargo === "Operador" || cargo === "Técnico") {
+                
+                // --- NOVA TRAVA DE ACESSO AQUI ---
+                // Verifica se é Operador. Se for, bloqueia e redireciona.
+                if (userData.role === 'Operador') {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Acesso Restrito à Gestão',
-                        text: `O seu cargo atual (${cargo}) não confere permissões de auditoria para analisar faturamento, custos de downtime ou custos de MRO.`,
-                        confirmButtonColor: '#3b82f6',
-                        allowOutsideClick: false
+                        title: 'Acesso Restrito',
+                        text: 'Operadores não têm permissão para aceder a esta área.',
+                        timer: 2000,
+                        showConfirmButton: false
                     }).then(() => {
-                        window.location.href = 'menu.html';
+                        window.location.href = 'menu.html'; // Redireciona para o menu principal
                     });
-                    return;
+                    return; // Interrompe a execução do resto do script
                 }
+                // ---------------------------------
 
-                document.getElementById('user-name').innerText = userData.name || "Diretor Financeiro";
-                document.getElementById('user-role').innerText = cargo;
-                if (userData.photoURL) {
-                    document.getElementById('user-photo').innerHTML = `<img src="${userData.photoURL}" class="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-dark-700" alt="Avatar">`;
-                }
+                // Resto do seu código original que carrega a página...
+                document.getElementById('user-name').innerText = userData.name || "Utilizador";
+                document.getElementById('user-role').innerText = userData.role || "Cargo não definido";
             }
         });
     } else {
