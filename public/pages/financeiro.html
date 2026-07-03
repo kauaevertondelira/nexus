@@ -6,6 +6,7 @@
     <title>Nexus Industrial - Gestão Financeira</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = {
@@ -22,7 +23,7 @@
         .table-row-hover:hover { background-color: rgba(59, 130, 246, 0.05); }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 dark:bg-[#0b1120] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm transition-colors duration-300">
+<body class="bg-slate-50 text-slate-800 dark:bg-[#0b1120] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm transition-colors duration-300 hidden">
 
     <aside class="w-64 bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 flex flex-col transition-colors duration-300 z-20">
         <div class="p-6 flex items-center justify-center border-b border-slate-200 dark:border-dark-800/50">
@@ -54,7 +55,7 @@
                 <i class="fas fa-moon text-slate-600 block dark:hidden w-5 text-center"></i>
                 <span class="font-medium hidden md:block theme-text-btn">Modo Claro</span>
             </button>
-            <a href="../../index.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300">
+            <a href="#" id="logout-btn" class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300">
                 <i class="fas fa-sign-out-alt w-5 text-center"></i>
                 <span class="font-medium">Sair</span>
             </a>
@@ -90,7 +91,7 @@
                         <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Custos de Manutenção (Mês)</p>
                         <i class="fas fa-tools text-slate-400"></i>
                     </div>
-                    <h3 class="text-3xl font-bold text-slate-800 dark:text-white mb-1">R$ 14.520<span class="text-lg text-slate-400">,00</span></h3>
+                    <h3 class="text-3xl font-bold text-slate-800 dark:text-white mb-1" id="kpi-custo-manutencao">R$ 0,00</h3>
                     <p class="text-xs text-red-500 font-medium mt-auto"><i class="fas fa-arrow-up mr-1"></i> +5.2% vs mês anterior</p>
                 </div>
 
@@ -100,7 +101,7 @@
                         <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Perda de Setup / Downtime</p>
                         <i class="fas fa-stopwatch text-red-500"></i>
                     </div>
-                    <h3 class="text-3xl font-bold text-red-600 dark:text-red-400 mb-1" id="kpi-downtime">R$ 0,00</h3>
+                    <h3 class="text-3xl font-bold text-red-600 dark:text-red-400 mb-1" id="kpi-prejuizo-downtime">R$ 0,00</h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-auto">Custo projetado pelas paradas</p>
                 </div>
 
