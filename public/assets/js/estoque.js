@@ -1,204 +1,235 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s",
-            authDomain: "nexus-iot-senai.firebaseapp.com",
-            databaseURL: "https://nexus-iot-senai-default-rtdb.firebaseio.com",
-            projectId: "nexus-iot-senai"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
+const firebaseConfig = {
+    apiKey: "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s",
+    authDomain: "nexus-iot-senai.firebaseapp.com",
+    databaseURL: "https://nexus-iot-senai-default-rtdb.firebaseio.com",
+    projectId: "nexus-iot-senai"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
 
-        // --- SISTEMA DE RASTREABILIDADE ---
-        let currentUserInfo = { name: "Operador", uid: "null" };
+let currentUserInfo = { name: "Operador", uid: "null" };
 
-        if (firebaseConfig.apiKey === "SUA_API_KEY") {
-            currentUserInfo = { name: "Gestor Operacional", uid: "simulado" };
-            document.getElementById('user-name').innerText = currentUserInfo.name;
-            document.getElementById('user-role').innerText = "Almoxarifado";
-            document.getElementById('user-photo').innerHTML = '<i class="fas fa-user-tie text-xl"></i>';
-        } else {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    onValue(ref(db, 'users/' + user.uid), (snapshot) => {
-                        const data = snapshot.val();
-                        if(data) {
-                            currentUserInfo = { name: data.name, uid: user.uid };
-                            document.getElementById('user-name').innerText = data.name;
-                            document.getElementById('user-role').innerText = data.role;
-                            if(data.photoURL) {
-                                document.getElementById('user-photo').style.backgroundImage = `url(${data.photoURL})`;
-                                document.getElementById('user-photo').innerHTML = '';
-                            } else {
-                                document.getElementById('user-photo').innerHTML = '<i class="fas fa-user text-xl"></i>';
-                            }
-                        }
+// 🔒 SISTEMA DE PROTEÇÃO DE ACESSO E PERFIL (RBAC)
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        onValue(ref(db, 'users/' + user.uid), (snapshot) => {
+            const userData = snapshot.val();
+            if (userData) {
+                const cargo = userData.role || "Operador";
+
+                // 🛑 BLOQUEIO ATIVO PARA OPERADORES
+                if (cargo === "Operador") {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Acesso Recusado',
+                        text: 'O seu cargo (Operador) não possui permissões acadêmicas ou industriais para modificar ou ler o Stock MRO.',
+                        confirmButtonColor: '#3b82f6',
+                        allowOutsideClick: false
+                    }).then(() => {
+                        window.location.href = 'menu.html';
                     });
-                } else {
-                    window.location.href = '../../index.html';
+                    return;
                 }
-            });
+
+                // 🔒 Limpeza visual da sidebar se logado como Técnico
+                if (cargo === "Técnico") {
+                    document.querySelectorAll('a[href*="financeiro.html"]').forEach(el => el.remove());
+                }
+
+                document.getElementById('user-name').innerText = userData.name || "Almoxarife";
+                document.getElementById('user-role').innerText = cargo;
+                if (userData.photoURL) {
+                    document.getElementById('user-photo').innerHTML = `<img src="${userData.photoURL}" class="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-dark-700" alt="Avatar">`;
+                }
+                currentUserInfo = { name: userData.name || "Usuário", uid: user.uid };
+            }
+        });
+    } else {
+        window.location.href = 'index.html';
+    }
+});
+
+const getSwalTheme = () => document.documentElement.classList.contains('dark') ? {
+    background: '#1e293b', color: '#cbd5e1', confirmButtonColor: '#3b82f6', cancelButtonColor: '#475569'
+} : { confirmButtonColor: '#3b82f6', cancelButtonColor: '#94a3b8' };
+
+function esc(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+}
+
+const inventoryRef = ref(db, 'inventory');
+
+onValue(inventoryRef, (snapshot) => {
+    const data = snapshot.val() || {};
+    const tbody = document.getElementById('inventory-list');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    const keys = Object.keys(data);
+
+    if (keys.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-slate-500"><i class="fas fa-box-open mr-2"></i> Nenhum insumo cadastrado no inventário MRO.</td></tr>`;
+        return;
+    }
+
+    keys.forEach(id => {
+        const item = data[id];
+        const qty = parseInt(item.quantity) || 0;
+        const min = parseInt(item.minStock) || 0;
+        const isLow = qty <= min;
+
+        const row = document.createElement('tr');
+        row.className = "table-row-hover border-b border-slate-100 dark:border-dark-800/50 text-xs text-slate-600 dark:text-slate-300 transition-colors";
+        row.innerHTML = `
+            <td class="px-5 py-4 font-mono font-medium text-brand">${esc(item.sku)}</td>
+            <td class="px-5 py-4 font-medium text-slate-800 dark:text-slate-200">${esc(item.name)}</td>
+            <td class="px-5 py-4 text-center">
+                <div class="flex flex-col items-center gap-1">
+                    <span class="font-bold ${isLow ? 'text-red-500' : 'text-slate-700 dark:text-slate-200'}">${qty} / ${min}</span>
+                    <div class="w-24 bg-slate-200 dark:bg-dark-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="h-full ${isLow ? 'bg-red-500' : 'bg-green-500'}" style="width: ${Math.min((qty/Math.max(min,1))*100, 100)}%"></div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-5 py-4 font-medium text-slate-700 dark:text-slate-300">R$ ${parseFloat(item.price || 0).toFixed(2)}</td>
+            <td class="px-5 py-4 text-slate-400 text-xxs flex items-center gap-1.5 mt-2 border-none">
+                <div class="w-1.5 h-1.5 rounded-full bg-brand"></div> ${esc(item.updatedBy || 'Sistema')}
+            </td>
+            <td class="px-5 py-4 text-right whitespace-nowrap">
+                <button onclick="editItem('${id}')" class="h-7 w-7 text-slate-500 hover:text-brand bg-slate-100 dark:bg-dark-700 rounded-md transition-colors mr-1"><i class="fas fa-edit text-xs"></i></button>
+                <button onclick="deleteItem('${id}')" class="h-7 w-7 text-slate-500 hover:text-red-500 bg-slate-100 dark:bg-dark-700 rounded-md transition-colors"><i class="fas fa-trash-alt text-xs"></i></button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+});
+
+window.addItem = async () => {
+    const { value } = await Swal.fire({
+        title: 'Adicionar Insumo MRO',
+        html: `
+            <div class="space-y-3 text-left">
+                <div><label class="text-xs text-slate-400 font-medium">Código SKU</label><input id="swal-sku" class="swal2-input !w-full !m-0 bg-dark-900 text-white !h-9 text-xs" placeholder="EX: MRO-ROL-023"></div>
+                <div><label class="text-xs text-slate-400 font-medium">Descrição / Item</label><input id="swal-name" class="swal2-input !w-full !m-0 bg-dark-900 text-white !h-9 text-xs" placeholder="EX: Rolamento Esférico Skf"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="text-xs text-slate-400 font-medium">Qtd Atual</label><input id="swal-qty" type="number" class="swal2-input !w-full !m-0 bg-dark-900 text-white !h-9 text-xs" value="10"></div>
+                    <div><label class="text-xs text-slate-400 font-medium">Qtd Mínima</label><input id="swal-min" type="number" class="swal2-input !w-full !m-0 bg-dark-900 text-white !h-9 text-xs" value="5"></div>
+                </div>
+                <div><label class="text-xs text-slate-400 font-medium">Custo Unitário (R$)</label><input id="swal-price" type="number" step="0.01" class="swal2-input !w-full !m-0 bg-dark-900 text-white !h-9 text-xs" placeholder="45.50"></div>
+            </div>`,
+        showCancelButton: true, confirmButtonText: 'Cadastrar', cancelButtonText: 'Cancelar',
+        ...getSwalTheme(),
+        preConfirm: () => {
+            const sku = document.getElementById('swal-sku').value.trim();
+            const name = document.getElementById('swal-name').value.trim();
+            const quantity = parseInt(document.getElementById('swal-qty').value) || 0;
+            const minStock = parseInt(document.getElementById('swal-min').value) || 0;
+            const price = parseFloat(document.getElementById('swal-price').value) || 0;
+
+            if(!sku || !name) { Swal.showValidationMessage('SKU e Descrição são obrigatórios.'); return false; }
+            if(quantity < 0 || minStock < 0) { Swal.showValidationMessage('As quantidades não podem ser negativas.'); return false; }
+            return { sku, name, quantity, minStock, price, updatedBy: currentUserInfo.name };
         }
-        
-        const getSwalTheme = () => document.documentElement.classList.contains('dark') ? { background: '#1e293b', color: '#f8fafc', confirmButtonColor: '#3b82f6', cancelButtonColor: '#ef4444' } : { confirmButtonColor: '#3b82f6', cancelButtonColor: '#ef4444' };
+    });
+    if(value) push(inventoryRef, value);
+};
 
-        onValue(ref(db, 'inventory'), (snapshot) => {
-            const data = snapshot.val();
-            const list = document.getElementById('inventory-list');
-            list.innerHTML = '';
-            
-            let totalItems = 0; let critItems = 0; let totalVal = 0;
+window.editItem = (id) => {
+    onValue(ref(db, 'inventory/' + id), async (snapshot) => {
+        const item = snapshot.val();
+        if(!item) return;
 
-            if (data) {
-                Object.entries(data).forEach(([id, item]) => {
-                    totalItems++;
-                    totalVal += (item.qty * (item.price || 0));
-                    
-                    let qtyHtml = '';
-                    if (item.qty <= item.min) {
-                        critItems++;
-                        qtyHtml = `<div class="mx-auto w-32 flex items-center justify-between px-3 py-1 bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-900/50 font-bold"><i class="fas fa-arrow-down animate-bounce"></i> <span>${item.qty} <span class="text-xs text-red-400 dark:text-red-500/70">/ ${item.min}</span></span></div>`;
-                    } else if (item.qty <= item.min * 1.5) {
-                        qtyHtml = `<div class="mx-auto w-32 flex items-center justify-between px-3 py-1 bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-500 rounded-lg font-bold"><span>${item.qty} <span class="text-xs text-amber-400 dark:text-amber-600/70">/ ${item.min}</span></span></div>`;
-                    } else {
-                        qtyHtml = `<div class="mx-auto w-32 flex items-center justify-between px-3 py-1 bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-500 rounded-lg font-bold"><span>${item.qty} <span class="text-xs text-green-400 dark:text-green-600/70">/ ${item.min}</span></span></div>`;
-                    }
+        const { value } = await Swal.fire({
+            title: 'Editar Insumo MRO',
+            html: `
+                <div class="space-y-3 text-left">
+                    <div><label class="text-xs text-slate-400 font-medium">Código SKU</label><input id="swal-sku" class="swal2-input !w-full !m-0 bg-dark-900 text-white !h-9 text-xs" value="${esc(item.sku)}" disabled></div>
+                    <div><label class="text-xs text-slate-400 font-medium">Descrição / Item</label><input id="swal-name" class="swal2-input !w-full !m-0 bg-dark-900 text-white !h-9 text-xs" value="${esc(item.name)}"></div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="text-xs text-slate-400 font-medium">Qtd Atual</label><input id="swal-qty" type="number" class="swal2-input !w-full !m-0 bg-dark-900 text-white !h-9 text-xs" value="${item.quantity}"></div>
+                        <div><label class="text-xs text-slate-400 font-medium">Qtd Mínima</label><input id="swal-min" type="number" class="swal2-input !w-full !m-0 bg-dark-900 text-white !h-9 text-xs" value="${item.minStock}"></div>
+                    </div>
+                    <div><label class="text-xs text-slate-400 font-medium">Custo Unitário (R$)</label><input id="swal-price" type="number" step="0.01" class="swal2-input !w-full !m-0 bg-dark-900 text-white !h-9 text-xs" value="${item.price || 0}"></div>
+                </div>`,
+            showCancelButton: true, confirmButtonText: 'Salvar', cancelButtonText: 'Cancelar',
+            ...getSwalTheme(),
+            preConfirm: () => {
+                const name = document.getElementById('swal-name').value.trim();
+                const quantity = parseInt(document.getElementById('swal-qty').value) || 0;
+                const minStock = parseInt(document.getElementById('swal-min').value) || 0;
+                const price = parseFloat(document.getElementById('swal-price').value) || 0;
 
-                    list.innerHTML += `
-                        <tr class="table-row-hover transition-colors text-slate-700 dark:text-slate-300">
-                            <td class="px-5 py-4 font-mono text-xs text-slate-500">MRO-${id.substring(1, 6).toUpperCase()}</td>
-                            <td class="px-5 py-4 font-medium">${item.name}</td>
-                            <td class="px-5 py-4 text-center">${qtyHtml}</td>
-                            <td class="px-5 py-4 text-slate-500 dark:text-slate-400">R$ ${(item.price || 0).toFixed(2)}</td>
-                            <td class="px-5 py-4 text-xs text-slate-400"><i class="fas fa-user-edit mr-1"></i> ${item.lastUpdatedBy || 'Sistema'}</td>
-                            <td class="px-5 py-4 text-right space-x-2">
-                                <button onclick="adjustQty('${id}', 1)" class="text-green-500 hover:text-green-600 bg-green-50 dark:bg-green-500/10 p-2 rounded-md transition"><i class="fas fa-plus"></i></button>
-                                <button onclick="adjustQty('${id}', -1)" class="text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 p-2 rounded-md transition"><i class="fas fa-minus"></i></button>
-                                <button onclick="editItem('${id}')" class="text-slate-400 hover:text-brand transition ml-2"><i class="fas fa-edit"></i></button>
-                                <button onclick="deleteItem('${id}')" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } else {
-                list.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-slate-500">Estoque vazio.</td></tr>`;
+                if(!name) { Swal.showValidationMessage('A descrição do item é obrigatória.'); return false; }
+                return { ...item, name, quantity, minStock, price, updatedBy: currentUserInfo.name };
             }
-
-            document.getElementById('kpi-total').innerText = totalItems;
-            document.getElementById('kpi-crit').innerText = critItems;
-            document.getElementById('kpi-value').innerText = 'R$ ' + totalVal.toFixed(2);
         });
+        if (value) update(ref(db, 'inventory/' + id), value);
+    }, { onlyOnce: true });
+};
 
-        window.addItem = () => {
-            Swal.fire({
-                title: 'Nova Peça/Material',
-                html: `
-                    <input id="n-name" class="swal2-input" placeholder="Descrição do Item">
-                    <input id="n-qty" type="number" class="swal2-input" placeholder="Quantidade Inicial">
-                    <input id="n-min" type="number" class="swal2-input" placeholder="Stock Mínimo (Alerta)">
-                    <input id="n-price" type="number" step="0.01" class="swal2-input" placeholder="Custo Unitário">
-                `,
-                showCancelButton: true, ...getSwalTheme(), confirmButtonText: 'Guardar',
-                preConfirm: () => {
-                    return {
-                        name: document.getElementById('n-name').value || 'Item S/N',
-                        qty: parseInt(document.getElementById('n-qty').value) || 0,
-                        min: parseInt(document.getElementById('n-min').value) || 0,
-                        price: parseFloat(document.getElementById('n-price').value) || 0,
-                        lastUpdatedBy: currentUserInfo.name // Regista o autor
-                    }
-                }
-            }).then((res) => { if (res.isConfirmed) push(ref(db, 'inventory'), res.value); });
-        };
+window.deleteItem = (id) => {
+    Swal.fire({
+        title: 'Eliminar Registro MRO?',
+        text: 'Esta ação removerá permanentemente o insumo do banco do chão de fábrica.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sim, deletar',
+        cancelButtonText: 'Cancelar',
+        ...getSwalTheme()
+    }).then((res) => {
+        if (res.isConfirmed) remove(ref(db, 'inventory/' + id));
+    });
+};
 
-        window.adjustQty = (id, amount) => {
-            onValue(ref(db, 'inventory/' + id), (snapshot) => {
-                const data = snapshot.val();
-                if(data) {
-                    let newQty = data.qty + amount;
-                    if(newQty >= 0) update(ref(db, 'inventory/' + id), { 
-                        qty: newQty,
-                        lastUpdatedBy: currentUserInfo.name // Atualiza quem fez a mudança
-                    });
-                }
-            }, { onlyOnce: true });
-        };
+window.exportToCSV = () => {
+    const table = document.getElementById('inventoryTable');
+    if (!table) return;
+    const rows = table.querySelectorAll('tr');
+    let csv = ['"CÓDIGO SKU";"DESCRIÇÃO";"STOCK ATUAL";"STOCK MÍNIMO";"ATUALIZADO POR"'];
 
-        window.editItem = (id) => {
-            onValue(ref(db, 'inventory/' + id), (snap) => {
-                const item = snap.val();
-                Swal.fire({
-                    title: 'Editar Item',
-                    html: `
-                        <input id="e-name" class="swal2-input" value="${item.name}">
-                        <input id="e-qty" type="number" class="swal2-input" value="${item.qty}">
-                        <input id="e-min" type="number" class="swal2-input" value="${item.min}">
-                        <input id="e-price" type="number" step="0.01" class="swal2-input" value="${item.price || 0}">
-                    `,
-                    showCancelButton: true, ...getSwalTheme(), confirmButtonText: 'Atualizar',
-                    preConfirm: () => {
-                        return {
-                            name: document.getElementById('e-name').value,
-                            qty: parseInt(document.getElementById('e-qty').value),
-                            min: parseInt(document.getElementById('e-min').value),
-                            price: parseFloat(document.getElementById('e-price').value),
-                            lastUpdatedBy: currentUserInfo.name // Atualiza o autor
-                        }
-                    }
-                }).then((res) => { if (res.isConfirmed) update(ref(db, 'inventory/' + id), res.value); });
-            }, { onlyOnce: true });
-        };
+    for (let i = 1; i < rows.length; i++) {
+        const cols = rows[i].querySelectorAll('td');
+        if (cols.length < 5) continue;
+        let sku = cols[0].innerText.trim();
+        let desc = cols[1].innerText.trim();
+        let numbers = cols[2].innerText.match(/\d+/g);
+        let qty = numbers ? numbers[0] : 0;
+        let min = numbers && numbers.length > 1 ? numbers[1] : 0;
+        let autor = cols[4].innerText.trim();
+        csv.push(`"${sku}";"${desc}";"${qty}";"${min}";"${autor}"`);
+    }
+    let csvFile = new Blob(["\uFEFF" + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
+    let downloadLink = document.createElement("a");
+    downloadLink.download = "Relatorio_Stock_Nexus.csv";
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.click();
+};
 
-        window.deleteItem = (id) => {
-            Swal.fire({ title: 'Remover Item?', text: "Será excluído do estoque.", icon: 'warning', showCancelButton: true, ...getSwalTheme(), confirmButtonText: 'Sim' })
-            .then((res) => { if (res.isConfirmed) remove(ref(db, 'inventory/' + id)); });
-        };
+document.getElementById('searchInput')?.addEventListener('keyup', (e) => {
+    const term = e.target.value.toLowerCase();
+    document.querySelectorAll('#inventory-list tr').forEach(row => {
+        if(!row.innerText.toLowerCase().includes('carregar')) row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none';
+    });
+});
 
-        window.exportCSV = () => {
-            let csv = ["SKU;Descricao;Qtd_Atual;Qtd_Minima;Atualizado_Por"];
-            let rows = document.querySelectorAll("#inventoryTable tr");
-            for (let i = 1; i < rows.length; i++) {
-                let cols = rows[i].querySelectorAll("td");
-                if (cols.length < 5) continue;
-                let sku = cols[0].innerText.trim();
-                let desc = cols[1].innerText.trim();
-                let qtyText = cols[2].innerText;
-                let numbers = qtyText.match(/\d+/g); 
-                let qty = numbers ? numbers[0] : 0; let min = numbers && numbers.length > 1 ? numbers[1] : 0;
-                let autor = cols[4].innerText.trim();
-                csv.push(`"${sku}";"${desc}";"${qty}";"${min}";"${autor}"`);
-            }
-            let csvFile = new Blob(["\uFEFF" + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
-            let downloadLink = document.createElement("a");
-            downloadLink.download = "Relatorio_Stock_Nexus.csv";
-            downloadLink.href = window.URL.createObjectURL(csvFile);
-            downloadLink.click();
-        };
-
-        document.getElementById('searchInput')?.addEventListener('keyup', (e) => {
-            const term = e.target.value.toLowerCase();
-            document.querySelectorAll('#inventory-list tr').forEach(row => {
-                if(!row.innerText.toLowerCase().includes('carregar')) row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none';
-            });
-        });
-
-         // ==========================================
-// CONTROLE DO MODO ESCURO (THEME)
-// ==========================================
-function toggleTheme() {
+window.toggleTheme = function() {
     const html = document.documentElement;
     if (html.classList.contains('dark')) {
         html.classList.remove('dark');
+        localStorage.theme = 'light';
     } else {
         html.classList.add('dark');
+        localStorage.theme = 'dark';
     }
-}
+};
 
-// Garante que o clique seja ouvido no novo ID do botão
-const themeBtn = document.getElementById('theme-toggle');
-if (themeBtn) {
-    themeBtn.addEventListener('click', toggleTheme);
+const logoutBtn = document.getElementById('logout-btn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => signOut(auth).then(() => window.location.href = 'index.html'));
 }
