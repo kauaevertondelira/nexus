@@ -77,7 +77,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
-    if (firebaseConfig.apiKey === "SUA_API_KEY") {
+    if (firebaseConfig.apiKey === "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s") {
         Swal.fire({ title: 'Modo de Teste', text: 'Firebase não configurado. Redirecionando para teste visual...', icon: 'info', timer: 2000, showConfirmButton: false, ...getSwalTheme() })
             .then(() => { window.location.href = 'menu.html'; });
         return;
@@ -100,7 +100,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const name = document.getElementById('reg-name').value;
     const role = document.getElementById('reg-role').value;
 
-    if (firebaseConfig.apiKey === "SUA_API_KEY") {
+    if (firebaseConfig.apiKey === "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s") {
         Swal.fire({ title: 'Perfil Simulado!', text: 'Firebase não configurado. Redirecionando para teste...', icon: 'success', timer: 2000, showConfirmButton: false, ...getSwalTheme() })
             .then(() => { window.location.href = 'menu.html'; });
         return;

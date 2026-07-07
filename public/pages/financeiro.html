@@ -6,7 +6,6 @@
     <title>Nexus Industrial - Gestão Financeira</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = {
@@ -23,7 +22,7 @@
         .table-row-hover:hover { background-color: rgba(59, 130, 246, 0.05); }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 dark:bg-[#0b1120] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm transition-colors duration-300 hidden">
+<body class="bg-slate-50 text-slate-800 dark:bg-[#0b1120] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm transition-colors duration-300">
 
     <aside class="w-64 bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 flex flex-col transition-colors duration-300 z-20">
         <div class="p-6 flex items-center justify-center border-b border-slate-200 dark:border-dark-800/50">
@@ -106,6 +105,7 @@
                 </div>
 
                 <div class="bg-white dark:bg-dark-800 p-6 rounded-2xl border border-slate-200 dark:border-dark-700/50 shadow-sm dark:shadow-none flex flex-col transition-colors duration-300 relative overflow-hidden">
+                    <div class="absolute left-0 top-0 w-1 h-full bg-red-500"></div>
                     <div class="flex justify-between items-start mb-2">
                         <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Ordens de Serviço Concluídas</p>
                         <i class="fas fa-check-circle text-green-500"></i>

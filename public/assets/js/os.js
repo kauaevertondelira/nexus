@@ -15,7 +15,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 
         let currentUserInfo = { name: "Operador", uid: "null" };
 
-        if (firebaseConfig.apiKey === "SUA_API_KEY") {
+        if (firebaseConfig.apiKey === "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s") {
             currentUserInfo = { name: "Gestor Operacional", uid: "simulado" };
             document.getElementById('user-name').innerText = currentUserInfo.name;
             document.getElementById('user-role').innerText = "Engenharia & PCM";
