@@ -344,3 +344,102 @@ if (firebaseConfig.apiKey !== "SUA_API_KEY") {
         }
     });
 }
+
+// --- 5. LOGICA DA SIDEBAR RETRÁTIL COM MEMÓRIA ---
+const sidebar = document.getElementById('sidebar');
+const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+const sidebarIcon = document.getElementById('sidebar-icon');
+const sidebarTexts = document.querySelectorAll('.sidebar-text');
+const sidebarLogo = document.getElementById('sidebar-logo');
+const sidebarLogoMini = document.getElementById('sidebar-logo-mini');
+
+// Função centralizada para aplicar o visual da Sidebar
+function applySidebarState(isCollapsed, isInstant = false) {
+    if (isCollapsed) {
+        // Encolher Sidebar
+        sidebar.classList.remove('w-64');
+        sidebar.classList.add('w-20');
+        sidebarIcon.classList.add('rotate-180');
+        
+        // Esconder Textos
+        sidebarTexts.forEach(text => {
+            if (isInstant) {
+                text.classList.add('hidden', 'opacity-0');
+            } else {
+                text.classList.add('opacity-0');
+                setTimeout(() => text.classList.add('hidden'), 200);
+            }
+        });
+        
+        // Trocar Logo
+        sidebarLogo.classList.add('hidden');
+        sidebarLogoMini.classList.remove('hidden');
+    } else {
+        // Expandir Sidebar
+        sidebar.classList.remove('w-20');
+        sidebar.classList.add('w-64');
+        sidebarIcon.classList.remove('rotate-180');
+        
+        // Mostrar Textos
+        sidebarTexts.forEach(text => {
+            text.classList.remove('hidden');
+            if (isInstant) {
+                text.classList.remove('opacity-0');
+            } else {
+                setTimeout(() => text.classList.remove('opacity-0'), 10);
+            }
+        });
+        
+        // Trocar Logo
+        sidebarLogoMini.classList.add('hidden');
+        sidebarLogo.classList.remove('hidden');
+    }
+}
+
+// 1. LER MEMÓRIA: Verifica se há registo no localStorage ao carregar a página
+let isSidebarCollapsed = localStorage.getItem('nexus_sidebar_state') === 'collapsed';
+
+// Aplica o estado guardado instantaneamente (para não piscar ao trocar de página)
+applySidebarState(isSidebarCollapsed, true);
+
+// 2. AÇÃO DE CLIQUE: Alternar e gravar
+toggleSidebarBtn.addEventListener('click', () => {
+    isSidebarCollapsed = !isSidebarCollapsed;
+    
+    // Grava a nova preferência no navegador do utilizador
+    localStorage.setItem('nexus_sidebar_state', isSidebarCollapsed ? 'collapsed' : 'expanded');
+    
+    // Aplica o novo visual de forma suave (animada)
+    applySidebarState(isSidebarCollapsed, false);
+});
+
+// ==========================================
+// MARCADOR DE PÁGINA ATIVA AUTOMÁTICO
+// ==========================================
+function highlightActiveMenu() {
+    // Pega o nome do arquivo atual da URL (ex: 'os.html', 'ativos.html')
+    let currentPage = window.location.pathname.split('/').pop();
+    
+    // Fallback se estiver na raiz do sistema
+    if (currentPage === '' || currentPage === '/') {
+        currentPage = 'menu.html';
+    }
+
+    // Seleciona todos os links dentro da nav
+    const navLinks = document.querySelectorAll('#sidebar-nav .nav-link');
+
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        
+        if (href === currentPage) {
+            // Remove as classes de inativo
+            link.classList.remove('text-slate-500', 'hover:bg-slate-100', 'hover:text-brand', 'dark:text-slate-400', 'dark:hover:bg-dark-800', 'dark:hover:text-white');
+            
+            // Adiciona as classes de ativo (Azul)
+            link.classList.add('bg-brand/10', 'text-brand', 'font-medium', 'border', 'border-brand/20');
+        }
+    });
+}
+
+// Executa ao carregar a página
+highlightActiveMenu();

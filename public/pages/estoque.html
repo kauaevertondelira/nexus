@@ -26,45 +26,64 @@
 <body class="bg-slate-50 text-slate-800 dark:bg-[#0b1120] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm transition-colors duration-300">
 
     <!-- MENU LATERAL -->
-    <aside class="w-64 bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 flex flex-col transition-colors duration-300 z-20">
-        <div class="p-6 flex items-center justify-center border-b border-slate-200 dark:border-dark-800/50">
-            <img src="../../IMG/canvas-b.png" alt="Nexus Logo" class="h-20 w-auto invert dark:invert-0 transition-all duration-300 drop-shadow-md" onerror="this.src='https://placehold.co/150x80/1e293b/ffffff?text=NEXUS'">
+    <aside id="sidebar" class="w-64 bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 flex flex-col transition-all duration-300 z-40 relative">
+        
+        <!-- Botão de Colapsar -->
+        <button id="toggle-sidebar" class="absolute -right-3 top-8 bg-white dark:bg-dark-800 border border-slate-200 dark:border-dark-700 text-slate-500 rounded-full w-6 h-6 flex items-center justify-center hover:text-brand transition-colors z-50 shadow-sm">
+            <i class="fas fa-chevron-left text-[10px] transition-transform duration-300" id="sidebar-icon"></i>
+        </button>
+
+        <div class="p-6 flex items-center justify-center border-b border-slate-200 dark:border-dark-800/50 h-20 overflow-hidden">
+            <!-- Logo Grande -->
+            <img src="../../IMG/canvas-b.png" alt="Nexus Logo" id="sidebar-logo" class="h-10 w-auto invert dark:invert-0 transition-all duration-300 drop-shadow-md" onerror="this.src='https://placehold.co/120x40/1e293b/ffffff?text=NEXUS'">
+            <!-- Ícone Mini (Aparece quando fechado) -->
+            <div id="sidebar-logo-mini" class="hidden w-10 h-10 bg-brand rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md shrink-0">N</div>
         </div>
 
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 mt-2 px-4">Painel</p>
+        <nav class="flex-1 p-3 space-y-2 overflow-y-auto overflow-x-hidden" id="sidebar-nav">
+            <p class="sidebar-text text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 mt-2 px-2 transition-opacity duration-300 whitespace-nowrap">Painel</p>
             
-            <a href="menu.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-chart-pie w-5 text-center"></i> Visão Global
+            <a href="menu.html" title="Visão Global" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-chart-pie w-6 text-center shrink-0"></i> 
+                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Visão Global</span>
             </a>
 
-            <a href="mapa.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-map-marked-alt w-5 text-center"></i> Planta Industrial
+            <a href="mapa.html" title="Planta Industrial" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-map-marked-alt w-6 text-center shrink-0"></i> 
+                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Planta Industrial</span>
             </a>
 
-            <a href="ativos.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-microchip w-5 text-center"></i> Parque de Ativos
+            <a href="ativos.html" title="Parque de Ativos" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-microchip w-6 text-center shrink-0"></i> 
+                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Parque de Ativos</span>
             </a>
-            <a href="os.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-clipboard-list w-5 text-center"></i> Ordens de Serviço
+            
+            <a href="os.html" title="Ordens de Serviço" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-clipboard-list w-6 text-center shrink-0"></i> 
+                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Ordens de Serviço</span>
             </a>
-            <a href="estoque.html" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand/10 text-brand font-medium border border-brand/20">
-                <i class="fas fa-boxes w-5 text-center"></i> Estoque (MRO)
+            
+            <a href="estoque.html" title="Estoque (MRO)" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-boxes w-6 text-center shrink-0"></i> 
+                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Estoque (MRO)</span>
             </a>
-            <a href="financeiro.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-wallet w-5 text-center"></i> Financeiro
+            
+            <a href="financeiro.html" title="Financeiro" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-wallet w-6 text-center shrink-0"></i> 
+                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Financeiro</span>
             </a>
         </nav>
-        <div class="p-4 border-t border-slate-200 dark:border-dark-800/50">
-            <button id="theme-toggle" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300 mb-2">
-                <i class="fas fa-sun text-amber-500 hidden dark:block w-5 text-center"></i>
-                <i class="fas fa-moon text-slate-600 block dark:hidden w-5 text-center"></i>
-                <span class="font-medium hidden md:block">Alternar Tema</span>
+
+        <div class="p-3 border-t border-slate-200 dark:border-dark-800/50">
+            <button id="theme-toggle" title="Alternar Tema" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300 mb-2">
+                <i class="fas fa-sun text-amber-500 hidden dark:block w-6 text-center shrink-0"></i>
+                <i class="fas fa-moon text-slate-600 block dark:hidden w-6 text-center shrink-0"></i>
+                <span class="sidebar-text font-medium transition-opacity duration-300 whitespace-nowrap">Alternar Tema</span>
             </button>
             
-            <a href="../../index.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300">
-                <i class="fas fa-sign-out-alt w-5 text-center"></i>
-                <span class="font-medium">Sair</span>
+            <a href="../../index.html" title="Sair do Sistema" class="flex items-center gap-3 px-3 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300">
+                <i class="fas fa-sign-out-alt w-6 text-center shrink-0"></i>
+                <span class="sidebar-text font-medium transition-opacity duration-300 whitespace-nowrap">Sair</span>
             </a>
         </div>
     </aside>
