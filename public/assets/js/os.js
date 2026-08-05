@@ -1,3 +1,32 @@
+
+// ==========================================
+// GUARD DE ACESSO — bloqueia cargo sem permissão
+// ==========================================
+const ROLE_PAGES_MAP = {
+    "Administrador":              ["menu","ativos","os","estoque","financeiro","mapa-consumo"],
+    "Técnico de Manutenção":      ["menu","ativos","os"],
+    "Almoxarifado / Suprimentos": ["menu","ativos","os","estoque","mapa-consumo"]
+};
+function checkPageAccess(pageId, userData) {
+    const allowed = userData.allowedPages || ROLE_PAGES_MAP[userData.role] || ["menu"];
+    if (!allowed.includes(pageId)) {
+        document.body.style.overflow = "hidden";
+        document.body.innerHTML = `
+          <div style="min-height:100vh;background:#0f172a;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;gap:16px;padding:32px;font-family:sans-serif">
+            <div style="width:64px;height:64px;border-radius:16px;background:rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;font-size:28px">🔒</div>
+            <h1 style="font-size:22px;font-weight:800;margin:0">Acesso Restrito</h1>
+            <p style="color:#94a3b8;text-align:center;max-width:360px;margin:0">
+              Seu cargo <strong style="color:white">${userData.role}</strong> não tem permissão para acessar esta página.
+            </p>
+            <a href="menu.html" style="margin-top:8px;padding:12px 24px;background:#3b82f6;border-radius:12px;font-weight:700;color:white;text-decoration:none">
+              ← Voltar ao Painel
+            </a>
+          </div>`;
+        return false;
+    }
+    return true;
+}
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -29,6 +58,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
                             currentUserInfo = { name: data.name, uid: user.uid };
                             document.getElementById('user-name').innerText = data.name;
                             document.getElementById('user-role').innerText = data.role;
+                            if (!checkPageAccess('os', data)) return;
                             if(data.photoURL) {
                                 document.getElementById('user-photo').style.backgroundImage = `url(${data.photoURL})`;
                                 document.getElementById('user-photo').innerHTML = '';

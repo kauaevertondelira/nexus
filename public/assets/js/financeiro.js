@@ -1,92 +1,140 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s",
-    authDomain: "nexus-iot-senai.firebaseapp.com",
-    databaseURL: "https://nexus-iot-senai-default-rtdb.firebaseio.com",
-    projectId: "nexus-iot-senai"
+// ==========================================
+// GUARD DE ACESSO — bloqueia cargo sem permissão
+// ==========================================
+const ROLE_PAGES_MAP = {
+    "Administrador":              ["menu","ativos","os","estoque","financeiro","mapa-consumo"],
+    "Técnico de Manutenção":      ["menu","ativos","os"],
+    "Almoxarifado / Suprimentos": ["menu","ativos","os","estoque","mapa-consumo"]
 };
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
-
-let chartBar = null;
-let chartDoughnut = null;
-
-const getGridColor = () => document.documentElement.classList.contains('dark') ? '#1e293b' : '#f1f5f9';
-const getTextColor = () => document.documentElement.classList.contains('dark') ? '#64748b' : '#94a3b8';
-
-// 🔒 SISTEMA DE PROTEÇÃO E BARREIRA DA CONTROLADORIA (RBAC)
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        onValue(ref(db, 'users/' + user.uid), (snapshot) => {
-            const userData = snapshot.val();
-            if (userData) {
-                
-                // --- NOVA TRAVA DE ACESSO INTEGRADA ---
-                if (userData.role === 'Operador') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Acesso Restrito',
-                        text: 'Operadores não têm permissão para aceder à Controladoria Financeira.',
-                        timer: 2500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = 'menu.html'; // Tira o operador da página imediatamente
-                    });
-                    return; // Interrompe de imediato a execução das lógicas de dados abaixo
-                }
-
-                // UTILIZADOR AUTORIZADO DETECTADO:
-                // Revela a interface e injeta os dados de forma assíncrona e segura
-                document.body.classList.remove('hidden');
-                document.getElementById('user-name').innerText = userData.name || "Utilizador";
-                document.getElementById('user-role').innerText = userData.role || "Cargo não definido";
-                
-                // Inicializa os gráficos e as escutas do banco de dados apenas para quem pode ver
-                initCharts();
-                setupDataListeners();
-            }
-        }, { onlyOnce: true });
-    } else {
-        window.location.href = 'index.html';
+function checkPageAccess(pageId, userData) {
+    const allowed = userData.allowedPages || ROLE_PAGES_MAP[userData.role] || ["menu"];
+    if (!allowed.includes(pageId)) {
+        document.body.style.overflow = "hidden";
+        document.body.innerHTML = `
+          <div style="min-height:100vh;background:#0f172a;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;gap:16px;padding:32px;font-family:sans-serif">
+            <div style="width:64px;height:64px;border-radius:16px;background:rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;font-size:28px">🔒</div>
+            <h1 style="font-size:22px;font-weight:800;margin:0">Acesso Restrito</h1>
+            <p style="color:#94a3b8;text-align:center;max-width:360px;margin:0">
+              Seu cargo <strong style="color:white">${userData.role}</strong> não tem permissão para acessar esta página.
+            </p>
+            <a href="menu.html" style="margin-top:8px;padding:12px 24px;background:#3b82f6;border-radius:12px;font-weight:700;color:white;text-decoration:none">
+              ← Voltar ao Painel
+            </a>
+          </div>`;
+        return false;
     }
-});
-
-function esc(str) {
-    if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+    return true;
 }
 
-function initCharts() {
-    // Sincronizado com o ID do canvas correto no HTML (costChart)
-    const ctxTrend = document.getElementById('costChart')?.getContext('2d');
-    if (ctxTrend) {
-        chartBar = new Chart(ctxTrend, {
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s",
+            authDomain: "nexus-iot-senai.firebaseapp.com",
+            databaseURL: "https://nexus-iot-senai-default-rtdb.firebaseio.com",
+            projectId: "nexus-iot-senai"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        // --- SISTEMA DE PERFIL ---
+        if (firebaseConfig.apiKey === "SUA_API_KEY") {
+            document.getElementById('user-name').innerText = "Diretor Financeiro";
+            document.getElementById('user-role').innerText = "Gestão / Controladoria";
+            document.getElementById('user-photo').innerHTML = '<i class="fas fa-chart-line text-xl"></i>';
+        } else {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    onValue(ref(db, 'users/' + user.uid), (snapshot) => {
+                        const data = snapshot.val();
+                        if(data) {
+                            document.getElementById('user-name').innerText = data.name;
+                            document.getElementById('user-role').innerText = data.role;
+                            if (!checkPageAccess('financeiro', data)) return;
+                            if(data.photoURL) {
+                                document.getElementById('user-photo').style.backgroundImage = `url(${data.photoURL})`;
+                                document.getElementById('user-photo').innerHTML = '';
+                            } else {
+                                document.getElementById('user-photo').innerHTML = '<i class="fas fa-user text-xl"></i>';
+                            }
+                        }
+                    });
+                } else {
+                    window.location.href = '../../index.html';
+                }
+            });
+        }
+
+        let chartDoughnut;
+
+        onValue(ref(db, 'work_orders'), (snapshot) => {
+            const data = snapshot.val();
+            let totalDone = 0; let urgentCount = 0; let normalCount = 0;
+            
+            if (data) {
+                Object.values(data).forEach(os => {
+                    if (os.status === 'done') totalDone++;
+                    if (os.priority === 'urgent' || os.priority === 'danger') urgentCount++;
+                    else normalCount++;
+                });
+            }
+
+            document.getElementById('kpi-os-done').innerText = totalDone;
+            
+            if(chartDoughnut) {
+                chartDoughnut.data.datasets[0].data = [urgentCount, normalCount];
+                chartDoughnut.update();
+            }
+
+            // Simula tabela de custos
+            document.getElementById('cost-table').innerHTML = `
+                <tr class="table-row-hover text-slate-700 dark:text-slate-300">
+                    <td class="py-3 font-medium">Extrusora Principal <span class="text-xs text-slate-500 block">#EXT-001</span></td>
+                    <td class="py-3 text-center">4</td>
+                    <td class="py-3 text-right text-red-500 font-bold">R$ 5.200,00</td>
+                </tr>
+                <tr class="table-row-hover text-slate-700 dark:text-slate-300">
+                    <td class="py-3 font-medium">Compressor Ar Linha B <span class="text-xs text-slate-500 block">#CMP-02</span></td>
+                    <td class="py-3 text-center">2</td>
+                    <td class="py-3 text-right">R$ 1.850,00</td>
+                </tr>
+            `;
+            document.getElementById('kpi-downtime').innerText = "R$ 7.050,00";
+        });
+
+        const getGridColor = () => document.documentElement.classList.contains('dark') ? '#1e293b' : '#f1f5f9';
+        const getTextColor = () => document.documentElement.classList.contains('dark') ? '#64748b' : '#94a3b8';
+
+        // Gráfico de Barras
+        const ctxBar = document.getElementById('costChart').getContext('2d');
+        window.chartBar = new Chart(ctxBar, {
             type: 'bar',
             data: {
                 labels: ['Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
-                datasets: [
-                    { label: 'Custo Manutenção (R$)', data: [8500, 7200, 10400, 6800, 9100, 4500], backgroundColor: '#3b82f6', borderRadius: 4, barPercentage: 0.5 },
-                    { label: 'Prejuízo Downtime (R$)', data: [3000, 1500, 5200, 1200, 2400, 800], backgroundColor: '#ef4444', borderRadius: 4, barPercentage: 0.5 }
-                ]
+                datasets: [{
+                    label: 'Custo Downtime (R$)',
+                    data: [3000, 1500, 5200, 1200, 2400, 800],
+                    backgroundColor: '#ef4444',
+                    borderRadius: 4,
+                    barPercentage: 0.5
+                }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: getTextColor() } } },
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
                 scales: {
                     y: { grid: { color: getGridColor() }, ticks: { color: getTextColor(), callback: (val) => 'R$ ' + val } },
                     x: { grid: { display: false }, ticks: { color: getTextColor() } }
                 }
             }
         });
-    }
 
-    const ctxDist = document.getElementById('distributionChart')?.getContext('2d');
-    if (ctxDist) {
+        // Gráfico Doughnut
+        const ctxDist = document.getElementById('distributionChart').getContext('2d');
         chartDoughnut = new Chart(ctxDist, {
             type: 'doughnut',
             data: {
@@ -99,132 +147,26 @@ function initCharts() {
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { position: 'bottom', labels: { color: getTextColor(), padding: 20 } } },
                 cutout: '70%'
             }
         });
+
+        // ==========================================
+// CONTROLE DO MODO ESCURO (THEME)
+// ==========================================
+function toggleTheme() {
+    const html = document.documentElement;
+    if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+    } else {
+        html.classList.add('dark');
     }
 }
 
-// 📊 FUNÇÃO DE CONSOLIDAÇÃO E PROCESSAMENTO DE DADOS PROTEGIDOS
-function setupDataListeners() {
-    onValue(ref(db, 'work_orders'), (osSnapshot) => {
-        const orders = osSnapshot.val() || {};
-        
-        onValue(ref(db, 'assets'), (assetsSnapshot) => {
-            const assets = assetsSnapshot.val() || {};
-            
-            let totalMaintCost = 0;
-            let totalDowntimeLoss = 0;
-            let urgentCount = 0;
-            let normalCount = 0;
-            let completedOsCount = 0;
-            
-            const equipmentStats = {};
-            Object.keys(assets).forEach(id => {
-                equipmentStats[id] = { name: assets[id].name, count: 0, cost: 0 };
-            });
-
-            Object.values(orders).forEach(os => {
-                const assetId = os.assetId || "maquina_generica";
-                
-                let baseCost = os.type === "Elétrica" ? 450 : os.type === "Mecânica" ? 300 : 150;
-                if (os.priority === "Alta") {
-                    baseCost *= 2.5;
-                    urgentCount++;
-                    totalDowntimeLoss += 800; 
-                } else {
-                    normalCount++;
-                }
-
-                if (os.status === "done") {
-                    totalMaintCost += baseCost;
-                    completedOsCount++;
-                    if (equipmentStats[assetId]) {
-                        equipmentStats[assetId].count++;
-                        equipmentStats[assetId].cost += baseCost;
-                    }
-                }
-            });
-
-            // Atualização de KPIS na UI com tratamento e formatação localizada
-            const kpiMaint = document.getElementById('kpi-custo-manutencao');
-            const kpiLoss = document.getElementById('kpi-prejuizo-downtime');
-            const kpiOsDone = document.getElementById('kpi-os-done');
-            
-            if (kpiMaint) kpiMaint.innerText = `R$ ${totalMaintCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-            if (kpiLoss) kpiLoss.innerText = `R$ ${totalDowntimeLoss.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-            if (kpiOsDone) kpiOsDone.innerText = completedOsCount;
-
-            // Renderização da tabela de maiores custos por ativo
-            const tableBody = document.getElementById('cost-table');
-            if (tableBody) {
-                tableBody.innerHTML = '';
-                const sortedEquip = Object.values(equipmentStats).sort((a,b) => b.cost - a.cost);
-                
-                if (sortedEquip.length === 0 || sortedEquip.every(e => e.cost === 0)) {
-                    tableBody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-500">Nenhum custo registrado para Ordens concluídas.</td></tr>`;
-                } else {
-                    sortedEquip.forEach(e => {
-                        if(e.cost === 0 && e.count === 0) return;
-                        const tr = document.createElement('tr');
-                        tr.className = "border-b border-slate-100 dark:border-dark-800/30 text-xs text-slate-600 dark:text-slate-300 table-row-hover";
-                        tr.innerHTML = `
-                            <td class="py-3.5 font-medium text-slate-800 dark:text-slate-200">${esc(e.name)}</td>
-                            <td class="py-3.5 text-center font-semibold text-brand">${e.count}</td>
-                            <td class="py-3.5 text-right font-bold text-slate-700 dark:text-slate-100">R$ ${e.cost.toFixed(2)}</td>
-                        `;
-                        tableBody.appendChild(tr);
-                    });
-                }
-            }
-
-            // Atualizar Distribuição Gráfica (Doughnut)
-            if (chartDoughnut) {
-                chartDoughnut.data.datasets[0].data = [urgentCount, normalCount];
-                chartDoughnut.update();
-            }
-        });
-    });
-}
-
-// Escuta do Botão de Alternância de Tema Corrigida
-const themeToggleBtn = document.getElementById('theme-toggle');
-if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
-        const html = document.documentElement;
-        if (html.classList.contains('dark')) {
-            html.classList.remove('dark');
-            localStorage.theme = 'light';
-        } else {
-            html.classList.add('dark');
-            localStorage.theme = 'dark';
-        }
-        
-        if (chartBar) {
-            chartBar.options.scales.y.grid.color = getGridColor();
-            chartBar.options.scales.y.ticks.color = getTextColor();
-            chartBar.options.scales.x.ticks.color = getTextColor();
-            chartBar.update();
-        }
-        if (chartDoughnut) {
-            chartDoughnut.options.plugins.legend.labels.color = getTextColor();
-            chartDoughnut.update();
-        }
-    });
-}
-
-// Escuta do Botão de Terminar Sessão (Logout do Firebase Auth) Corrigida
-const logoutBtn = document.getElementById('logout-btn');
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        signOut(auth).then(() => {
-            window.location.href = 'index.html';
-        }).catch((err) => {
-            console.error("Erro ao efetuar logout:", err);
-        });
-    });
+// Garante que o clique seja ouvido no novo ID do botão
+const themeBtn = document.getElementById('theme-toggle');
+if (themeBtn) {
+    themeBtn.addEventListener('click', toggleTheme);
 }
