@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-PT" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Industrial - Planta Industrial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { dark: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' }, brand: '#3b82f6' }, fontSize: { 'xxs': '0.65rem' } } }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-track { background: #0f172a; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        
+        /* Fundo de Grade da Planta Industrial */
+        .factory-grid {
+            background-size: 50px 50px;
+            background-image:
+              linear-gradient(to right, rgba(148, 163, 184, 0.2) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(148, 163, 184, 0.2) 1px, transparent 1px);
+        }
+        .dark .factory-grid {
+            background-image:
+              linear-gradient(to right, rgba(51, 65, 85, 0.4) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(51, 65, 85, 0.4) 1px, transparent 1px);
+        }
+
+        /* Efeito Neon para as máquinas */
+        .glow-green { box-shadow: 0 0 15px 2px rgba(34, 197, 94, 0.6); }
+        .glow-red { box-shadow: 0 0 15px 2px rgba(239, 68, 68, 0.6); }
+        .glow-yellow { box-shadow: 0 0 15px 2px rgba(234, 179, 8, 0.6); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-[#0b1120] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm transition-colors duration-300">
+
+    <!-- MENU LATERAL -->
+    <aside class="w-64 bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 flex flex-col transition-colors duration-300 z-20">
+        <div class="p-6 flex items-center justify-center border-b border-slate-200 dark:border-dark-800/50">
+            <img src="../../IMG/canvas-b.png" alt="Nexus Logo" class="h-20 w-auto invert dark:invert-0 transition-all duration-300 drop-shadow-md" onerror="this.src='https://placehold.co/150x80/1e293b/ffffff?text=NEXUS'">
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 mt-2 px-4">Painel</p>
+            
+            <!-- Link Visão Global (Inativo nesta página) -->
+            <a href="menu.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-chart-pie w-5 text-center"></i> Visão Global
+            </a>
+
+            <!-- NOVO LINK: Mapa Industrial (Ativo nesta página) -->
+            <a href="mapa.html" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand/10 text-brand font-medium border border-brand/20">
+                <i class="fas fa-map-marked-alt w-5 text-center"></i> Planta Industrial
+            </a>
+
+            <!-- Restante dos links -->
+            <a href="ativos.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-microchip w-5 text-center"></i> Parque de Ativos
+            </a>
+            <a href="os.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-clipboard-list w-5 text-center"></i> Ordens de Serviço
+            </a>
+            <a href="estoque.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-boxes w-5 text-center"></i> Estoque (MRO)
+            </a>
+            <a href="financeiro.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-wallet w-5 text-center"></i> Financeiro
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-200 dark:border-dark-800/50">
+            <button id="theme-toggle" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300 mb-2">
+                <i class="fas fa-sun text-amber-500 hidden dark:block w-5 text-center"></i>
+                <i class="fas fa-moon text-slate-600 block dark:hidden w-5 text-center"></i>
+                <span class="font-medium hidden md:block">Alternar Tema</span>
+            </button>
+            
+            <a href="../../index.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300">
+                <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                <span class="font-medium">Sair</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="flex-1 flex flex-col h-screen relative">
+        <header class="h-20 bg-white dark:bg-dark-900 border-b border-slate-200 dark:border-dark-800 flex items-center justify-between px-8 transition-colors duration-300 z-10 shrink-0">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800 dark:text-white tracking-wide">Planta Industrial - Gêmeo Digital</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Monitoramento de ativos e telemetria em tempo real no chão de fábrica</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <!-- Legenda de Status Rápida no Header -->
+                <div class="hidden md:flex gap-4 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-dark-800 px-4 py-2 rounded-full border border-slate-200 dark:border-dark-700 mr-4">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500 glow-green"></span> Operando (8)</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-500 glow-yellow"></span> Alerta (2)</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500 glow-red"></span> Parada (1)</span>
+                </div>
+
+                <div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-dark-800">
+                    <div class="h-10 w-10 rounded-full bg-gradient-to-tr from-brand to-blue-400 flex items-center justify-center text-white font-bold shadow-md"></div>
+                    <div class="hidden md:block">
+                        <p class="text-sm font-bold text-slate-800 dark:text-white">Admin</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Gestor de Chão de Fábrica</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTAINER DO MAPA GIGANTE -->
+        <div class="flex-1 p-6 overflow-hidden flex flex-col">
+            <div class="flex-1 relative bg-slate-100 dark:bg-[#080d14] rounded-2xl border-2 border-slate-300 dark:border-dark-700 overflow-hidden factory-grid shadow-inner select-none transition-colors duration-300 w-full h-full">
+                
+                <!-- Controles do Mapa (Zomm in/out simulado visualmente) -->
+                <div class="absolute bottom-6 right-6 bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-slate-200 dark:border-dark-700 flex flex-col overflow-hidden z-20">
+                    <button class="p-3 text-slate-600 hover:text-brand dark:text-slate-300 dark:hover:bg-dark-700 transition-colors border-b border-slate-200 dark:border-dark-700"><i class="fas fa-plus"></i></button>
+                    <button class="p-3 text-slate-600 hover:text-brand dark:text-slate-300 dark:hover:bg-dark-700 transition-colors"><i class="fas fa-minus"></i></button>
+                </div>
+
+                <!-- Divisórias Físicas da Fábrica (Paredes/Setores) -->
+                <!-- Setor Usinagem -->
+                <div class="absolute top-[10%] left-[5%] w-[40%] h-[80%] border-2 border-dashed border-slate-400/50 dark:border-slate-600/30 rounded-lg pointer-events-none">
+                    <span class="absolute -top-3 left-4 bg-slate-100 dark:bg-[#080d14] px-2 text-slate-500 dark:text-slate-500 font-bold uppercase tracking-widest text-xs">Setor Usinagem Pesada</span>
+                </div>
+                
+                <!-- Setor Montagem -->
+                <div class="absolute top-[10%] right-[5%] w-[45%] h-[80%] border-2 border-dashed border-slate-400/50 dark:border-slate-600/30 rounded-lg pointer-events-none">
+                    <span class="absolute -top-3 left-4 bg-slate-100 dark:bg-[#080d14] px-2 text-slate-500 dark:text-slate-500 font-bold uppercase tracking-widest text-xs">Setor Montagem Automática</span>
+                </div>
+
+                <!-- MÁQUINAS (NODES DO ESP32) -->
+                
+                <!-- MÁQUINA 01 - Operando -->
+                <div class="absolute top-[25%] left-[15%] group cursor-pointer transform hover:scale-110 transition-transform z-10" 
+                     onclick="openMachineModal('M-001', 'Torno CNC X1', 'OPERANDO', '68.5 °C', '1540', '192.168.0.105')">
+                    <div class="w-6 h-6 bg-green-500 rounded-full animate-pulse glow-green border-[3px] border-white dark:border-dark-900"></div>
+                    <span class="absolute top-8 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-dark-800/90 px-3 py-1 rounded-md backdrop-blur-sm border border-slate-300 dark:border-dark-600 shadow-md whitespace-nowrap">M-001 <br> <span class="text-xxs font-normal text-slate-500">Torno X1</span></span>
+                </div>
+
+                <!-- MÁQUINA 02 - Parada/Erro -->
+                <div class="absolute top-[65%] left-[25%] group cursor-pointer transform hover:scale-110 transition-transform z-10"
+                     onclick="openMachineModal('M-002', 'Fresa Inteligente', 'PARADA', '112.0 °C', '320', '192.168.0.106')">
+                    <div class="w-6 h-6 bg-red-500 rounded-full animate-pulse glow-red border-[3px] border-white dark:border-dark-900"></div>
+                    <span class="absolute top-8 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-dark-800/90 px-3 py-1 rounded-md backdrop-blur-sm border border-slate-300 dark:border-dark-600 shadow-md whitespace-nowrap">M-002 <br> <span class="text-xxs font-normal text-slate-500">Fresa A</span></span>
+                </div>
+
+                <!-- MÁQUINA 03 - Alerta -->
+                <div class="absolute top-[30%] right-[30%] group cursor-pointer transform hover:scale-110 transition-transform z-10"
+                     onclick="openMachineModal('M-003', 'Braço Robótico A', 'ALERTA', '85.2 °C', '890', '192.168.0.107')">
+                    <div class="w-6 h-6 bg-yellow-500 rounded-full animate-pulse glow-yellow border-[3px] border-white dark:border-dark-900"></div>
+                    <span class="absolute top-8 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-dark-800/90 px-3 py-1 rounded-md backdrop-blur-sm border border-slate-300 dark:border-dark-600 shadow-md whitespace-nowrap">M-003 <br> <span class="text-xxs font-normal text-slate-500">Robô 01</span></span>
+                </div>
+
+                <!-- MÁQUINA 04 - Operando (Nova Máquina Exemplo) -->
+                <div class="absolute top-[70%] right-[15%] group cursor-pointer transform hover:scale-110 transition-transform z-10"
+                     onclick="openMachineModal('M-004', 'Esteira de Seleção', 'OPERANDO', '42.1 °C', '4520', '192.168.0.108')">
+                    <div class="w-6 h-6 bg-green-500 rounded-full animate-pulse glow-green border-[3px] border-white dark:border-dark-900"></div>
+                    <span class="absolute top-8 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-dark-800/90 px-3 py-1 rounded-md backdrop-blur-sm border border-slate-300 dark:border-dark-600 shadow-md whitespace-nowrap">M-004 <br> <span class="text-xxs font-normal text-slate-500">Esteira</span></span>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL DE DETALHES DA MÁQUINA -->
+    <div id="machine-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <!-- Caixa do Modal -->
+        <div class="bg-white dark:bg-dark-800 w-full max-w-md rounded-2xl p-6 border border-slate-200 dark:border-dark-700 shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
+            
+            <!-- Header do Modal -->
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <i class="fas fa-microchip text-brand"></i>
+                        <span id="modal-machine-name">Nome da Máquina</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">ID: <span id="modal-machine-id" class="font-mono text-slate-700 dark:text-slate-300">M-000</span> | IP: <span id="modal-machine-ip" class="font-mono">0.0.0.0</span></p>
+                </div>
+                <button onclick="closeMachineModal()" class="text-slate-400 hover:text-red-500 transition-colors h-8 w-8 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Status Badge -->
+            <div class="mb-6 flex justify-center">
+                <span id="modal-status-badge" class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border">
+                    Status
+                </span>
+            </div>
+
+            <!-- Dados Coletados do Python/ESP32 -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-slate-50 dark:bg-dark-900 p-4 rounded-xl border border-slate-200 dark:border-dark-700 flex flex-col items-center justify-center text-center">
+                    <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold mb-2 uppercase"><i class="fas fa-thermometer-half text-amber-500 mr-1"></i> Temperatura</p>
+                    <p class="text-3xl font-bold text-slate-800 dark:text-white" id="modal-temp">0 °C</p>
+                </div>
+                <div class="bg-slate-50 dark:bg-dark-900 p-4 rounded-xl border border-slate-200 dark:border-dark-700 flex flex-col items-center justify-center text-center">
+                    <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold mb-2 uppercase"><i class="fas fa-cog text-brand mr-1"></i> Peças Prod.</p>
+                    <p class="text-3xl font-bold text-slate-800 dark:text-white" id="modal-prod">0</p>
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="flex gap-3">
+                <!-- Botão que levará para a tela de O.S. enviando o ID da máquina na URL -->
+                <button onclick="alert('Funcionalidade que redirecionará para os.html?maquina=' + document.getElementById('modal-machine-id').innerText)" class="flex-1 bg-brand hover:bg-blue-600 text-white py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2">
+                    <i class="fas fa-tools"></i> Ação O.S.
+                </button>
+                <button class="flex-1 border border-slate-300 dark:border-dark-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-dark-700 py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2">
+                    <i class="fas fa-chart-line"></i> Métricas
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../assets/js/mapa.js">
+        
+    </script>
+</body>
+</html>
