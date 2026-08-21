@@ -1,24 +1,29 @@
 <!DOCTYPE html>
-<html lang="pt-PT" class="dark">
+<html lang="pt-BR" class="dark nexus-auth-pending">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Industrial - Planta Industrial</title>
+    <script src="../assets/js/auth-gate.js"></script>
+    <link rel="stylesheet" href="../assets/css/nexus-ui.css">
+    <link rel="stylesheet" href="../assets/css/theme-polish.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="/IMG/canvas-b.png">
+    <script src="../assets/js/theme-manager.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { extend: { colors: { dark: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' }, brand: '#3b82f6' }, fontSize: { 'xxs': '0.65rem' } } }
+            theme: { extend: { colors: { dark: { 900: '#1d2b40', 800: '#223249', 700: '#3a506b' }, brand: '#3b82f6' }, fontSize: { 'xxs': '0.65rem' } } }
         }
     </script>
     <style>
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .dark ::-webkit-scrollbar-track { background: #0f172a; }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        .dark ::-webkit-scrollbar-track { background: #1d2b40; }
+        .dark ::-webkit-scrollbar-thumb { background: #3a506b; }
         
         /* Fundo de Grade e Zonas Especiais */
         .factory-grid {
@@ -51,7 +56,7 @@
         .grabbing { cursor: grabbing !important; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 dark:bg-[#0b1120] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm transition-colors duration-300">
+<body class="bg-slate-50 text-slate-800 dark:bg-[#172234] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm transition-colors duration-300">
 
     <!-- MENU LATERAL -->
     <aside id="sidebar" class="w-64 bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 flex flex-col transition-all duration-300 z-40 relative">
@@ -71,34 +76,40 @@
         <nav class="flex-1 p-3 space-y-2 overflow-y-auto overflow-x-hidden" id="sidebar-nav">
             <p class="sidebar-text text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 mt-2 px-2 transition-opacity duration-300 whitespace-nowrap">Painel</p>
             
-            <a href="menu.html" title="Visão Global" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+            <a href="menu.html" data-page="menu" title="Visão Global" class="sb-link nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
                 <i class="fas fa-chart-pie w-6 text-center shrink-0"></i> 
                 <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Visão Global</span>
             </a>
 
-            <a href="mapa.html" title="Planta Industrial" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-map-marked-alt w-6 text-center shrink-0"></i> 
-                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Planta Industrial</span>
-            </a>
 
-            <a href="ativos.html" title="Parque de Ativos" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+            <a href="ativos.html" data-page="ativos" title="Parque de Ativos" class="sb-link nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
                 <i class="fas fa-microchip w-6 text-center shrink-0"></i> 
                 <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Parque de Ativos</span>
             </a>
             
-            <a href="os.html" title="Ordens de Serviço" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+            <a href="os.html" data-page="os" title="Ordens de Serviço" class="sb-link nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
                 <i class="fas fa-clipboard-list w-6 text-center shrink-0"></i> 
                 <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Ordens de Serviço</span>
             </a>
             
-            <a href="estoque.html" title="Estoque (MRO)" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+            <a href="estoque.html" data-page="estoque" title="Estoque (MRO)" class="sb-link nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
                 <i class="fas fa-boxes w-6 text-center shrink-0"></i> 
                 <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Estoque (MRO)</span>
             </a>
             
-            <a href="financeiro.html" title="Financeiro" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+            <a href="financeiro.html" data-page="financeiro" title="Financeiro" class="sb-link nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
                 <i class="fas fa-wallet w-6 text-center shrink-0"></i> 
                 <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Financeiro</span>
+            </a>
+
+            <a href="mapa.html" data-page="mapa" title="Planta Industrial" class="sb-link nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-map-marked-alt w-6 text-center shrink-0"></i> 
+                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Planta Industrial</span>
+            </a>
+
+            <a href="mapa-consumo.html" data-page="mapa-consumo" title="Mapa de Consumo" class="sb-link nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
+                <i class="fas fa-fire-alt w-6 text-center shrink-0"></i>
+                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Mapa de Consumo</span>
             </a>
         </nav>
 
@@ -143,7 +154,7 @@
         </header>
 
         <!-- CONTAINER DO MAPA GIGANTE (Com Drag enabled) -->
-        <div class="flex-1 p-6 overflow-hidden flex flex-col relative bg-slate-200 dark:bg-[#05080f] cursor-grab" id="zoom-wrapper">
+        <div class="flex-1 p-6 overflow-hidden flex flex-col relative bg-slate-200 dark:bg-[#1a283b] cursor-grab" id="zoom-wrapper">
             
             <!-- Controles do Mapa -->
             <div class="absolute bottom-10 right-10 bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-slate-200 dark:border-dark-700 flex flex-col overflow-hidden z-30">
@@ -153,7 +164,7 @@
             </div>
 
             <!-- CAMADA DO MAPA (Grelha e Zonas) -->
-            <div class="relative bg-slate-100 dark:bg-[#080d14] rounded-2xl border-2 border-slate-300 dark:border-dark-700 overflow-hidden factory-grid shadow-inner select-none transition-colors duration-300 w-full h-full transform origin-center" id="map-container">
+            <div class="relative bg-slate-100 dark:bg-[#203047] rounded-2xl border-2 border-slate-300 dark:border-dark-700 overflow-hidden factory-grid shadow-inner select-none transition-colors duration-300 w-full h-full transform origin-center" id="map-container">
                 
                 <!-- LAYOUT ESTRUTURAL (Linhas AGV) -->
                 <div class="absolute top-[50%] left-0 w-full h-12 border-y-2 border-dashed border-amber-400/40 dark:border-amber-500/30 flex items-center justify-end px-10 pointer-events-none z-0">
@@ -164,12 +175,12 @@
 
                 <!-- Setor Usinagem -->
                 <div class="absolute top-[10%] left-[5%] w-[40%] h-[80%] border-2 border-dashed border-slate-400/50 dark:border-slate-600/30 rounded-lg pointer-events-none z-0">
-                    <span class="absolute -top-3 left-4 bg-slate-100 dark:bg-[#080d14] px-2 text-slate-500 dark:text-slate-500 font-bold uppercase tracking-widest text-xs">Setor Usinagem Pesada</span>
+                    <span class="absolute -top-3 left-4 bg-slate-100 dark:bg-[#203047] px-2 text-slate-500 dark:text-slate-500 font-bold uppercase tracking-widest text-xs">Setor Usinagem Pesada</span>
                 </div>
                 
                 <!-- Setor Montagem -->
                 <div class="absolute top-[10%] right-[5%] w-[45%] h-[80%] border-2 border-dashed border-slate-400/50 dark:border-slate-600/30 rounded-lg pointer-events-none z-0">
-                    <span class="absolute -top-3 left-4 bg-slate-100 dark:bg-[#080d14] px-2 text-slate-500 dark:text-slate-500 font-bold uppercase tracking-widest text-xs">Setor Montagem Automática</span>
+                    <span class="absolute -top-3 left-4 bg-slate-100 dark:bg-[#203047] px-2 text-slate-500 dark:text-slate-500 font-bold uppercase tracking-widest text-xs">Setor Montagem Automática</span>
                 </div>
 
                 <!-- Zona de Risco (Caldeira/Alta Tensão) -->
@@ -179,50 +190,11 @@
                     </span>
                 </div>
 
-                <!-- MÁQUINAS (NODES) -->
-                <!-- Note os novos atributos: class="machine-node", data-status, data-name, etc. -->
-                
-                <!-- MÁQUINA 01 -->
-                <div class="machine-node absolute top-[25%] left-[15%] group cursor-pointer transform hover:scale-110 transition-all duration-300 z-10" 
-                     data-status="OPERANDO" data-id="M-001" data-name="Torno CNC X1" data-temp="68.5 °C"
-                     onclick="openMachineModal('M-001', 'Torno CNC X1', 'OPERANDO', '68.5 °C', '1540', '192.168.0.105')">
-                    <div class="w-6 h-6 bg-green-500 rounded-full animate-pulse glow-green border-[3px] border-white dark:border-dark-900"></div>
-                    <span class="absolute top-8 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-dark-800/90 px-3 py-1 rounded-md backdrop-blur-sm border border-slate-300 dark:border-dark-600 shadow-md whitespace-nowrap">M-001</span>
-                </div>
-
-                <!-- MÁQUINA 02 -->
-                <div class="machine-node absolute top-[65%] left-[25%] group cursor-pointer transform hover:scale-110 transition-all duration-300 z-10"
-                     data-status="PARADA" data-id="M-002" data-name="Fresa Inteligente" data-temp="112.0 °C"
-                     onclick="openMachineModal('M-002', 'Fresa Inteligente', 'PARADA', '112.0 °C', '320', '192.168.0.106')">
-                    <div class="w-6 h-6 bg-red-500 rounded-full animate-pulse glow-red border-[3px] border-white dark:border-dark-900"></div>
-                    <span class="absolute top-8 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-dark-800/90 px-3 py-1 rounded-md backdrop-blur-sm border border-slate-300 dark:border-dark-600 shadow-md whitespace-nowrap">M-002</span>
-                </div>
-
-                <!-- MÁQUINA 03 -->
-                <div class="machine-node absolute top-[30%] right-[30%] group cursor-pointer transform hover:scale-110 transition-all duration-300 z-10"
-                     data-status="ALERTA" data-id="M-003" data-name="Braço Robótico A" data-temp="85.5 °C"
-                     onclick="openMachineModal('M-003', 'Braço Robótico A', 'ALERTA', '85.5 °C', '890', '192.168.0.107')">
-                    <div class="w-6 h-6 bg-yellow-500 rounded-full animate-pulse glow-yellow border-[3px] border-white dark:border-dark-900"></div>
-                    <span class="absolute top-8 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-dark-800/90 px-3 py-1 rounded-md backdrop-blur-sm border border-slate-300 dark:border-dark-600 shadow-md whitespace-nowrap">M-003</span>
-                </div>
-
-                <!-- MÁQUINA 04 -->
-                <div class="machine-node absolute top-[70%] right-[15%] group cursor-pointer transform hover:scale-110 transition-all duration-300 z-10"
-                     data-status="OPERANDO" data-id="M-004" data-name="Esteira de Seleção" data-temp="42.1 °C"
-                     onclick="openMachineModal('M-004', 'Esteira de Seleção', 'OPERANDO', '42.1 °C', '4520', '192.168.0.108')">
-                    <div class="w-6 h-6 bg-green-500 rounded-full animate-pulse glow-green border-[3px] border-white dark:border-dark-900"></div>
-                    <span class="absolute top-8 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-dark-800/90 px-3 py-1 rounded-md backdrop-blur-sm border border-slate-300 dark:border-dark-600 shadow-md whitespace-nowrap">M-004</span>
-                </div>
-
-                <!-- MÁQUINA NOVA -->
-                <div class="machine-node absolute top-[45%] left-[50%] group cursor-pointer transform hover:scale-110 transition-all duration-300 z-20"
-                     data-status="CONFIGURAR" data-id="NOVO" data-name="Hardare Desconhecido" data-temp="-"
-                     onclick="openMachineModal('NOVO', 'Dispositivo Desconhecido', 'CONFIGURAR', '-', '-', '192.168.0.109')">
-                    <div class="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-75"></div>
-                    <div class="relative w-6 h-6 bg-blue-500 rounded-full border-[3px] border-white dark:border-dark-900 shadow-[0_0_15px_3px_rgba(59,130,246,0.6)] flex items-center justify-center">
-                        <i class="fas fa-wifi text-[8px] text-white animate-pulse"></i>
+                <!-- Os ativos são posicionados dinamicamente a partir do Firebase. -->
+                <div id="machine-layer" class="absolute inset-0 z-10">
+                    <div class="absolute inset-0 flex items-center justify-center text-slate-400 pointer-events-none">
+                        <span><i class="fas fa-spinner fa-spin mr-2"></i>Carregando ativos da planta...</span>
                     </div>
-                    <span class="absolute top-8 left-1/2 -translate-x-1/2 text-xs font-bold text-brand bg-white/90 dark:bg-dark-800/90 px-3 py-1 rounded-md backdrop-blur-sm border border-brand/50 shadow-[0_0_10px_rgba(59,130,246,0.3)] whitespace-nowrap">NOVO</span>
                 </div>
 
             </div>
@@ -240,7 +212,7 @@
     </main>
 
     <!-- MODAL DE DETALHES (Mantido exatamente como criaste no passo anterior) -->
-    <div id="machine-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="machine-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-white dark:bg-dark-800 w-full max-w-md max-h-[95vh] overflow-y-auto rounded-2xl p-6 border border-slate-200 dark:border-dark-700 shadow-2xl transform scale-95 transition-all duration-300" id="modal-content">
             <!-- Header Modal -->
             <div class="flex justify-between items-start mb-6">
@@ -288,6 +260,7 @@
         </div>
     </div>
     
+    <script src="../assets/js/ui-enhancements.js"></script>
     <script type="module" src="../assets/js/mapa.js"></script>
 </body>
 </html>

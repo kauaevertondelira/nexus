@@ -1,408 +1,274 @@
-// --- VARIÁVEIS GLOBAIS E CHART.JS ---
-let telemetryInterval; 
-let chartInstance = null; 
+import { guardPage, applyRoleMenu } from './auth-guard.js';
+import { db } from './firebase.js';
+import { onValue, ref } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+import { nonNegative } from './security-utils.js';
 
-// --- 1. NAVEGAÇÃO PAN (ARRASTAR) E ZOOM ---
+guardPage('mapa');
+applyRoleMenu();
+
 let currentZoom = 1;
 let translateX = 0;
 let translateY = 0;
 let isDragging = false;
+let lastPointerX = 0;
+let lastPointerY = 0;
+let chartInstance = null;
+let telemetryInterval = null;
+let activeFilter = null;
+let selectedAssetId = '';
+let assetsById = {};
 
 const mapContainer = document.getElementById('map-container');
 const zoomWrapper = document.getElementById('zoom-wrapper');
+const machineLayer = document.getElementById('machine-layer');
+const tooltip = document.getElementById('quick-tooltip');
+const toastContainer = document.getElementById('toast-container');
 
-// Atualiza o CSS Transform combinando Pan (Translação) e Zoom (Escala)
+const AREA_POSITIONS = {
+    producao: [[15, 25], [25, 65], [35, 40], [40, 75]],
+    utilidades: [[60, 25], [72, 38], [82, 68], [65, 75]],
+    logistica: [[48, 48], [58, 65], [75, 52], [88, 30]],
+    default: [[20, 35], [40, 55], [62, 32], [78, 65]]
+};
+
 function updateMapTransform() {
-    // Retiramos a animação CSS padrão durante o drag para não causar atraso visual ("lag")
-    mapContainer.style.transition = isDragging ? 'none' : 'transform 0.3s ease';
+    mapContainer.style.transition = isDragging ? 'none' : 'transform .3s ease';
     mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
 }
 
-// Inicia o arrasto
-zoomWrapper.addEventListener('mousedown', (e) => {
-    // Só permite arrastar se clicar no fundo (não permite arrastar se clicar no botão da máquina)
-    if (e.target.closest('.machine-node')) return;
-    
+zoomWrapper.addEventListener('pointerdown', (event) => {
+    if (event.target.closest('.machine-node, button')) return;
     isDragging = true;
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+    zoomWrapper.setPointerCapture?.(event.pointerId);
     zoomWrapper.classList.add('grabbing');
 });
 
-// Durante o arrasto
-window.addEventListener('mousemove', (e) => {
+zoomWrapper.addEventListener('pointermove', (event) => {
     if (!isDragging) return;
-    // Soma o movimento exato do rato à posição atual
-    translateX += e.movementX;
-    translateY += e.movementY;
+    translateX += event.clientX - lastPointerX;
+    translateY += event.clientY - lastPointerY;
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
     updateMapTransform();
 });
 
-// Termina o arrasto
-window.addEventListener('mouseup', () => {
+function stopDragging() {
     isDragging = false;
     zoomWrapper.classList.remove('grabbing');
-    updateMapTransform(); // Reaplica a transição CSS
-});
+    updateMapTransform();
+}
 
-// Controles de Zoom
+zoomWrapper.addEventListener('pointerup', stopDragging);
+zoomWrapper.addEventListener('pointercancel', stopDragging);
 document.getElementById('zoom-in').addEventListener('click', () => {
-    if (currentZoom < 2.0) { currentZoom += 0.1; updateMapTransform(); }
+    currentZoom = Math.min(2, currentZoom + .1);
+    updateMapTransform();
 });
 document.getElementById('zoom-out').addEventListener('click', () => {
-    if (currentZoom > 0.5) { currentZoom -= 0.1; updateMapTransform(); }
+    currentZoom = Math.max(.5, currentZoom - .1);
+    updateMapTransform();
 });
 document.getElementById('zoom-reset').addEventListener('click', () => {
-    currentZoom = 1; translateX = 0; translateY = 0; updateMapTransform();
+    currentZoom = 1;
+    translateX = 0;
+    translateY = 0;
+    updateMapTransform();
 });
 
-// --- 2. FILTROS DINÂMICOS (LEGENDA) ---
-const filterButtons = document.querySelectorAll('.status-filter');
-const machineNodes = document.querySelectorAll('.machine-node');
-let activeFilter = null;
+function mapStatus(asset = {}) {
+    if (asset.status === 'online' && nonNegative(asset.temp) < 80) return 'OPERANDO';
+    if (asset.status === 'danger' || nonNegative(asset.temp) >= 80) return 'ALERTA';
+    if (asset.status === 'offline') return 'PARADA';
+    return 'CONFIGURAR';
+}
 
-filterButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const targetStatus = btn.getAttribute('data-filter');
-        
-        // Se clicar no filtro que já está ativo, desativa-o
-        if (activeFilter === targetStatus) {
-            activeFilter = null;
-            btn.classList.remove('ring-2', 'ring-brand', 'bg-slate-200', 'dark:bg-dark-700');
-        } else {
-            // Limpa estilo dos outros
-            filterButtons.forEach(b => b.classList.remove('ring-2', 'ring-brand', 'bg-slate-200', 'dark:bg-dark-700'));
-            // Aplica estilo no clicado
-            btn.classList.add('ring-2', 'ring-brand', 'bg-slate-200', 'dark:bg-dark-700');
-            activeFilter = targetStatus;
-        }
+function statusStyle(status) {
+    if (status === 'OPERANDO') return { dot: 'bg-green-500 glow-green', badge: 'bg-green-500/10 text-green-500', label: 'Operando' };
+    if (status === 'ALERTA') return { dot: 'bg-yellow-500 glow-yellow', badge: 'bg-yellow-500/10 text-yellow-500', label: 'Alerta' };
+    if (status === 'PARADA') return { dot: 'bg-red-500 glow-red', badge: 'bg-red-500/10 text-red-500', label: 'Parada' };
+    return { dot: 'bg-blue-500', badge: 'bg-blue-500/10 text-blue-500', label: 'Configurar' };
+}
 
-        // Aplica o efeito visual nas máquinas do mapa
-        machineNodes.forEach(node => {
-            const nodeStatus = node.getAttribute('data-status');
-            if (!activeFilter || nodeStatus === activeFilter) {
-                node.classList.remove('opacity-20', 'grayscale');
-            } else {
-                node.classList.add('opacity-20', 'grayscale');
-            }
-        });
+function machinePosition(asset, index) {
+    const list = AREA_POSITIONS[asset.area] || AREA_POSITIONS.default;
+    const base = list[index % list.length];
+    const cycle = Math.floor(index / list.length);
+    return [Math.min(90, base[0] + cycle * 4), Math.min(85, base[1] + cycle * 3)];
+}
+
+function renderMachines() {
+    machineLayer.innerHTML = '';
+    const entries = Object.entries(assetsById);
+    if (!entries.length) {
+        machineLayer.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-400 pointer-events-none"><div class="nexus-empty-state"><i class="fas fa-industry text-2xl"></i><strong>Nenhum ativo cadastrado</strong><span>Cadastre um ativo para vê-lo na planta.</span></div></div>';
+        return;
+    }
+
+    const areaCounts = {};
+    entries.forEach(([id, asset]) => {
+        const area = asset.area || 'default';
+        const index = areaCounts[area] || 0;
+        areaCounts[area] = index + 1;
+        const [left, top] = machinePosition(asset, index);
+        const status = mapStatus(asset);
+        const style = statusStyle(status);
+        const node = document.createElement('button');
+        node.type = 'button';
+        node.className = 'machine-node absolute group cursor-pointer transform hover:scale-110 transition-all duration-300 z-10';
+        node.style.left = `${left}%`;
+        node.style.top = `${top}%`;
+        node.dataset.status = status;
+        node.dataset.id = id;
+        node.dataset.name = asset.name || 'Ativo sem nome';
+        node.dataset.temp = `${nonNegative(asset.temp)} °C`;
+        node.setAttribute('aria-label', `Abrir ${asset.name || id}`);
+        node.innerHTML = `<span class="block w-6 h-6 ${style.dot} rounded-full animate-pulse border-[3px] border-white dark:border-dark-900"></span><span class="absolute top-8 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-dark-800/90 px-3 py-1 rounded-md backdrop-blur-sm border border-slate-300 dark:border-dark-600 shadow-md whitespace-nowrap"></span>`;
+        node.querySelector('span:last-child').textContent = asset.name || id;
+        node.addEventListener('click', () => openMachine(id));
+        node.addEventListener('pointerenter', (event) => showTooltip(event, id));
+        node.addEventListener('pointerleave', () => tooltip.classList.add('hidden'));
+        machineLayer.appendChild(node);
+    });
+    applyMachineFilter();
+}
+
+function showTooltip(event, id) {
+    const asset = assetsById[id];
+    if (!asset || isDragging) return;
+    const status = statusStyle(mapStatus(asset));
+    tooltip.innerHTML = '';
+    const title = document.createElement('strong');
+    title.className = 'block mb-1';
+    title.textContent = asset.name || id;
+    const detail = document.createElement('span');
+    detail.textContent = `${status.label} · ${nonNegative(asset.temp)} °C`;
+    tooltip.append(title, detail);
+    tooltip.style.left = `${event.clientX}px`;
+    tooltip.style.top = `${event.clientY}px`;
+    tooltip.classList.remove('hidden');
+}
+
+function applyMachineFilter() {
+    document.querySelectorAll('.machine-node').forEach((node) => {
+        const visible = !activeFilter || node.dataset.status === activeFilter;
+        node.classList.toggle('opacity-20', !visible);
+        node.classList.toggle('pointer-events-none', !visible);
+    });
+}
+
+document.querySelectorAll('.status-filter').forEach((button) => {
+    button.addEventListener('click', () => {
+        const next = button.dataset.filter;
+        activeFilter = activeFilter === next ? null : next;
+        document.querySelectorAll('.status-filter').forEach((item) => item.classList.toggle('ring-2', item.dataset.filter === activeFilter));
+        applyMachineFilter();
     });
 });
 
-// --- 3. TOOLTIPS RÁPIDOS NO HOVER ---
-const tooltip = document.getElementById('quick-tooltip');
+function openMachine(id) {
+    const asset = assetsById[id];
+    if (!asset) return;
+    selectedAssetId = id;
+    const status = mapStatus(asset);
+    const style = statusStyle(status);
+    document.getElementById('modal-machine-name').textContent = asset.name || 'Ativo sem nome';
+    document.getElementById('modal-machine-id').textContent = id;
+    document.getElementById('modal-machine-ip').textContent = asset.ip || 'Não informado';
+    document.getElementById('modal-temp').textContent = `${nonNegative(asset.temp).toFixed(1)} °C`;
+    document.getElementById('modal-prod').textContent = String(Math.round(nonNegative(asset.productionCount || asset.production)));
+    document.getElementById('modal-rpm').textContent = String(Math.round(nonNegative(asset.rpm)));
+    document.getElementById('modal-kwh').textContent = nonNegative(asset.energyKwh).toLocaleString('pt-BR');
+    const badge = document.getElementById('modal-status-badge');
+    badge.className = `px-3 py-1 rounded-full text-[10px] font-bold uppercase ${style.badge}`;
+    badge.textContent = style.label;
+    document.getElementById('metrics-expansion').classList.add('hidden');
+    document.getElementById('machine-modal').classList.remove('opacity-0', 'pointer-events-none');
+    document.getElementById('modal-content').classList.remove('scale-95');
+    startTelemetry(asset);
+}
 
-machineNodes.forEach(node => {
-    node.addEventListener('mouseenter', (e) => {
-        // Se houver um modal aberto ou se o mapa estiver a ser arrastado, não mostra tooltip
-        if (!document.getElementById('machine-modal').classList.contains('opacity-0') || isDragging) return;
+window.openMachineModal = (id) => openMachine(id);
+window.closeMachineModal = function () {
+    clearInterval(telemetryInterval);
+    document.getElementById('machine-modal').classList.add('opacity-0', 'pointer-events-none');
+    document.getElementById('modal-content').classList.add('scale-95');
+};
 
-        const name = node.getAttribute('data-name');
-        const temp = node.getAttribute('data-temp');
-        const status = node.getAttribute('data-status');
-        
-        let statusColor = "text-green-400";
-        if(status === 'ALERTA') statusColor = "text-yellow-400";
-        if(status === 'PARADA') statusColor = "text-red-400";
-        if(status === 'CONFIGURAR') statusColor = "text-blue-400";
+window.redirectToOS = function () {
+    if (!selectedAssetId) return;
+    window.location.href = `os.html?acao=nova_os&maquina=${encodeURIComponent(selectedAssetId)}`;
+};
 
-        tooltip.innerHTML = `
-            <div class="font-bold text-[13px]">${name}</div>
-            <div class="text-[10px] mt-1 text-slate-300">Temp: <span class="${statusColor} font-bold">${temp}</span></div>
-        `;
-        tooltip.classList.remove('hidden');
+window.toggleMetrics = function () {
+    const area = document.getElementById('metrics-expansion');
+    const opening = area.classList.contains('hidden');
+    area.classList.toggle('hidden', !opening);
+    area.classList.toggle('flex', opening);
+    if (opening) renderChart();
+};
+
+function startTelemetry(asset) {
+    clearInterval(telemetryInterval);
+    let temp = nonNegative(asset.temp, 40);
+    telemetryInterval = window.setInterval(() => {
+        temp = Math.max(0, temp + (Math.random() - .5) * 1.2);
+        document.getElementById('modal-temp').textContent = `${temp.toFixed(1)} °C`;
+    }, 2500);
+}
+
+function renderChart() {
+    const asset = assetsById[selectedAssetId] || {};
+    const base = nonNegative(asset.temp, 40);
+    const data = [5, 4, 3, 2, 1, 0].map((step) => Math.max(0, base - step * .7));
+    chartInstance?.destroy();
+    chartInstance = new Chart(document.getElementById('telemetryChart').getContext('2d'), {
+        type: 'line',
+        data: { labels: ['-50m', '-40m', '-30m', '-20m', '-10m', 'Agora'], datasets: [{ data, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)', fill: true, tension: .35, pointRadius: 3 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
     });
-
-    node.addEventListener('mousemove', (e) => {
-        tooltip.style.left = e.clientX + 'px';
-        tooltip.style.top = e.clientY - 15 + 'px'; // Ligeiramente acima do rato
-    });
-
-    node.addEventListener('mouseleave', () => {
-        tooltip.classList.add('hidden');
-    });
-});
-
-// --- 4. SISTEMA DE NOTIFICAÇÕES GLOBAIS (TOASTS) ---
-const toastContainer = document.getElementById('toast-container');
+}
 
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    
-    // Configura as cores consoante o tipo do evento
-    let icon = '<i class="fas fa-info-circle text-blue-500"></i>';
-    let border = 'border-blue-500';
-    if(type === 'warning') { icon = '<i class="fas fa-exclamation-triangle text-yellow-500"></i>'; border = 'border-yellow-500'; }
-    if(type === 'error') { icon = '<i class="fas fa-times-circle text-red-500"></i>'; border = 'border-red-500'; }
-    if(type === 'success') { icon = '<i class="fas fa-check-circle text-green-500"></i>'; border = 'border-green-500'; }
-
-    toast.className = `toast-enter flex items-center gap-3 bg-white dark:bg-dark-800 text-slate-700 dark:text-slate-200 p-4 rounded-lg shadow-xl border-l-4 ${border} border-y border-r border-y-slate-200 border-r-slate-200 dark:border-y-dark-700 dark:border-r-dark-700 min-w-[250px]`;
-    toast.innerHTML = `${icon} <span class="text-xs font-medium">${message}</span>`;
-    
+    const colors = { success: 'border-green-500', warning: 'border-yellow-500', error: 'border-red-500', info: 'border-blue-500' };
+    toast.className = `toast-enter bg-white dark:bg-dark-800 text-slate-700 dark:text-slate-200 p-4 rounded-lg shadow-xl border-l-4 ${colors[type] || colors.info}`;
+    toast.textContent = message;
     toastContainer.appendChild(toast);
-
-    // Remove automaticamente após 4.5 segundos
-    setTimeout(() => {
-        toast.classList.replace('toast-enter', 'toast-exit');
-        setTimeout(() => toast.remove(), 300); // Aguarda fim da animação
-    }, 4500);
+    window.setTimeout(() => toast.remove(), 3500);
 }
 
-// Simulador esporádico de eventos de chão de fábrica
-setInterval(() => {
-    const events = [
-        { msg: "AGV (Empilhador 04) concluiu rota.", type: "success" },
-        { msg: "M-003: Alerta térmico persistente.", type: "warning" },
-        { msg: "M-001 atingiu meta de produção diária.", type: "info" }
-    ];
-    // Sorteia um evento aleatório com probabilidade moderada
-    if(Math.random() > 0.6) {
-        const randomEvent = events[Math.floor(Math.random() * events.length)];
-        showToast(randomEvent.msg, randomEvent.type);
-    }
-}, 20000); // Tenta disparar a cada 20 segundos
-
-// Dispara um toast de boas-vindas inicial ao carregar a página
-setTimeout(() => showToast("Conexão com servidor IoT estabelecida.", "success"), 1000);
-
-
-// --- LÓGICA DO MODAL, GRÁFICO E REDIRECIONAMENTOS (Mantidos e Melhorados) ---
-window.redirectToOS = function() {
-    const maquinaId = document.getElementById('modal-machine-id').innerText;
-    window.location.href = `os.html?acao=nova_os&maquina=${maquinaId}`;
-};
-
-window.toggleMetrics = function() {
-    const expansionArea = document.getElementById('metrics-expansion');
-    if (expansionArea.classList.contains('hidden')) {
-        expansionArea.classList.remove('hidden');
-        expansionArea.classList.add('flex');
-        renderChart();
-    } else {
-        expansionArea.classList.add('hidden');
-        expansionArea.classList.remove('flex');
-    }
-};
-
-function renderChart() {
-    const ctx = document.getElementById('telemetryChart').getContext('2d');
-    if (chartInstance) chartInstance.destroy();
-
-    const tempText = document.getElementById('modal-temp').innerText;
-    let baseTemp = parseFloat(tempText.replace(' °C', ''));
-    if (isNaN(baseTemp)) baseTemp = 40; 
-
-    const dummyData = [
-        baseTemp - (Math.random() * 5 + 2),
-        baseTemp - (Math.random() * 4 + 1),
-        baseTemp - (Math.random() * 2 + 1),
-        baseTemp + (Math.random() * 2),
-        baseTemp - (Math.random() * 1),
-        baseTemp 
-    ].map(val => val.toFixed(1));
-
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    const gridColor = isDarkMode ? '#334155' : '#e2e8f0'; 
-    const textColor = isDarkMode ? '#94a3b8' : '#64748b';
-
-    chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['-50m', '-40m', '-30m', '-20m', '-10m', 'Agora'],
-            datasets: [{
-                label: 'Temperatura (°C)',
-                data: dummyData,
-                borderColor: '#3b82f6', 
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                borderWidth: 2, pointBackgroundColor: '#3b82f6', pointRadius: 3, fill: true, tension: 0.4 
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-            scales: {
-                y: { grid: { color: gridColor, drawBorder: false }, ticks: { color: textColor, font: { size: 10 } } },
-                x: { grid: { display: false, drawBorder: false }, ticks: { color: textColor, font: { size: 10 } } }
-            }
-        }
-    });
-}
-
-window.openMachineModal = function(id, nome, status, temperatura, producao, ip) {
-    // Esconde a tooltip se ela existir
-    tooltip.classList.add('hidden');
-
-    const modal = document.getElementById('machine-modal');
-    const modalContent = document.getElementById('modal-content');
-    
-    document.getElementById('metrics-expansion').classList.add('hidden');
-    document.getElementById('metrics-expansion').classList.remove('flex');
-    
-    document.getElementById('modal-machine-id').innerText = id;
-    document.getElementById('modal-machine-name').innerText = nome;
-    document.getElementById('modal-machine-ip').innerText = ip;
-
-    const badge = document.getElementById('modal-status-badge');
-    badge.innerText = status;
-    badge.className = "px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border ";
-    
-    const tempElement = document.getElementById('modal-temp');
-    const prodElement = document.getElementById('modal-prod');
-    const rpmElement = document.getElementById('modal-rpm');
-    
-    tempElement.innerText = temperatura;
-    prodElement.innerText = producao;
-
-    if (status === 'OPERANDO') badge.className += "bg-green-100 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-400 dark:border-green-500/30";
-    else if (status === 'ALERTA') badge.className += "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/20 dark:text-yellow-400 dark:border-yellow-500/30";
-    else if (status === 'PARADA') badge.className += "bg-red-100 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/30";
-    else if (status === 'CONFIGURAR') badge.className += "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30 animate-pulse";
-
-    modal.classList.remove('opacity-0', 'pointer-events-none');
-    modalContent.classList.remove('scale-95');
-    modalContent.classList.add('scale-100');
-
-    clearInterval(telemetryInterval); 
-    
-    if(status !== 'PARADA' && status !== 'CONFIGURAR') {
-        let baseTemp = parseFloat(temperatura.replace(' °C', ''));
-        let baseProd = parseInt(producao);
-        let baseRpm = 1200 + Math.floor(Math.random() * 200); 
-        
-        telemetryInterval = setInterval(() => {
-            let currentTemp = (baseTemp + (Math.random() * 1 - 0.5)).toFixed(1);
-            tempElement.innerText = currentTemp + ' °C';
-            
-            if(Math.random() > 0.7) { baseProd += 1; prodElement.innerText = baseProd; }
-            rpmElement.innerText = baseRpm + Math.floor(Math.random() * 15 - 7);
-
-            if (chartInstance && !document.getElementById('metrics-expansion').classList.contains('hidden')) {
-                chartInstance.data.datasets[0].data[5] = currentTemp;
-                chartInstance.update('none'); 
-            }
-        }, 1500); 
-    }
-}
-
-window.closeMachineModal = function() {
-    const modal = document.getElementById('machine-modal');
-    const modalContent = document.getElementById('modal-content');
-    
-    clearInterval(telemetryInterval); 
-    modal.classList.add('opacity-0', 'pointer-events-none');
-    modalContent.classList.remove('scale-100');
-    modalContent.classList.add('scale-95');
-
-    setTimeout(() => {
-        document.getElementById('metrics-expansion').classList.add('hidden');
-        document.getElementById('metrics-expansion').classList.remove('flex');
-    }, 300); 
-}
-
-document.getElementById('machine-modal').addEventListener('click', function(e) {
-    if(e.target === this) closeMachineModal();
+onValue(ref(db, 'assets'), (snapshot) => {
+    assetsById = snapshot.val() || {};
+    renderMachines();
+}, () => {
+    machineLayer.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-red-500">Não foi possível carregar os ativos.</div>';
+    showToast('Falha ao carregar a planta industrial.', 'error');
 });
 
-document.getElementById('theme-toggle').addEventListener('click', () => {
-    document.documentElement.classList.toggle('dark');
-    if (!document.getElementById('metrics-expansion').classList.contains('hidden')) {
-        renderChart(); 
-    }
+const toggleSidebar = document.getElementById('toggle-sidebar');
+toggleSidebar?.addEventListener('click', () => {
+    const sidebar = document.getElementById('sidebar');
+    const collapsed = sidebar.classList.contains('w-64');
+    sidebar.classList.toggle('w-64', !collapsed);
+    sidebar.classList.toggle('w-20', collapsed);
+    document.getElementById('sidebar-icon')?.classList.toggle('rotate-180', collapsed);
+    document.querySelectorAll('.sidebar-text').forEach((text) => text.classList.toggle('hidden', collapsed));
+    document.getElementById('sidebar-logo')?.classList.toggle('hidden', collapsed);
+    document.getElementById('sidebar-logo-mini')?.classList.toggle('hidden', !collapsed);
+    try { localStorage.setItem('nexus-map-sidebar', collapsed ? 'collapsed' : 'expanded'); } catch (error) {}
 });
 
-// --- 5. LOGICA DA SIDEBAR RETRÁTIL COM MEMÓRIA ---
-const sidebar = document.getElementById('sidebar');
-const toggleSidebarBtn = document.getElementById('toggle-sidebar');
-const sidebarIcon = document.getElementById('sidebar-icon');
-const sidebarTexts = document.querySelectorAll('.sidebar-text');
-const sidebarLogo = document.getElementById('sidebar-logo');
-const sidebarLogoMini = document.getElementById('sidebar-logo-mini');
-
-// Função centralizada para aplicar o visual da Sidebar
-function applySidebarState(isCollapsed, isInstant = false) {
-    if (isCollapsed) {
-        // Encolher Sidebar
-        sidebar.classList.remove('w-64');
-        sidebar.classList.add('w-20');
-        sidebarIcon.classList.add('rotate-180');
-        
-        // Esconder Textos
-        sidebarTexts.forEach(text => {
-            if (isInstant) {
-                text.classList.add('hidden', 'opacity-0');
-            } else {
-                text.classList.add('opacity-0');
-                setTimeout(() => text.classList.add('hidden'), 200);
-            }
-        });
-        
-        // Trocar Logo
-        sidebarLogo.classList.add('hidden');
-        sidebarLogoMini.classList.remove('hidden');
-    } else {
-        // Expandir Sidebar
-        sidebar.classList.remove('w-20');
-        sidebar.classList.add('w-64');
-        sidebarIcon.classList.remove('rotate-180');
-        
-        // Mostrar Textos
-        sidebarTexts.forEach(text => {
-            text.classList.remove('hidden');
-            if (isInstant) {
-                text.classList.remove('opacity-0');
-            } else {
-                setTimeout(() => text.classList.remove('opacity-0'), 10);
-            }
-        });
-        
-        // Trocar Logo
-        sidebarLogoMini.classList.add('hidden');
-        sidebarLogo.classList.remove('hidden');
-    }
+try {
+    if (localStorage.getItem('nexus-map-sidebar') === 'collapsed') toggleSidebar?.click();
+} catch (error) {
+    // O mapa continua funcional mesmo quando o navegador bloqueia armazenamento local.
 }
 
-// 1. LER MEMÓRIA: Verifica se há registo no localStorage ao carregar a página
-let isSidebarCollapsed = localStorage.getItem('nexus_sidebar_state') === 'collapsed';
-
-// Aplica o estado guardado instantaneamente (para não piscar ao trocar de página)
-applySidebarState(isSidebarCollapsed, true);
-
-// 2. AÇÃO DE CLIQUE: Alternar e gravar
-toggleSidebarBtn.addEventListener('click', () => {
-    isSidebarCollapsed = !isSidebarCollapsed;
-    
-    // Grava a nova preferência no navegador do utilizador
-    localStorage.setItem('nexus_sidebar_state', isSidebarCollapsed ? 'collapsed' : 'expanded');
-    
-    // Aplica o novo visual de forma suave (animada)
-    applySidebarState(isSidebarCollapsed, false);
+document.getElementById('theme-toggle')?.addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') window.closeMachineModal();
 });
 
-// ==========================================
-// MARCADOR DE PÁGINA ATIVA AUTOMÁTICO
-// ==========================================
-function highlightActiveMenu() {
-    // Pega o nome do arquivo atual da URL (ex: 'os.html', 'ativos.html')
-    let currentPage = window.location.pathname.split('/').pop();
-    
-    // Fallback se estiver na raiz do sistema
-    if (currentPage === '' || currentPage === '/') {
-        currentPage = 'menu.html';
-    }
-
-    // Seleciona todos os links dentro da nav
-    const navLinks = document.querySelectorAll('#sidebar-nav .nav-link');
-
-    navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        
-        if (href === currentPage) {
-            // Remove as classes de inativo
-            link.classList.remove('text-slate-500', 'hover:bg-slate-100', 'hover:text-brand', 'dark:text-slate-400', 'dark:hover:bg-dark-800', 'dark:hover:text-white');
-            
-            // Adiciona as classes de ativo (Azul)
-            link.classList.add('bg-brand/10', 'text-brand', 'font-medium', 'border', 'border-brand/20');
-        }
-    });
-}
-
-// Executa ao carregar a página
-highlightActiveMenu();
+showToast('Planta conectada aos ativos cadastrados.', 'success');

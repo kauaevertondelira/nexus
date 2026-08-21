@@ -1,0 +1,66 @@
+{
+  "id": "./",
+  "name": "Nexus Industrial — ERP e MRO",
+  "short_name": "Nexus",
+  "description": "Gestão industrial de ativos, manutenção, estoque, compras, contratos, custos, telemetria e continuidade.",
+  "lang": "pt-BR",
+  "start_url": "./public/pages/login.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#172234",
+  "theme_color": "#2563eb",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "./IMG/canvas-b.png",
+      "sizes": "470x470",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./IMG/canvas-c.png",
+      "sizes": "470x470",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Visão Global",
+      "short_name": "Painel",
+      "url": "./public/pages/menu.html",
+      "icons": [{ "src": "./IMG/canvas-b.png", "sizes": "470x470" }]
+    },
+    {
+      "name": "Ordens de Serviço",
+      "short_name": "O.S.",
+      "url": "./public/pages/os.html",
+      "icons": [{ "src": "./IMG/canvas-b.png", "sizes": "470x470" }]
+    },
+    {
+      "name": "Planejamento de Manutenção",
+      "short_name": "Planejamento",
+      "url": "./public/pages/planejamento.html",
+      "icons": [{ "src": "./IMG/canvas-b.png", "sizes": "470x470" }]
+    },
+    {
+      "name": "Central IoT",
+      "short_name": "IoT",
+      "url": "./public/pages/iot.html",
+      "icons": [{ "src": "./IMG/canvas-b.png", "sizes": "470x470" }]
+    },
+    {
+      "name": "Centro de Confiabilidade",
+      "short_name": "Confiabilidade",
+      "url": "./public/pages/confiabilidade.html",
+      "icons": [{ "src": "./IMG/canvas-b.png", "sizes": "470x470" }]
+    },
+    {
+      "name": "Painel Executivo",
+      "short_name": "Executivo",
+      "url": "./public/pages/executivo.html",
+      "icons": [{ "src": "./IMG/canvas-b.png", "sizes": "470x470" }]
+    }
+  ]
+}

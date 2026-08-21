@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus - Teste de Rolagem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../public/assets/css/nexus-ui.css">
+    <link rel="stylesheet" href="../public/assets/css/theme-polish.css">
+    <link rel="stylesheet" href="../public/assets/css/sprint3.css">
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-[#172234] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm">
+    <aside id="sidebar" class="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
+        <div class="h-20 flex items-center px-5 border-b border-slate-200 dark:border-slate-800"><strong>Nexus Industrial</strong></div>
+        <nav class="flex-1 p-4 overflow-y-auto"><a class="sb-link block px-4 py-3 text-blue-400" href="#">Painel Executivo</a></nav>
+    </aside>
+    <main id="conteudo" class="flex-1 flex flex-col h-screen relative min-w-0">
+        <header class="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-8 shrink-0">
+            <div><h1 class="text-xl font-bold">Teste de conteúdo longo</h1><p class="text-xs text-slate-500 mt-1">Validação da rolagem compartilhada</p></div>
+        </header>
+        <section id="maintenance-content" class="flex-1 min-h-0">
+            <div class="s3-page">
+                <div class="s3-grid s3-grid--kpi">
+                    <article class="s3-card s3-kpi"><div><span class="s3-kpi__label">Indicador</span><strong class="s3-kpi__value">100%</strong></div></article>
+                    <article class="s3-card s3-kpi"><div><span class="s3-kpi__label">Ativos</span><strong class="s3-kpi__value">24</strong></div></article>
+                    <article class="s3-card s3-kpi"><div><span class="s3-kpi__label">Alertas</span><strong class="s3-kpi__value">3</strong></div></article>
+                    <article class="s3-card s3-kpi"><div><span class="s3-kpi__label">Disponibilidade</span><strong class="s3-kpi__value">98%</strong></div></article>
+                </div>
+                <section class="s3-card"><div class="s3-card__head"><div><h3>Primeiro bloco</h3><p>Conteúdo no início da página.</p></div></div><div class="s3-card__body" style="min-height: 620px"></div></section>
+                <section class="s3-card mt-4" id="last-content"><div class="s3-card__head"><div><h3>Último bloco visível</h3><p>A rolagem chegou ao final corretamente.</p></div></div><div class="s3-card__body" style="min-height: 320px"></div></section>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

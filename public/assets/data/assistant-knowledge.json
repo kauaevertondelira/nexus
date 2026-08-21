@@ -1,0 +1,180 @@
+{
+  "version": 5,
+  "updatedAt": "2026-08-18",
+  "entries": [
+    {
+      "id": "alerts",
+      "keywords": ["alerta", "falha", "temperatura", "notificação", "crítico"],
+      "answer": "Alertas vermelhos indicam falha ou temperatura elevada. Alertas amarelos indicam atenção, como estoque abaixo do mínimo. A decisão técnica deve seguir o procedimento da empresa.",
+      "routes": ["menu", "ativos"]
+    },
+    {
+      "id": "work-orders",
+      "keywords": ["ordem de serviço", "os", "manutenção", "prioridade", "kanban"],
+      "answer": "Em Ordens de Serviço você pode acompanhar as etapas A Fazer, Em Execução e Concluído. Uma nova O.S. deve informar título, tipo, prioridade e o ativo relacionado quando disponível.",
+      "routes": ["os"]
+    },
+    {
+      "id": "assets",
+      "keywords": ["ativo", "máquina", "equipamento", "parque", "sensor"],
+      "answer": "O Parque de Ativos reúne condição, temperatura, setor e identificação dos equipamentos. Edição e exclusão dependem do cargo autenticado.",
+      "routes": ["ativos", "mapa"]
+    },
+    {
+      "id": "inventory",
+      "keywords": ["estoque", "peça", "mro", "quantidade", "mínimo", "csv"],
+      "answer": "O Estoque MRO controla quantidade atual e mínima, permite pesquisar peças e exportar um relatório CSV. Itens abaixo do mínimo geram alerta.",
+      "routes": ["estoque"]
+    },
+    {
+      "id": "finance",
+      "keywords": ["financeiro", "custo", "downtime", "relatório", "excel"],
+      "answer": "O Financeiro calcula manutenção e downtime usando dados das O.S., permite filtrar resultados e exportar relatórios.",
+      "routes": ["financeiro"]
+    },
+    {
+      "id": "permissions",
+      "keywords": ["cargo", "permissão", "administrador", "autorizar", "acesso"],
+      "answer": "As páginas disponíveis são limitadas pelo cargo. Somente um administrador autenticado pode alterar o cargo de outro usuário, e essa mudança fica registrada na auditoria.",
+      "routes": ["financeiro"]
+    },
+    {
+      "id": "consumption",
+      "keywords": ["consumo", "energia", "insumos", "mro mensal"],
+      "answer": "O Mapa de Consumo compara energia, manutenção e insumos por equipamento e área industrial.",
+      "routes": ["consumo"]
+    },
+    {
+      "id": "accessibility",
+      "keywords": ["vlibras", "libras", "acessibilidade", "teclado", "contraste"],
+      "answer": "A Central oferece VLibras sob demanda, navegação por teclado, foco visível, temas claro e escuro e suporte a redução de movimento.",
+      "routes": []
+    },
+    {
+      "id": "pwa",
+      "keywords": ["instalar", "aplicativo", "pwa", "offline", "notificações"],
+      "answer": "O Nexus pode ser instalado como aplicativo pelo navegador. A estrutura abre offline, mas dados industriais continuam exigindo conexão com o Firebase.",
+      "routes": []
+    },
+    {
+      "id": "security",
+      "keywords": ["segurança", "auditoria", "login", "logout", "histórico"],
+      "answer": "Login, logout, cadastro, mudanças de cargo e alterações importantes são registrados para consulta administrativa. O chatbot não executa ações de escrita.",
+      "routes": ["financeiro"]
+    },
+    {
+      "id": "sla",
+      "keywords": ["sla", "prazo", "atrasada", "aprovação", "concluir os"],
+      "answer": "Cada O.S. recebe um prazo sugerido conforme a prioridade. A conclusão exige uma observação e registra quem aprovou, quando aprovou e se o SLA foi cumprido.",
+      "routes": ["os"]
+    },
+    {
+      "id": "predictive-rules",
+      "keywords": ["risco preventivo", "previsão de falha", "preditiva", "pontuação de risco"],
+      "answer": "O risco preventivo combina estado e temperatura cadastrados. É uma análise por regras para priorização e não substitui diagnóstico, inspeção ou procedimento técnico.",
+      "routes": ["ativos"]
+    },
+    {
+      "id": "inventory-forecast",
+      "keywords": ["previsão de estoque", "ruptura", "cobertura", "consumo médio"],
+      "answer": "A cobertura estimada divide a quantidade atual pelo consumo médio mensal informado. Itens com até 30 dias de cobertura aparecem como risco de ruptura.",
+      "routes": ["estoque"]
+    },
+    {
+      "id": "energy-efficiency",
+      "keywords": ["eficiência energética", "desvio de energia", "potencial de redução", "média da área"],
+      "answer": "O painel compara cada equipamento com a média energética de sua área. Diferenças a partir de 25% são destacadas para investigação, sem afirmar que existe defeito.",
+      "routes": ["consumo"]
+    },
+    {
+      "id": "work-order-360",
+      "keywords": ["os 360", "checklist", "apontamento", "peças da os", "comentários da os", "histórico da os"],
+      "answer": "A O.S. 360 reúne resumo, checklist, apontamentos de horas, materiais, comentários, evidências e histórico. Abra uma ordem pelo botão O.S. 360° no Kanban.",
+      "routes": ["os"]
+    },
+    {
+      "id": "maintenance-planning",
+      "keywords": ["planejamento", "agenda", "programar os", "atribuir técnico", "capacidade"],
+      "answer": "A Central de Planejamento organiza as O.S. por semana, responsável, horário e duração estimada. Ordens sem data permanecem na fila não programada.",
+      "routes": ["planejamento"]
+    },
+    {
+      "id": "preventive-plans",
+      "keywords": ["preventiva", "plano preventivo", "periodicidade", "gerar os automática"],
+      "answer": "Em Manutenção Preventiva você cria planos recorrentes por dias, ativo, prioridade e checklist. O botão Gerar O.S. cria uma ordem para o ciclo atual sem duplicar o mesmo vencimento.",
+      "routes": ["preventiva"]
+    },
+    {
+      "id": "maintenance-requests",
+      "keywords": ["solicitação", "pedir manutenção", "comunicar problema", "triagem"],
+      "answer": "Solicitações permitem comunicar um problema antes da criação da O.S. Administradores e técnicos podem converter a solicitação em ordem ou rejeitar com justificativa.",
+      "routes": ["solicitacoes"]
+    },
+    {
+      "id": "technician-workspace",
+      "keywords": ["técnico", "minhas os", "cronômetro", "assumir os", "apontar tempo"],
+      "answer": "O Espaço do Técnico mostra a fila pessoal, a agenda do dia e O.S. sem responsável. O cronômetro acumula o tempo e salva o apontamento ao pausar.",
+      "routes": ["tecnico"]
+    },
+    {
+      "id": "iot-telemetry",
+      "keywords": ["iot", "mqtt", "telemetria", "temperatura ao vivo", "vibração", "gateway", "simulador"],
+      "answer": "A Central IoT mostra temperatura, vibração, energia e rotação recebidas pelo gateway MQTT do PC. O sistema é somente leitura industrial e não envia comandos para máquinas.",
+      "routes": ["iot"]
+    },
+    {
+      "id": "remote-push",
+      "keywords": ["push", "notificação fechada", "alerta no celular", "vapid", "cloud messaging"],
+      "answer": "Em Notificações, cada usuário escolhe os alertas e cadastra o navegador. O push remoto exige a chave pública VAPID e a publicação da função Firebase do Sprint 4.",
+      "routes": ["notificacoes"]
+    },
+    {
+      "id": "backup-recovery",
+      "keywords": ["backup", "restaurar", "recuperação", "continuidade", "exportar banco"],
+      "answer": "A área Continuidade permite ao Administrador exportar módulos em um backup JSON validado, acompanhar a saúde dos dados e restaurar módulos após confirmação reforçada.",
+      "routes": ["continuidade"]
+    },
+    {
+      "id": "asset-360",
+      "keywords": ["ativo 360", "ficha técnica", "documento do ativo", "criticidade", "fabricante", "número de série"],
+      "answer": "O Ativo 360° reúne ficha técnica, criticidade, saúde calculada, O.S., custos, telemetria, inspeções e links de documentos. Abra pelo ícone de acesso no Parque de Ativos.",
+      "routes": ["ativos"]
+    },
+    {
+      "id": "digital-inspections",
+      "keywords": ["inspeção", "rota de inspeção", "ronda", "check de máquina", "achado"],
+      "answer": "Inspeções Digitais permite criar rotas recorrentes por equipamento e registrar condição, temperatura, vibração e observação. Desvios geram solicitações para triagem.",
+      "routes": ["inspecoes"]
+    },
+    {
+      "id": "reliability-center",
+      "keywords": ["confiabilidade", "mtbf", "mttr", "pareto", "disponibilidade", "backlog"],
+      "answer": "O Centro de Confiabilidade calcula MTBF, MTTR, disponibilidade, backlog, cumprimento de SLA e Pareto usando os registros de O.S. e inspeção. Os resultados dependem da qualidade dos apontamentos.",
+      "routes": ["confiabilidade"]
+    },
+    {
+      "id": "suppliers",
+      "keywords": ["fornecedor", "cnpj", "lead time", "avaliação de fornecedor", "empresa homologada"],
+      "answer": "A tela Fornecedores mantém contatos, categoria, prazo médio de entrega, avaliação e situação de cada empresa usada nas compras e contratos.",
+      "routes": ["fornecedores"]
+    },
+    {
+      "id": "mro-purchases",
+      "keywords": ["compra", "requisição de compra", "aprovar compra", "pedido", "recebimento"],
+      "answer": "Compras MRO segue as etapas solicitação, aprovação administrativa, pedido e recebimento. Quando a requisição está vinculada a um item, o recebimento atualiza o saldo do estoque.",
+      "routes": ["compras"]
+    },
+    {
+      "id": "contracts-warranties",
+      "keywords": ["contrato", "garantia", "vencimento", "cobertura", "renovação"],
+      "answer": "Contratos e Garantias controla valores, responsáveis, fornecedores, prazos de renovação e coberturas vinculadas aos ativos.",
+      "routes": ["contratos"]
+    },
+    {
+      "id": "executive-dashboard",
+      "keywords": ["executivo", "resumo gerencial", "indicadores consolidados", "painel da gestão"],
+      "answer": "O Painel Executivo consolida disponibilidade estimada, custos, compras, estoque, metas, contratos e prioridades por área. O acesso é administrativo.",
+      "routes": ["executivo"]
+    }
+  ]
+}

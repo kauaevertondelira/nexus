@@ -1,0 +1,341 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'Administrador'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'Administrador')",
+        ".write": "auth != null && ((!data.exists() && auth.uid === $uid && (newData.child('role').val() === 'Técnico de Manutenção' || newData.child('role').val() === 'Almoxarifado / Suprimentos')) || (root.child('users').child(auth.uid).child('role').val() === 'Administrador' && (auth.uid != $uid || newData.child('role').val() === 'Administrador')))",
+        "name": { ".validate": "newData.isString() && newData.val().length > 1 && newData.val().length <= 120" },
+        "email": { ".validate": "newData.isString() && newData.val().length <= 180" },
+        "role": { ".validate": "newData.val() === 'Administrador' || newData.val() === 'Técnico de Manutenção' || newData.val() === 'Almoxarifado / Suprimentos'" },
+        "photoURL": { ".validate": "newData.isString() && newData.val().length <= 1500000" },
+        "$other": { ".validate": true }
+      }
+    },
+    "assets": {
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção')",
+      "$id": {
+        "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120" },
+        "status": { ".validate": "newData.val() === 'online' || newData.val() === 'offline' || newData.val() === 'danger'" },
+        "temp": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 500" },
+        "energyKwh": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "mroCost": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "criticality": { ".validate": "newData.val() === 'A' || newData.val() === 'B' || newData.val() === 'C'" },
+        "maintenanceStrategy": { ".validate": "newData.isString() && newData.val().length <= 80" },
+        "manufacturer": { ".validate": "newData.isString() && newData.val().length <= 120" },
+        "model": { ".validate": "newData.isString() && newData.val().length <= 120" },
+        "serialNumber": { ".validate": "newData.isString() && newData.val().length <= 120" },
+        "installDate": { ".validate": "newData.isString() && newData.val().length <= 10" },
+        "targetAvailability": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 100" },
+        "assetClass": { ".validate": "newData.isString() && newData.val().length <= 100" },
+        "$other": { ".validate": true }
+      }
+    },
+    "inventory": {
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Almoxarifado / Suprimentos')",
+      "$id": {
+        "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
+        "qty": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "min": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "price": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "monthlyUse": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "$other": { ".validate": true }
+      }
+    },
+    "work_orders": {
+      ".read": "auth != null",
+      "$id": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || (root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção' && ((!data.exists() && newData.exists() && newData.child('createdByUid').val() === auth.uid) || (data.exists() && newData.exists() && (!data.child('assignedToUid').exists() || data.child('assignedToUid').val() === auth.uid || data.child('createdByUid').val() === auth.uid) && (!newData.child('assignedToUid').exists() || newData.child('assignedToUid').val() === auth.uid)))))",
+        "title": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 180" },
+        "estimatedCost": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "downtimeHours": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "dueAt": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "completionNote": { ".validate": "newData.isString() && newData.val().length >= 5 && newData.val().length <= 300" },
+        "$other": { ".validate": true }
+      }
+    },
+    "maintenance_plans": {
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção')",
+      "$id": {
+        "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 140" },
+        "assetId": { ".validate": "newData.isString() && newData.val().length <= 160" },
+        "frequencyDays": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 3650" },
+        "nextDueAt": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "estimatedHours": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "active": { ".validate": "newData.isBoolean()" },
+        "$other": { ".validate": true }
+      }
+    },
+    "maintenance_requests": {
+      ".read": "auth != null",
+      "$id": {
+        ".write": "auth != null && ((!data.exists() && newData.child('requesterUid').val() === auth.uid) || root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção' || (data.child('requesterUid').val() === auth.uid && data.child('status').val() === 'new' && newData.child('status').val() === 'cancelled'))",
+        "title": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
+        "description": { ".validate": "newData.isString() && newData.val().length >= 5 && newData.val().length <= 1200" },
+        "requesterUid": { ".validate": "newData.isString() && newData.val().length > 0" },
+        "priority": { ".validate": "newData.val() === 'low' || newData.val() === 'normal' || newData.val() === 'urgent' || newData.val() === 'danger'" },
+        "status": { ".validate": "newData.val() === 'new' || newData.val() === 'approved' || newData.val() === 'converted' || newData.val() === 'rejected' || newData.val() === 'cancelled'" },
+        "$other": { ".validate": true }
+      }
+    },
+    "work_order_checklists": {
+      ".read": "auth != null",
+      "$orderId": {
+        "$itemId": {
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção')",
+          "title": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 180" },
+          "done": { ".validate": "newData.isBoolean()" },
+          "$other": { ".validate": true }
+        }
+      }
+    },
+    "work_order_time_entries": {
+      ".read": "auth != null",
+      "$orderId": {
+        "$entryId": {
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção')",
+          "hours": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 24" },
+          "note": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 240" },
+          "$other": { ".validate": true }
+        }
+      }
+    },
+    "work_order_parts": {
+      ".read": "auth != null",
+      "$orderId": {
+        "$partId": {
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção' || root.child('users').child(auth.uid).child('role').val() === 'Almoxarifado / Suprimentos')",
+          "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
+          "qty": { ".validate": "newData.isNumber() && newData.val() > 0" },
+          "unitPrice": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "$other": { ".validate": true }
+        }
+      }
+    },
+    "work_order_comments": {
+      ".read": "auth != null",
+      "$orderId": {
+        "$commentId": {
+          ".write": "auth != null && ((!data.exists() && newData.child('userUid').val() === auth.uid) || data.child('userUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'Administrador')",
+          "text": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 800" },
+          "link": { ".validate": "newData.isString() && newData.val().length <= 500" },
+          "$other": { ".validate": true }
+        }
+      }
+    },
+    "work_order_activity": {
+      ".read": "auth != null",
+      "$orderId": {
+        "$eventId": {
+          ".write": "auth != null && ((!data.exists() && newData.child('createdByUid').val() === auth.uid) || root.child('users').child(auth.uid).child('role').val() === 'Administrador')",
+          "description": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 300" },
+          "$other": { ".validate": true }
+        }
+      }
+    },
+    "asset_documents": {
+      ".read": "auth != null",
+      "$assetId": {
+        "$documentId": {
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção')",
+          "title": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 140" },
+          "type": { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "url": { ".validate": "newData.isString() && newData.val().length > 8 && newData.val().length <= 500" },
+          "$other": { ".validate": true }
+        }
+      }
+    },
+    "inspection_routes": {
+      ".read": "auth != null",
+      "$routeId": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção')",
+        "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 140" },
+        "frequencyDays": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 365" },
+        "nextDueAt": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "active": { ".validate": "newData.isBoolean()" },
+        "$other": { ".validate": true }
+      }
+    },
+    "inspection_executions": {
+      ".read": "auth != null",
+      "$executionId": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção')",
+        "routeId": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
+        "checkpointCount": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 200" },
+        "status": { ".validate": "newData.val() === 'completed'" },
+        "inspectorUid": { ".validate": "newData.isString() && newData.val().length > 0" },
+        "$other": { ".validate": true }
+      }
+    },
+    "inspection_results": {
+      ".read": "auth != null",
+      "$executionId": {
+        "$resultId": {
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção')",
+          "assetId": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
+          "status": { ".validate": "newData.val() === 'ok' || newData.val() === 'attention' || newData.val() === 'critical'" },
+          "temperature": { ".validate": "newData.isNumber() && newData.val() >= -40 && newData.val() <= 250" },
+          "vibration": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+          "note": { ".validate": "newData.isString() && newData.val().length <= 300" },
+          "$other": { ".validate": true }
+        }
+      }
+    },
+    "suppliers": {
+      ".read": "auth != null",
+      "$supplierId": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Almoxarifado / Suprimentos')",
+        "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
+        "taxId": { ".validate": "newData.isString() && newData.val().length <= 18" },
+        "category": { ".validate": "newData.isString() && newData.val().length <= 100" },
+        "contact": { ".validate": "newData.isString() && newData.val().length <= 100" },
+        "phone": { ".validate": "newData.isString() && newData.val().length <= 30" },
+        "email": { ".validate": "newData.isString() && newData.val().length <= 180" },
+        "leadTimeDays": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 365" },
+        "rating": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 5" },
+        "active": { ".validate": "newData.isBoolean()" },
+        "$other": { ".validate": true }
+      }
+    },
+    "purchase_requests": {
+      ".read": "auth != null",
+      "$requestId": {
+        ".write": "auth != null && ((!data.exists() && newData.child('requesterUid').val() === auth.uid && newData.child('status').val() === 'submitted') || (data.exists() && data.child('requesterUid').val() === auth.uid && data.child('status').val() === 'submitted' && newData.child('status').val() === 'cancelled') || root.child('users').child(auth.uid).child('role').val() === 'Administrador' || (root.child('users').child(auth.uid).child('role').val() === 'Almoxarifado / Suprimentos' && data.exists() && newData.exists() && ((data.child('status').val() === 'approved' && newData.child('status').val() === 'ordered') || (data.child('status').val() === 'ordered' && newData.child('status').val() === 'received') || data.child('status').val() === newData.child('status').val())))",
+        "itemName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
+        "inventoryId": { ".validate": "newData.isString() && newData.val().length <= 160" },
+        "supplierId": { ".validate": "newData.isString() && newData.val().length <= 160" },
+        "qty": { ".validate": "newData.isNumber() && newData.val() > 0" },
+        "estimatedUnitCost": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "justification": { ".validate": "newData.isString() && newData.val().length >= 5 && newData.val().length <= 500" },
+        "priority": { ".validate": "newData.val() === 'low' || newData.val() === 'normal' || newData.val() === 'urgent' || newData.val() === 'danger'" },
+        "status": { ".validate": "newData.val() === 'submitted' || newData.val() === 'approved' || newData.val() === 'ordered' || newData.val() === 'received' || newData.val() === 'rejected' || newData.val() === 'cancelled'" },
+        "requesterUid": { ".validate": "newData.isString() && newData.val().length > 0" },
+        "$other": { ".validate": true }
+      }
+    },
+    "supplier_contracts": {
+      ".read": "auth != null",
+      "$contractId": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'Administrador'",
+        "title": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
+        "supplierId": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
+        "startDate": { ".validate": "newData.isString() && newData.val().length === 10" },
+        "endDate": { ".validate": "newData.isString() && newData.val().length === 10" },
+        "totalValue": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "renewalNoticeDays": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 365" },
+        "owner": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120" },
+        "active": { ".validate": "newData.isBoolean()" },
+        "$other": { ".validate": true }
+      }
+    },
+    "asset_warranties": {
+      ".read": "auth != null",
+      "$warrantyId": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Almoxarifado / Suprimentos')",
+        "assetId": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
+        "supplierId": { ".validate": "newData.isString() && newData.val().length <= 160" },
+        "endDate": { ".validate": "newData.isString() && newData.val().length === 10" },
+        "coverageType": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 140" },
+        "reference": { ".validate": "newData.isString() && newData.val().length <= 120" },
+        "$other": { ".validate": true }
+      }
+    },
+    "telemetry": {
+      ".read": "auth != null",
+      ".write": false,
+      "latest": {
+        "$deviceId": {
+          "temperature": { ".validate": "newData.isNumber() && newData.val() >= -40 && newData.val() <= 250" },
+          "vibration": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+          "energyKwh": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "receivedAt": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "$other": { ".validate": true }
+        }
+      },
+      "history": {
+        "$deviceId": {
+          "$readingId": {
+            "temperature": { ".validate": "newData.isNumber() && newData.val() >= -40 && newData.val() <= 250" },
+            "vibration": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+            "receivedAt": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+            "$other": { ".validate": true }
+          }
+        }
+      }
+    },
+    "iot_gateway": {
+      ".read": "auth != null",
+      ".write": false
+    },
+    "iot_device_config": {
+      ".read": "auth != null",
+      "$deviceId": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção')",
+        ".validate": "newData.hasChildren(['label', 'assetId', 'tempWarning', 'tempCritical', 'vibrationWarning', 'vibrationCritical', 'active']) && newData.child('tempWarning').val() < newData.child('tempCritical').val() && newData.child('vibrationWarning').val() < newData.child('vibrationCritical').val()",
+        "label": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120" },
+        "assetId": { ".validate": "newData.isString() && newData.val().length <= 160" },
+        "tempWarning": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() < 500" },
+        "tempCritical": { ".validate": "newData.isNumber() && newData.val() >= 2 && newData.val() <= 500" },
+        "vibrationWarning": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 100" },
+        "vibrationCritical": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 100" },
+        "active": { ".validate": "newData.isBoolean()" },
+        "$other": { ".validate": true }
+      }
+    },
+    "iot_alerts": {
+      ".read": "auth != null",
+      "$alertId": {
+        ".write": "auth != null && data.exists() && newData.exists() && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção')",
+        "severity": { ".validate": "newData.val() === 'warning' || newData.val() === 'critical'" },
+        "acknowledged": { ".validate": "newData.isBoolean()" },
+        "message": { ".validate": "newData.isString() && newData.val().length <= 300" },
+        "$other": { ".validate": true }
+      }
+    },
+    "notification_subscriptions": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'Administrador')",
+        "$deviceKey": {
+          ".write": "auth != null && auth.uid === $uid",
+          "token": { ".validate": "newData.isString() && newData.val().length > 20 && newData.val().length <= 4096" },
+          "enabled": { ".validate": "newData.isBoolean()" },
+          "userUid": { ".validate": "newData.val() === auth.uid" },
+          "$other": { ".validate": true }
+        }
+      }
+    },
+    "notification_preferences": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'Administrador')",
+        ".write": "auth != null && auth.uid === $uid && newData.child('userUid').val() === auth.uid",
+        "$other": { ".validate": true }
+      }
+    },
+    "backup_jobs": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'Administrador'",
+      "$jobId": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'Administrador' && !data.exists() && newData.child('userUid').val() === auth.uid",
+        "action": { ".validate": "newData.val() === 'export' || newData.val() === 'restore'" },
+        "status": { ".validate": "newData.val() === 'success' || newData.val() === 'failed'" },
+        "$other": { ".validate": true }
+      }
+    },
+    "push_deliveries": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'Administrador'",
+      ".write": false
+    },
+    "audit_logs": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'Administrador'",
+      "$id": {
+        ".write": "auth != null && ((!data.exists() && newData.child('createdByUid').val() === auth.uid) || root.child('users').child(auth.uid).child('role').val() === 'Administrador')",
+        "description": { ".validate": "newData.isString() && newData.val().length <= 300" },
+        "$other": { ".validate": true }
+      }
+    }
+  }
+}

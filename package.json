@@ -1,0 +1,8 @@
+{
+  "name": "nexus-industrial-static",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/project-audit.mjs && node tests/auth-gate.test.mjs && node tests/accessibility.test.mjs && node tests/operational-intelligence.test.mjs && node tests/sprint3.test.mjs && node tests/sprint4.test.mjs && node tests/sprint5.test.mjs && node tests/sprint6.test.mjs && node tests/ui-regressions.test.mjs"
+  }
+}

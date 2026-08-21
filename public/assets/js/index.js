@@ -1,15 +1,16 @@
 function checkTheme() {
-            if (localStorage.theme === 'light') {
-                document.documentElement.classList.remove('dark');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
-            }
-        }
-        checkTheme();
+    if (window.NexusTheme) {
+        window.NexusTheme.set(window.NexusTheme.get());
+    }
+}
 
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-            checkTheme();
-        }
+function toggleTheme() {
+    const isDark = document.documentElement.classList.contains('dark');
+    if (window.NexusTheme) {
+        window.NexusTheme.set(isDark ? 'light' : 'dark');
+    } else {
+        document.documentElement.classList.toggle('dark');
+    }
+}
+
+checkTheme();

@@ -1,91 +1,143 @@
-<!DOCTYPE html>
-<html lang="pt-PT" class="dark">
+﻿<!DOCTYPE html>
+<html lang="pt-BR" class="dark nexus-auth-pending">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Industrial - Gestão Financeira</title>
+    <script src="../assets/js/auth-gate.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/nexus-ui.css">
+    <link rel="stylesheet" href="../assets/css/theme-polish.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="/IMG/canvas-b.png">
+    <script src="../assets/js/theme-manager.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { extend: { colors: { dark: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' }, brand: '#3b82f6' }, fontSize: { 'xxs': '0.65rem' } } }
+            theme: { extend: { colors: { dark: { 900: '#1d2b40', 800: '#223249', 700: '#3a506b' }, brand: '#3b82f6' }, fontSize: { 'xxs': '0.65rem' } } }
         }
     </script>
     <style>
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .dark ::-webkit-scrollbar-track { background: #0f172a; }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        .dark ::-webkit-scrollbar-track { background: #1d2b40; }
+        .dark ::-webkit-scrollbar-thumb { background: #3a506b; }
         .table-row-hover:hover { background-color: rgba(59, 130, 246, 0.05); }
+        /* Sidebar retrátil */
+        #sidebar { width: 264px; overflow: hidden; }
+        .sb-icon-collapsed { display: none; }
+        html.sidebar-collapsed .sb-text { display: none !important; }
+        html.sidebar-collapsed .sb-icon-expanded { display: none !important; }
+        html.sidebar-collapsed .sb-icon-collapsed { display: inline-flex !important; }
+        html.sidebar-collapsed #sidebar { width: 80px !important; }
+        html.sidebar-collapsed .sb-link { justify-content: center !important; }
+
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 dark:bg-[#0b1120] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm transition-colors duration-300">
+<body class="bg-slate-50 text-slate-800 dark:bg-[#172234] dark:text-slate-300 font-sans h-screen flex overflow-hidden text-sm transition-colors duration-300">
 
-    <!-- MENU LATERAL -->
-    <aside id="sidebar" class="w-64 bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 flex flex-col transition-all duration-300 z-40 relative">
-        
-        <!-- Botão de Colapsar -->
-        <button id="toggle-sidebar" class="absolute -right-3 top-8 bg-white dark:bg-dark-800 border border-slate-200 dark:border-dark-700 text-slate-500 rounded-full w-6 h-6 flex items-center justify-center hover:text-brand transition-colors z-50 shadow-sm">
-            <i class="fas fa-chevron-left text-[10px] transition-transform duration-300" id="sidebar-icon"></i>
-        </button>
+    <script>
+    (function () {
+        try {
+            if (localStorage.getItem('nexus-sidebar-collapsed') === '1') {
+                document.documentElement.classList.add('sidebar-collapsed');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <aside id="sidebar" class="bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 flex flex-col transition-all duration-300 z-20 shrink-0">
+        <div class="h-20 flex items-center justify-between px-4 border-b border-slate-200 dark:border-dark-800/50 shrink-0">
+            <div class="flex items-center gap-3 min-w-0 sb-text">
+                <img src="../../IMG/canvas-b.png" alt="Nexus Logo" class="h-9 w-9 object-contain invert dark:invert-0 transition-all duration-300 shrink-0">
+                <div class="min-w-0">
+                    <p class="text-sm font-bold text-slate-800 dark:text-white truncate">Nexus Industrial</p>
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500 truncate">ERP &middot; MRO</p>
+                </div>
+            </div>
+            <img src="../../IMG/canvas-b.png" alt="Nexus" class="h-8 w-8 object-contain invert dark:invert-0 sb-icon-collapsed shrink-0 mx-auto">
 
-        <div class="p-6 flex items-center justify-center border-b border-slate-200 dark:border-dark-800/50 h-20 overflow-hidden">
-            <!-- Logo Grande -->
-            <img src="../../IMG/canvas-b.png" alt="Nexus Logo" id="sidebar-logo" class="h-10 w-auto invert dark:invert-0 transition-all duration-300 drop-shadow-md" onerror="this.src='https://placehold.co/120x40/1e293b/ffffff?text=NEXUS'">
-            <!-- Ícone Mini (Aparece quando fechado) -->
-            <div id="sidebar-logo-mini" class="hidden w-10 h-10 bg-brand rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md shrink-0">N</div>
+            <button id="sidebar-toggle" title="Recolher/Expandir menu" class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-dark-800 hover:text-brand transition-all duration-300 shrink-0 sb-toggle-btn">
+                <i class="fas fa-angles-left sb-icon-expanded"></i>
+                <i class="fas fa-angles-right sb-icon-collapsed"></i>
+            </button>
         </div>
 
-        <nav class="flex-1 p-3 space-y-2 overflow-y-auto overflow-x-hidden" id="sidebar-nav">
-            <p class="sidebar-text text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 mt-2 px-2 transition-opacity duration-300 whitespace-nowrap">Painel</p>
-            
-            <a href="menu.html" title="Visão Global" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-chart-pie w-6 text-center shrink-0"></i> 
-                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Visão Global</span>
+        <div class="px-4 pt-4 sb-text">
+            <div class="relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-xs"></i>
+                <input type="text" placeholder="Pesquisar..." class="w-full bg-slate-100 dark:bg-dark-800 border border-transparent focus:border-brand text-xs text-slate-600 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 rounded-xl pl-9 pr-3 py-2.5 outline-none transition-colors">
+            </div>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto overflow-x-hidden">
+            <p class="sb-text text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-1 px-2">Painel</p>
+            <a href="menu.html" data-page="menu" class="sb-link flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white">
+                <i class="fas fa-chart-pie w-5 text-center shrink-0"></i>
+                <span class="sb-text">Visão Global</span>
+            </a>
+            <a href="ativos.html" data-page="ativos" class="sb-link flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white">
+                <i class="fas fa-microchip w-5 text-center shrink-0"></i>
+                <span class="sb-text">Parque de Ativos</span>
+            </a>
+            <a href="os.html" data-page="os" class="sb-link flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white">
+                <i class="fas fa-clipboard-list w-5 text-center shrink-0"></i>
+                <span class="sb-text">Ordens de Serviço</span>
+            </a>
+            <a href="estoque.html" data-page="estoque" class="sb-link flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white">
+                <i class="fas fa-boxes w-5 text-center shrink-0"></i>
+                <span class="sb-text">Estoque (MRO)</span>
+            </a>
+            <a href="financeiro.html" data-page="financeiro" class="sb-link flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 bg-brand/10 text-brand font-medium">
+                <i class="fas fa-wallet w-5 text-center shrink-0"></i>
+                <span class="sb-text">Financeiro</span>
+            </a>
+            <a href="mapa.html" data-page="mapa" class="sb-link flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white">
+
+                <i class="fas fa-map-marked-alt w-5 text-center shrink-0"></i>
+
+                <span class="sb-text">Planta Industrial</span>
+
             </a>
 
-            <a href="mapa.html" title="Planta Industrial" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-map-marked-alt w-6 text-center shrink-0"></i> 
-                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Planta Industrial</span>
-            </a>
-
-            <a href="ativos.html" title="Parque de Ativos" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-microchip w-6 text-center shrink-0"></i> 
-                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Parque de Ativos</span>
-            </a>
-            
-            <a href="os.html" title="Ordens de Serviço" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-clipboard-list w-6 text-center shrink-0"></i> 
-                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Ordens de Serviço</span>
-            </a>
-            
-            <a href="estoque.html" title="Estoque (MRO)" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-boxes w-6 text-center shrink-0"></i> 
-                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Estoque (MRO)</span>
-            </a>
-            
-            <a href="financeiro.html" title="Financeiro" class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300">
-                <i class="fas fa-wallet w-6 text-center shrink-0"></i> 
-                <span class="sidebar-text transition-opacity duration-300 whitespace-nowrap">Financeiro</span>
+            <a href="mapa-consumo.html" data-page="mapa-consumo" class="sb-link flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-500 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white">
+                <i class="fas fa-fire-alt w-5 text-center shrink-0"></i>
+                <span class="sb-text">Mapa de Consumo</span>
             </a>
         </nav>
-        <div class="p-3 border-t border-slate-200 dark:border-dark-800/50">
-            <button id="theme-toggle" title="Alternar Tema" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300 mb-2">
-                <i class="fas fa-sun text-amber-500 hidden dark:block w-6 text-center shrink-0"></i>
-                <i class="fas fa-moon text-slate-600 block dark:hidden w-6 text-center shrink-0"></i>
-                <span class="sidebar-text font-medium transition-opacity duration-300 whitespace-nowrap">Alternar Tema</span>
+
+        <div class="p-4 border-t border-slate-200 dark:border-dark-800/50 space-y-1 shrink-0">
+            <button id="theme-toggle" class="sb-link w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-dark-800 dark:hover:text-white transition-all duration-300 text-sm">
+                <span class="flex items-center gap-3">
+                    <i class="fas fa-sun text-amber-500 hidden dark:block w-5 text-center shrink-0"></i>
+                    <i class="fas fa-moon text-slate-600 block dark:hidden w-5 text-center shrink-0"></i>
+                    <span class="font-medium theme-text-btn sb-text">Modo Claro</span>
+                </span>
+                <span class="relative inline-block w-9 h-5 rounded-full bg-slate-300 dark:bg-brand transition-colors duration-300 shrink-0 sb-text">
+                    <span class="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-300 dark:translate-x-4"></span>
+                </span>
             </button>
-            
-            <a href="../../index.html" title="Sair do Sistema" class="flex items-center gap-3 px-3 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300">
-                <i class="fas fa-sign-out-alt w-6 text-center shrink-0"></i>
-                <span class="sidebar-text font-medium transition-opacity duration-300 whitespace-nowrap">Sair</span>
+            <a href="../../index.html" class="sb-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300 text-sm">
+                <i class="fas fa-sign-out-alt w-5 text-center shrink-0"></i>
+                <span class="font-medium sb-text">Sair</span>
             </a>
         </div>
     </aside>
 
+    <script>
+    (function () {
+        var btn = document.getElementById('sidebar-toggle');
+        if (btn) {
+            btn.addEventListener('click', function () {
+                var collapsed = !document.documentElement.classList.contains('sidebar-collapsed');
+                document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
+                try { localStorage.setItem('nexus-sidebar-collapsed', collapsed ? '1' : '0'); } catch (e) {}
+            });
+        }
+    })();
+    </script>
 
     <main class="flex-1 flex flex-col h-screen relative">
         <header class="h-20 bg-white dark:bg-dark-900 border-b border-slate-200 dark:border-dark-800 flex items-center justify-between px-8 z-10 transition-colors duration-300">
@@ -95,14 +147,35 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 dark:bg-dark-900 dark:border-dark-700 dark:text-slate-300 dark:hover:bg-dark-800 px-4 py-2.5 rounded-xl font-medium transition-all shadow-sm flex items-center gap-2">
-                    <i class="fas fa-file-pdf text-red-500"></i> <span class="hidden sm:inline">Relatório Mensal</span>
+                <select id="report-period" aria-label="Período do relatório" class="bg-slate-100 dark:bg-dark-800 border border-slate-200 dark:border-dark-700 text-xs rounded-xl px-3 py-2.5">
+                    <option value="30">30 dias</option>
+                    <option value="90">90 dias</option>
+                    <option value="365">1 ano</option>
+                    <option value="all">Todo o histórico</option>
+                </select>
+                <select id="report-asset" aria-label="Equipamento do relatório" class="hidden lg:block bg-slate-100 dark:bg-dark-800 border border-slate-200 dark:border-dark-700 text-xs rounded-xl px-3 py-2.5 max-w-40">
+                    <option value="all">Todos os ativos</option>
+                </select>
+                <select id="report-area" aria-label="Setor do relatório" class="hidden xl:block bg-slate-100 dark:bg-dark-800 border border-slate-200 dark:border-dark-700 text-xs rounded-xl px-3 py-2.5">
+                    <option value="all">Todos os setores</option>
+                    <option value="producao">Produção</option>
+                    <option value="utilidades">Utilidades</option>
+                    <option value="logistica">Logística</option>
+                </select>
+                <a href="#user-management" class="hidden xl:flex bg-purple-600 hover:bg-purple-500 text-white px-4 py-2.5 rounded-xl font-medium transition-all shadow-sm items-center gap-2">
+                    <i class="fas fa-user-shield"></i> Usuários
+                </a>
+                <button id="monthly-report-pdf" type="button" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 dark:bg-dark-900 dark:border-dark-700 dark:text-slate-300 dark:hover:bg-dark-800 px-4 py-2.5 rounded-xl font-medium transition-all shadow-sm flex items-center gap-2">
+                    <i class="fas fa-file-pdf text-red-500"></i> <span class="hidden sm:inline">PDF</span>
+                </button>
+                <button id="financial-report-excel" type="button" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2.5 rounded-xl font-medium transition-all shadow-sm flex items-center gap-2">
+                    <i class="fas fa-file-excel"></i> <span class="hidden sm:inline">Excel</span>
                 </button>
                 
                 <div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-dark-800">
                     <div id="user-photo" class="h-10 w-10 rounded-full bg-gradient-to-tr from-brand to-blue-400 flex items-center justify-center text-white font-bold shadow-md bg-cover bg-center"></div>
                     <div class="hidden md:block">
-                        <p id="user-name" class="text-sm font-bold text-slate-800 dark:text-white">A carregar...</p>
+                        <p id="user-name" class="text-sm font-bold text-slate-800 dark:text-white">Carregando...</p>
                         <p id="user-role" class="text-xs text-slate-500 dark:text-slate-400">...</p>
                     </div>
                 </div>
@@ -116,8 +189,8 @@
                         <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Custos de Manutenção (Mês)</p>
                         <i class="fas fa-tools text-slate-400"></i>
                     </div>
-                    <h3 class="text-3xl font-bold text-slate-800 dark:text-white mb-1">R$ 14.520<span class="text-lg text-slate-400">,00</span></h3>
-                    <p class="text-xs text-red-500 font-medium mt-auto"><i class="fas fa-arrow-up mr-1"></i> +5.2% vs mês anterior</p>
+                    <h3 id="kpi-maintenance" class="text-3xl font-bold text-slate-800 dark:text-white mb-1">R$ 0,00</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-auto">Calculado pelas O.S. do período</p>
                 </div>
 
                 <div class="bg-white dark:bg-dark-800 p-6 rounded-2xl border border-red-200 dark:border-red-900/30 shadow-sm dark:shadow-none flex flex-col transition-colors duration-300 relative overflow-hidden">
@@ -173,9 +246,34 @@
                     </table>
                  </div>
             </div>
+
+            <section id="user-management" class="mt-8 bg-white dark:bg-dark-800 p-6 rounded-2xl border border-purple-200 dark:border-purple-500/20 shadow-sm scroll-mt-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                    <div>
+                        <h3 class="text-slate-800 dark:text-white font-bold"><i class="fas fa-user-shield mr-2 text-purple-500"></i>Gestão de usuários</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Para autorizar outro administrador, cadastre a conta normalmente e altere o cargo dela aqui.</p>
+                    </div>
+                    <span class="text-[11px] text-purple-600 dark:text-purple-300 bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 rounded-lg px-3 py-2"><i class="fas fa-lock mr-1"></i>Somente administradores</span>
+                </div>
+                <div id="user-admin-list" class="space-y-3">
+                    <div class="text-center text-slate-400 py-5"><i class="fas fa-spinner fa-spin mr-2"></i>Carregando usuários...</div>
+                </div>
+            </section>
+
+            <div class="mt-8 bg-white dark:bg-dark-800 p-6 rounded-2xl border border-slate-200 dark:border-dark-700/50 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-slate-800 dark:text-white font-bold"><i class="fas fa-clock-rotate-left mr-2 text-green-500"></i>Histórico de Alterações</h3>
+                    <span class="text-[11px] text-slate-400">Últimos 40 eventos</span>
+                </div>
+                <div id="audit-history" class="space-y-2">
+                    <div class="text-center text-slate-400 py-5"><i class="fas fa-spinner fa-spin mr-2"></i>Carregando histórico...</div>
+                </div>
+            </div>
         </div>
     </main>
 
     <script type="module" src="../assets/js/financeiro.js"></script>
+    <script src="../assets/js/ui-enhancements.js"></script>
 </body>
 </html>
+

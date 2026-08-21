@@ -2,17 +2,12 @@
 // ==========================================
 // GUARD DE ACESSO — bloqueia cargo sem permissão
 // ==========================================
-const ROLE_PAGES_MAP = {
-    "Administrador":              ["menu","ativos","os","estoque","financeiro","mapa-consumo"],
-    "Técnico de Manutenção":      ["menu","ativos","os"],
-    "Almoxarifado / Suprimentos": ["menu","ativos","os","estoque","mapa-consumo"]
-};
 function checkPageAccess(pageId, userData) {
-    const allowed = userData.allowedPages || ROLE_PAGES_MAP[userData.role] || ["menu"];
+    const allowed = getAllowedPages(userData);
     if (!allowed.includes(pageId)) {
         document.body.style.overflow = "hidden";
         document.body.innerHTML = `
-          <div style="min-height:100vh;background:#0f172a;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;gap:16px;padding:32px;font-family:sans-serif">
+          <div style="min-height:100vh;background:#1d2b40;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;gap:16px;padding:32px;font-family:sans-serif">
             <div style="width:64px;height:64px;border-radius:16px;background:rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;font-size:28px">🔒</div>
             <h1 style="font-size:22px;font-weight:800;margin:0">Acesso Restrito</h1>
             <p style="color:#94a3b8;text-align:center;max-width:360px;margin:0">
@@ -22,43 +17,31 @@ function checkPageAccess(pageId, userData) {
               ← Voltar ao Painel
             </a>
           </div>`;
+        revealProtectedPage();
         return false;
     }
+    revealProtectedPage();
     return true;
 }
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s",
-            authDomain: "nexus-iot-senai.firebaseapp.com",
-            databaseURL: "https://nexus-iot-senai-default-rtdb.firebaseio.com",
-            projectId: "nexus-iot-senai"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
+import { auth, db, getAllowedPages, applyAllowedMenu, revealProtectedPage, writeAuditLog } from "./firebase.js";
+import { ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { escapeHtml, csvCell, downloadFile, nonNegative } from "./security-utils.js";
 
         // --- SISTEMA DE RASTREABILIDADE ---
         let currentUserInfo = { name: "Operador", uid: "null" };
 
-        if (firebaseConfig.apiKey === "SUA_API_KEY") {
-            currentUserInfo = { name: "Gestor Operacional", uid: "simulado" };
-            document.getElementById('user-name').innerText = currentUserInfo.name;
-            document.getElementById('user-role').innerText = "Almoxarifado";
-            document.getElementById('user-photo').innerHTML = '<i class="fas fa-user-tie text-xl"></i>';
-        } else {
-            onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, (user) => {
                 if (user) {
                     onValue(ref(db, 'users/' + user.uid), (snapshot) => {
                         const data = snapshot.val();
                         if(data) {
-                            currentUserInfo = { name: data.name, uid: user.uid };
+                            currentUserInfo = { name: data.name, uid: user.uid, role: data.role };
                             document.getElementById('user-name').innerText = data.name;
                             document.getElementById('user-role').innerText = data.role;
                             if (!checkPageAccess('estoque', data)) return;
+                            applyAllowedMenu(data);
                             if(data.photoURL) {
                                 document.getElementById('user-photo').style.backgroundImage = `url(${data.photoURL})`;
                                 document.getElementById('user-photo').innerHTML = '';
@@ -68,58 +51,69 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
                         }
                     });
                 } else {
-                    window.location.href = '../../index.html';
+                    const currentPage = window.location.pathname.split('/').pop() || 'estoque.html';
+                    window.location.replace('login.html?return=' + encodeURIComponent(currentPage));
                 }
-            });
-        }
+        });
         
-        const getSwalTheme = () => document.documentElement.classList.contains('dark') ? { background: '#1e293b', color: '#f8fafc', confirmButtonColor: '#3b82f6', cancelButtonColor: '#ef4444' } : { confirmButtonColor: '#3b82f6', cancelButtonColor: '#ef4444' };
+        const getSwalTheme = () => document.documentElement.classList.contains('dark') ? { background: '#223249', color: '#f8fafc', confirmButtonColor: '#3b82f6', cancelButtonColor: '#ef4444' } : { confirmButtonColor: '#3b82f6', cancelButtonColor: '#ef4444' };
 
         onValue(ref(db, 'inventory'), (snapshot) => {
             const data = snapshot.val();
             const list = document.getElementById('inventory-list');
             list.innerHTML = '';
             
-            let totalItems = 0; let critItems = 0; let totalVal = 0;
+            let totalItems = 0; let critItems = 0; let forecastItems = 0; let totalVal = 0;
 
             if (data) {
                 Object.entries(data).forEach(([id, item]) => {
+                    const qty = nonNegative(item.qty);
+                    const min = nonNegative(item.min);
+                    const price = nonNegative(item.price);
+                    const monthlyUse = nonNegative(item.monthlyUse);
+                    const coverageDays = monthlyUse > 0 ? Math.floor((qty / monthlyUse) * 30) : null;
+                    if (coverageDays !== null && coverageDays <= 30) forecastItems++;
+                    const safeName = escapeHtml(item.name || 'Item sem nome');
+                    const safeAuthor = escapeHtml(item.lastUpdatedBy || 'Sistema');
                     totalItems++;
-                    totalVal += (item.qty * (item.price || 0));
+                    totalVal += qty * price;
                     
                     let qtyHtml = '';
-                    if (item.qty <= item.min) {
+                    if (qty <= min) {
                         critItems++;
-                        qtyHtml = `<div class="mx-auto w-32 flex items-center justify-between px-3 py-1 bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-900/50 font-bold"><i class="fas fa-arrow-down animate-bounce"></i> <span>${item.qty} <span class="text-xs text-red-400 dark:text-red-500/70">/ ${item.min}</span></span></div>`;
-                    } else if (item.qty <= item.min * 1.5) {
-                        qtyHtml = `<div class="mx-auto w-32 flex items-center justify-between px-3 py-1 bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-500 rounded-lg font-bold"><span>${item.qty} <span class="text-xs text-amber-400 dark:text-amber-600/70">/ ${item.min}</span></span></div>`;
+                        qtyHtml = `<div class="mx-auto w-32 flex items-center justify-between px-3 py-1 bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-900/50 font-bold"><i class="fas fa-arrow-down animate-bounce"></i> <span>${qty} <span class="text-xs text-red-400 dark:text-red-500/70">/ ${min}</span></span></div>`;
+                    } else if (qty <= min * 1.5) {
+                        qtyHtml = `<div class="mx-auto w-32 flex items-center justify-between px-3 py-1 bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-500 rounded-lg font-bold"><span>${qty} <span class="text-xs text-amber-400 dark:text-amber-600/70">/ ${min}</span></span></div>`;
                     } else {
-                        qtyHtml = `<div class="mx-auto w-32 flex items-center justify-between px-3 py-1 bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-500 rounded-lg font-bold"><span>${item.qty} <span class="text-xs text-green-400 dark:text-green-600/70">/ ${item.min}</span></span></div>`;
+                        qtyHtml = `<div class="mx-auto w-32 flex items-center justify-between px-3 py-1 bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-500 rounded-lg font-bold"><span>${qty} <span class="text-xs text-green-400 dark:text-green-600/70">/ ${min}</span></span></div>`;
                     }
 
                     list.innerHTML += `
                         <tr class="table-row-hover transition-colors text-slate-700 dark:text-slate-300">
                             <td class="px-5 py-4 font-mono text-xs text-slate-500">MRO-${id.substring(1, 6).toUpperCase()}</td>
-                            <td class="px-5 py-4 font-medium">${item.name}</td>
+                            <td class="px-5 py-4 font-medium">${safeName}<span class="block text-[10px] mt-1 ${coverageDays !== null && coverageDays <= 30 ? 'text-amber-500 font-bold' : 'text-slate-400'}"><i class="fas fa-chart-line mr-1"></i>${coverageDays === null ? 'Informe o consumo médio para prever ruptura' : `Cobertura estimada: ${coverageDays} dia(s)`}</span></td>
                             <td class="px-5 py-4 text-center">${qtyHtml}</td>
-                            <td class="px-5 py-4 text-slate-500 dark:text-slate-400">R$ ${(item.price || 0).toFixed(2)}</td>
-                            <td class="px-5 py-4 text-xs text-slate-400"><i class="fas fa-user-edit mr-1"></i> ${item.lastUpdatedBy || 'Sistema'}</td>
+                            <td class="px-5 py-4 text-slate-500 dark:text-slate-400">R$ ${price.toFixed(2)}</td>
+                            <td class="px-5 py-4 text-xs text-slate-400"><i class="fas fa-user-edit mr-1"></i> ${safeAuthor}</td>
                             <td class="px-5 py-4 text-right space-x-2">
-                                <button onclick="adjustQty('${id}', 1)" class="text-green-500 hover:text-green-600 bg-green-50 dark:bg-green-500/10 p-2 rounded-md transition"><i class="fas fa-plus"></i></button>
-                                <button onclick="adjustQty('${id}', -1)" class="text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 p-2 rounded-md transition"><i class="fas fa-minus"></i></button>
-                                <button onclick="editItem('${id}')" class="text-slate-400 hover:text-brand transition ml-2"><i class="fas fa-edit"></i></button>
-                                <button onclick="deleteItem('${id}')" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                                <button onclick="adjustQty('${id}', 1)" aria-label="Adicionar uma unidade de ${safeName}" class="text-green-500 hover:text-green-600 bg-green-50 dark:bg-green-500/10 p-2 rounded-md transition"><i class="fas fa-plus"></i></button>
+                                <button onclick="adjustQty('${id}', -1)" aria-label="Remover uma unidade de ${safeName}" class="text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 p-2 rounded-md transition"><i class="fas fa-minus"></i></button>
+                                <button onclick="editItem('${id}')" aria-label="Editar item ${safeName}" class="text-slate-400 hover:text-brand transition ml-2 p-2 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/10"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteItem('${id}')" aria-label="Remover item ${safeName}" class="text-slate-400 hover:text-red-500 transition p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-500/10"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                     `;
                 });
             } else {
-                list.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-slate-500">Estoque vazio.</td></tr>`;
+                list.innerHTML = `<tr><td colspan="6" class="px-5 py-8"><div class="nexus-empty-state"><i class="fas fa-box-open text-2xl"></i><strong>Estoque vazio</strong><span>Use "Nova Peça" para cadastrar o primeiro item MRO.</span></div></td></tr>`;
             }
 
             document.getElementById('kpi-total').innerText = totalItems;
             document.getElementById('kpi-crit').innerText = critItems;
             document.getElementById('kpi-value').innerText = 'R$ ' + totalVal.toFixed(2);
+            document.getElementById('kpi-forecast').innerText = forecastItems;
+        }, () => {
+            document.getElementById('inventory-list').innerHTML = '<tr><td colspan="6" class="px-5 py-8 text-center text-red-500">Não foi possível carregar o estoque.</td></tr>';
         });
 
         window.addItem = () => {
@@ -127,21 +121,33 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
                 title: 'Nova Peça/Material',
                 html: `
                     <input id="n-name" class="swal2-input" placeholder="Descrição do Item">
-                    <input id="n-qty" type="number" class="swal2-input" placeholder="Quantidade Inicial">
-                    <input id="n-min" type="number" class="swal2-input" placeholder="Stock Mínimo (Alerta)">
-                    <input id="n-price" type="number" step="0.01" class="swal2-input" placeholder="Custo Unitário">
+                    <input id="n-qty" type="number" min="0" class="swal2-input" placeholder="Quantidade Inicial">
+                    <input id="n-min" type="number" min="0" class="swal2-input" placeholder="Estoque Mínimo (Alerta)">
+                    <input id="n-price" type="number" min="0" step="0.01" class="swal2-input" placeholder="Custo Unitário">
+                    <input id="n-use" type="number" min="0" step="0.1" class="swal2-input" placeholder="Consumo médio mensal (unidades)">
                 `,
                 showCancelButton: true, ...getSwalTheme(), confirmButtonText: 'Guardar',
                 preConfirm: () => {
                     return {
                         name: document.getElementById('n-name').value || 'Item S/N',
-                        qty: parseInt(document.getElementById('n-qty').value) || 0,
-                        min: parseInt(document.getElementById('n-min').value) || 0,
-                        price: parseFloat(document.getElementById('n-price').value) || 0,
+                        qty: nonNegative(document.getElementById('n-qty').value),
+                        min: nonNegative(document.getElementById('n-min').value),
+                        price: nonNegative(document.getElementById('n-price').value),
+                        monthlyUse: nonNegative(document.getElementById('n-use').value),
                         lastUpdatedBy: currentUserInfo.name // Regista o autor
                     }
                 }
-            }).then((res) => { if (res.isConfirmed) push(ref(db, 'inventory'), res.value); });
+            }).then(async (res) => {
+                if (res.isConfirmed) {
+                    try {
+                        const created = await push(ref(db, 'inventory'), { ...res.value, createdAt: Date.now() });
+                        await writeAuditLog({ action: 'create', entity: 'inventory', entityId: created.key, description: `Item ${res.value.name} criado.` });
+                        window.nexusToast?.('success', 'Item cadastrado no estoque.');
+                    } catch (error) {
+                        window.nexusToast?.('error', 'Não foi possível cadastrar o item.');
+                    }
+                }
+            });
         };
 
         window.adjustQty = (id, amount) => {
@@ -149,10 +155,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
                 const data = snapshot.val();
                 if(data) {
                     let newQty = data.qty + amount;
-                    if(newQty >= 0) update(ref(db, 'inventory/' + id), { 
-                        qty: newQty,
-                        lastUpdatedBy: currentUserInfo.name // Atualiza quem fez a mudança
-                    });
+                    if(newQty >= 0) {
+                        update(ref(db, 'inventory/' + id), {
+                            qty: newQty,
+                            updatedAt: Date.now(),
+                            lastUpdatedBy: currentUserInfo.name
+                        }).then(() => writeAuditLog({ action: 'quantity', entity: 'inventory', entityId: id, description: `Quantidade alterada em ${amount > 0 ? '+' : ''}${amount}.`, metadata: { quantity: newQty, delta: amount } }));
+                        window.nexusToast?.('success', 'Quantidade atualizada.');
+                    }
                 }
             }, { onlyOnce: true });
         };
@@ -160,31 +170,69 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
         window.editItem = (id) => {
             onValue(ref(db, 'inventory/' + id), (snap) => {
                 const item = snap.val();
+                if (!item) {
+                    window.nexusToast?.('error', 'Item não encontrado.');
+                    return;
+                }
                 Swal.fire({
                     title: 'Editar Item',
                     html: `
-                        <input id="e-name" class="swal2-input" value="${item.name}">
-                        <input id="e-qty" type="number" class="swal2-input" value="${item.qty}">
-                        <input id="e-min" type="number" class="swal2-input" value="${item.min}">
-                        <input id="e-price" type="number" step="0.01" class="swal2-input" value="${item.price || 0}">
+                        <input id="e-name" class="swal2-input" placeholder="Descrição do item">
+                        <input id="e-qty" type="number" min="0" class="swal2-input" placeholder="Quantidade">
+                        <input id="e-min" type="number" min="0" class="swal2-input" placeholder="Estoque mínimo">
+                        <input id="e-price" type="number" min="0" step="0.01" class="swal2-input" placeholder="Custo unitário">
+                        <input id="e-use" type="number" min="0" step="0.1" class="swal2-input" placeholder="Consumo médio mensal (unidades)">
                     `,
                     showCancelButton: true, ...getSwalTheme(), confirmButtonText: 'Atualizar',
+                    didOpen: () => {
+                        document.getElementById('e-name').value = item.name || '';
+                        document.getElementById('e-qty').value = item.qty ?? 0;
+                        document.getElementById('e-min').value = item.min ?? 0;
+                        document.getElementById('e-price').value = item.price ?? 0;
+                        document.getElementById('e-use').value = item.monthlyUse ?? 0;
+                    },
                     preConfirm: () => {
+                        const name = document.getElementById('e-name').value.trim();
+                        if (!name) {
+                            Swal.showValidationMessage('A descrição do item é obrigatória.');
+                            return false;
+                        }
                         return {
-                            name: document.getElementById('e-name').value,
-                            qty: parseInt(document.getElementById('e-qty').value),
-                            min: parseInt(document.getElementById('e-min').value),
-                            price: parseFloat(document.getElementById('e-price').value),
+                            name,
+                            qty: Math.max(0, parseInt(document.getElementById('e-qty').value, 10) || 0),
+                            min: Math.max(0, parseInt(document.getElementById('e-min').value, 10) || 0),
+                            price: Math.max(0, parseFloat(document.getElementById('e-price').value) || 0),
+                            monthlyUse: Math.max(0, parseFloat(document.getElementById('e-use').value) || 0),
                             lastUpdatedBy: currentUserInfo.name // Atualiza o autor
                         }
                     }
-                }).then((res) => { if (res.isConfirmed) update(ref(db, 'inventory/' + id), res.value); });
+                }).then(async (res) => {
+                    if (res.isConfirmed) {
+                        try {
+                            await update(ref(db, 'inventory/' + id), { ...res.value, updatedAt: Date.now() });
+                            await writeAuditLog({ action: 'update', entity: 'inventory', entityId: id, description: `Item ${res.value.name} atualizado.` });
+                            window.nexusToast?.('success', 'Item atualizado.');
+                        } catch (error) {
+                            window.nexusToast?.('error', 'Não foi possível atualizar o item.');
+                        }
+                    }
+                });
             }, { onlyOnce: true });
         };
 
         window.deleteItem = (id) => {
             Swal.fire({ title: 'Remover Item?', text: "Será excluído do estoque.", icon: 'warning', showCancelButton: true, ...getSwalTheme(), confirmButtonText: 'Sim' })
-            .then((res) => { if (res.isConfirmed) remove(ref(db, 'inventory/' + id)); });
+            .then(async (res) => {
+                if (res.isConfirmed) {
+                    try {
+                        await remove(ref(db, 'inventory/' + id));
+                        await writeAuditLog({ action: 'delete', entity: 'inventory', entityId: id, description: 'Item removido do estoque.' });
+                        window.nexusToast?.('warning', 'Item removido do estoque.');
+                    } catch (error) {
+                        window.nexusToast?.('error', 'Não foi possível remover o item.');
+                    }
+                }
+            });
         };
 
         window.exportCSV = () => {
@@ -199,13 +247,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
                 let numbers = qtyText.match(/\d+/g); 
                 let qty = numbers ? numbers[0] : 0; let min = numbers && numbers.length > 1 ? numbers[1] : 0;
                 let autor = cols[4].innerText.trim();
-                csv.push(`"${sku}";"${desc}";"${qty}";"${min}";"${autor}"`);
+                csv.push([sku, desc, qty, min, autor].map(csvCell).join(';'));
             }
-            let csvFile = new Blob(["\uFEFF" + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
-            let downloadLink = document.createElement("a");
-            downloadLink.download = "Relatorio_Stock_Nexus.csv";
-            downloadLink.href = window.URL.createObjectURL(csvFile);
-            downloadLink.click();
+            downloadFile("\uFEFF" + csv.join("\n"), "Relatorio_Estoque_Nexus.csv", "text/csv;charset=utf-8");
+            window.nexusToast?.('success', 'CSV exportado.');
         };
 
         document.getElementById('searchInput')?.addEventListener('keyup', (e) => {
@@ -232,102 +277,3 @@ const themeBtn = document.getElementById('theme-toggle');
 if (themeBtn) {
     themeBtn.addEventListener('click', toggleTheme);
 }
-
-// --- 5. LOGICA DA SIDEBAR RETRÁTIL COM MEMÓRIA ---
-const sidebar = document.getElementById('sidebar');
-const toggleSidebarBtn = document.getElementById('toggle-sidebar');
-const sidebarIcon = document.getElementById('sidebar-icon');
-const sidebarTexts = document.querySelectorAll('.sidebar-text');
-const sidebarLogo = document.getElementById('sidebar-logo');
-const sidebarLogoMini = document.getElementById('sidebar-logo-mini');
-
-// Função centralizada para aplicar o visual da Sidebar
-function applySidebarState(isCollapsed, isInstant = false) {
-    if (isCollapsed) {
-        // Encolher Sidebar
-        sidebar.classList.remove('w-64');
-        sidebar.classList.add('w-20');
-        sidebarIcon.classList.add('rotate-180');
-        
-        // Esconder Textos
-        sidebarTexts.forEach(text => {
-            if (isInstant) {
-                text.classList.add('hidden', 'opacity-0');
-            } else {
-                text.classList.add('opacity-0');
-                setTimeout(() => text.classList.add('hidden'), 200);
-            }
-        });
-        
-        // Trocar Logo
-        sidebarLogo.classList.add('hidden');
-        sidebarLogoMini.classList.remove('hidden');
-    } else {
-        // Expandir Sidebar
-        sidebar.classList.remove('w-20');
-        sidebar.classList.add('w-64');
-        sidebarIcon.classList.remove('rotate-180');
-        
-        // Mostrar Textos
-        sidebarTexts.forEach(text => {
-            text.classList.remove('hidden');
-            if (isInstant) {
-                text.classList.remove('opacity-0');
-            } else {
-                setTimeout(() => text.classList.remove('opacity-0'), 10);
-            }
-        });
-        
-        // Trocar Logo
-        sidebarLogoMini.classList.add('hidden');
-        sidebarLogo.classList.remove('hidden');
-    }
-}
-
-// 1. LER MEMÓRIA: Verifica se há registo no localStorage ao carregar a página
-let isSidebarCollapsed = localStorage.getItem('nexus_sidebar_state') === 'collapsed';
-
-// Aplica o estado guardado instantaneamente (para não piscar ao trocar de página)
-applySidebarState(isSidebarCollapsed, true);
-
-// 2. AÇÃO DE CLIQUE: Alternar e gravar
-toggleSidebarBtn.addEventListener('click', () => {
-    isSidebarCollapsed = !isSidebarCollapsed;
-    
-    // Grava a nova preferência no navegador do utilizador
-    localStorage.setItem('nexus_sidebar_state', isSidebarCollapsed ? 'collapsed' : 'expanded');
-    
-    // Aplica o novo visual de forma suave (animada)
-    applySidebarState(isSidebarCollapsed, false);
-});
-
-// ==========================================
-// MARCADOR DE PÁGINA ATIVA AUTOMÁTICO
-// ==========================================
-function highlightActiveMenu() {
-    // Pega o nome do arquivo atual da URL (ex: 'os.html', 'ativos.html')
-    let currentPage = window.location.pathname.split('/').pop();
-    
-    // Fallback se estiver na raiz do sistema
-    if (currentPage === '' || currentPage === '/') {
-        currentPage = 'menu.html';
-    }
-
-    // Seleciona todos os links dentro da nav
-    const navLinks = document.querySelectorAll('#sidebar-nav .nav-link');
-
-    navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        
-        if (href === currentPage) {
-            // Remove as classes de inativo
-            link.classList.remove('text-slate-500', 'hover:bg-slate-100', 'hover:text-brand', 'dark:text-slate-400', 'dark:hover:bg-dark-800', 'dark:hover:text-white');
-            
-            // Adiciona as classes de ativo (Azul)
-            link.classList.add('bg-brand/10', 'text-brand', 'font-medium', 'border', 'border-brand/20');
-        }
-    });
-}
-
-// Executa ao carregar a página
-highlightActiveMenu();

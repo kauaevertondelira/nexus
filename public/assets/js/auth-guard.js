@@ -6,46 +6,38 @@
  *       applyRoleMenu();       // Oculta itens de menu sem permissão
  */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s",
-  authDomain: "nexus-iot-senai.firebaseapp.com",
-  databaseURL: "https://nexus-iot-senai-default-rtdb.firebaseio.com",
-  projectId: "nexus-iot-senai",
-  storageBucket: "nexus-iot-senai.firebasestorage.app",
-  messagingSenderId: "717361923500",
-  appId: "1:717361923500:web:9e55a4dcb002e049abe609",
-};
-
-// Evita inicializar o Firebase duas vezes se menu.js já o fez
-let _app, _auth, _db;
-try {
-    const { getApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
-    _app = getApp();
-} catch {
-    _app = initializeApp(firebaseConfig, 'auth-guard');
-}
-_auth = getAuth(_app);
-_db = getDatabase(_app);
+import { auth, db, ROLE_PERMISSIONS, getAllowedPages, revealProtectedPage } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { escapeHtml } from "./security-utils.js";
 
 // Mapa de permissões por cargo (espelho do login.js)
-export const ROLE_PERMISSIONS = {
-    "Administrador":            ["menu", "ativos", "os", "estoque", "financeiro", "mapa-consumo"],
-    "Técnico de Manutenção":    ["menu", "ativos", "os"],
-    "Almoxarifado / Suprimentos": ["menu", "ativos", "os", "estoque", "mapa-consumo"]
-};
+export { ROLE_PERMISSIONS };
 
 // IDs de página → elementos do menu lateral
 export const PAGE_MENU_MAP = {
     "menu":         '[data-page="menu"]',
+    "mapa":         '[data-page="mapa"]',
     "ativos":       '[data-page="ativos"]',
+    "ativo-detalhes": '[data-page="ativo-detalhes"]',
     "os":           '[data-page="os"]',
+    "os-detalhes":  '[data-page="os-detalhes"]',
+    "planejamento": '[data-page="planejamento"]',
+    "preventiva":   '[data-page="preventiva"]',
+    "inspecoes":    '[data-page="inspecoes"]',
+    "confiabilidade": '[data-page="confiabilidade"]',
+    "fornecedores": '[data-page="fornecedores"]',
+    "compras":      '[data-page="compras"]',
+    "contratos":    '[data-page="contratos"]',
+    "executivo":    '[data-page="executivo"]',
+    "solicitacoes": '[data-page="solicitacoes"]',
+    "tecnico":      '[data-page="tecnico"]',
     "estoque":      '[data-page="estoque"]',
     "financeiro":   '[data-page="financeiro"]',
     "mapa-consumo": '[data-page="mapa-consumo"]',
+    "iot":          '[data-page="iot"]',
+    "notificacoes": '[data-page="notificacoes"]',
+    "continuidade": '[data-page="continuidade"]',
 };
 
 /**
@@ -54,15 +46,16 @@ export const PAGE_MENU_MAP = {
  * @param {string} pageId - ex: 'financeiro', 'ativos'
  */
 export function guardPage(pageId) {
-    onAuthStateChanged(_auth, (user) => {
+    onAuthStateChanged(auth, (user) => {
         if (!user) {
-            window.location.href = '../../index.html';
+            const currentPage = window.location.pathname.split('/').pop() || 'menu.html';
+            window.location.replace('login.html?return=' + encodeURIComponent(currentPage));
             return;
         }
-        onValue(ref(_db, 'users/' + user.uid), (snap) => {
+        onValue(ref(db, 'users/' + user.uid), (snap) => {
             const data = snap.val();
             if (!data) return;
-            const allowed = data.allowedPages || ROLE_PERMISSIONS[data.role] || ["menu"];
+            const allowed = getAllowedPages(data);
             if (!allowed.includes(pageId)) {
                 // Sem permissão: bloqueia a página com overlay
                 document.body.innerHTML = `
@@ -72,13 +65,16 @@ export function guardPage(pageId) {
                     </div>
                     <h1 class="text-2xl font-bold">Acesso Restrito</h1>
                     <p class="text-slate-400 text-center max-w-sm">
-                      Seu cargo <strong class="text-white">${data.role}</strong> não tem permissão para acessar esta página.
+                      Seu cargo <strong class="text-white">${escapeHtml(data.role)}</strong> não tem permissão para acessar esta página.
                     </p>
                     <a href="menu.html" class="mt-4 px-6 py-3 bg-brand rounded-xl font-bold hover:bg-blue-600 transition-colors">
                       Voltar ao Painel
                     </a>
                   </div>`;
+                revealProtectedPage();
+                return;
             }
+            revealProtectedPage();
         }, { onlyOnce: true });
     });
 }
@@ -88,21 +84,16 @@ export function guardPage(pageId) {
  * Requer que cada <a> do menu tenha data-page="nome".
  */
 export function applyRoleMenu() {
-    onAuthStateChanged(_auth, (user) => {
+    onAuthStateChanged(auth, (user) => {
         if (!user) return;
-        onValue(ref(_db, 'users/' + user.uid), (snap) => {
+        onValue(ref(db, 'users/' + user.uid), (snap) => {
             const data = snap.val();
             if (!data) return;
-            const allowed = data.allowedPages || ROLE_PERMISSIONS[data.role] || ["menu"];
+            const allowed = getAllowedPages(data);
             Object.entries(PAGE_MENU_MAP).forEach(([page, selector]) => {
-                const el = document.querySelector(selector);
-                if (el) {
-                    if (!allowed.includes(page)) {
-                        el.style.display = 'none';
-                    } else {
-                        el.style.display = '';
-                    }
-                }
+                document.querySelectorAll(selector).forEach(el => {
+                    el.style.display = allowed.includes(page) ? '' : 'none';
+                });
             });
         }, { onlyOnce: true });
     });

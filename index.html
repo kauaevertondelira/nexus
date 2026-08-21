@@ -1,18 +1,22 @@
-<!DOCTYPE html>
-<html lang="pt-PT" class="dark">
+﻿<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Industrial - Apresentação ERP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="public/assets/css/nexus-ui.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="/IMG/canvas-b.png">
+    <link rel="stylesheet" href="public/assets/css/theme-polish.css">
+    <script src="public/assets/js/theme-manager.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: { 
                 extend: { 
                     colors: { 
-                        dark: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' }, 
+                        dark: { 900: '#1d2b40', 800: '#223249', 700: '#3a506b' }, 
                         brand: '#3b82f6' 
                     } 
                 } 
@@ -23,16 +27,13 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .dark ::-webkit-scrollbar-track { background: #0f172a; }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        .dark ::-webkit-scrollbar-track { background: #1d2b40; }
+        .dark ::-webkit-scrollbar-thumb { background: #3a506b; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 dark:bg-[#0b1120] dark:text-slate-300 font-sans transition-colors duration-300 antialiased selection:bg-brand selection:text-white overflow-x-hidden">
+<body class="bg-slate-50 text-slate-800 dark:bg-[#172234] dark:text-slate-300 font-sans transition-colors duration-300 antialiased selection:bg-brand selection:text-white overflow-x-hidden">
 
-    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand/10 dark:bg-brand rounded-full mix-blend-multiply filter blur-[128px] opacity-20 pointer-events-none z-0"></div>
-    <div class="absolute bottom-[20%] right-[-10%] w-96 h-96 bg-blue-800/10 dark:bg-blue-900 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 pointer-events-none z-0"></div>
-
-    <nav class="sticky top-0 z-50 backdrop-blur-md bg-slate-50/80 dark:bg-[#0b1120]/80 border-b border-slate-200 dark:border-slate-800 transition-colors">
+    <nav class="sticky top-0 z-50 backdrop-blur-md bg-slate-50/80 dark:bg-[#172234]/80 border-b border-slate-200 dark:border-slate-800 transition-colors">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             
             <a href="#hero" class="flex items-center gap-3 group">
@@ -54,7 +55,7 @@
                     <i class="fas fa-moon hidden dark:block"></i>
                 </button>
                 <a href="public/pages/login.html" class="bg-brand hover:bg-blue-600 text-white font-semibold text-sm px-5 py-3 rounded-xl transition-all shadow-md shadow-brand/20 hover:shadow-lg hover:shadow-brand/30 flex items-center gap-2 group">
-                    <span>Aceder ao Sistema</span>
+                    <span>Acessar o Sistema</span>
                     <i class="fas fa-arrow-right text-xs transition-transform group-hover:translate-x-1"></i>
                 </a>
             </div>
@@ -70,7 +71,7 @@
             A Inteligência Operacional que Impulsiona a sua <span class="bg-gradient-to-r from-brand to-blue-500 bg-clip-text text-transparent">Indústria</span>
         </h1>
         <p class="mt-6 text-lg sm:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            O Nexus Industrial é uma solução de ERP especializada em MRO e manutenção, desenvolvida para unificar o controle de ativos, stock técnico e fluxo financeiro numa única plataforma web ágil.
+            O Nexus Industrial é uma solução de ERP especializada em MRO e manutenção, desenvolvida para unificar o controle de ativos, estoque técnico e fluxo financeiro em uma única plataforma web ágil.
         </p>
         <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a href="public/pages/login.html" class="w-full sm:w-auto bg-brand hover:bg-blue-600 text-white font-semibold px-8 py-4 rounded-xl text-base transition-all shadow-lg shadow-brand/20 hover:scale-[1.02] flex items-center justify-center gap-3">
@@ -92,7 +93,7 @@
                     Um <strong>Enterprise Resource Planning (ERP)</strong> voltado ao setor industrial é um sistema integrado de gestão concebido especificamente para responder às exigências complexas do chão de fábrica e da cadeia de abastecimento.
                 </p>
                 <p class="mt-3 text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Diferente de um software comercial genérico, uma solução industrial lida de forma nativa com o ciclo de vida de ativos, a resiliência das máquinas e a gestão rigorosa de componentes **MRO (Manutenção, Reparação e Operações)**, reduzindo drasticamente o risco de paragens imprevistas na produção.
+                        Diferente de um software comercial genérico, uma solução industrial lida de forma nativa com o ciclo de vida de ativos, a resiliência das máquinas e a gestão rigorosa de componentes <strong>MRO (Manutenção, Reparo e Operações)</strong>, reduzindo o risco de paradas imprevistas na produção.
                 </p>
             </div>
             <div class="bg-slate-200/50 dark:bg-dark-800/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-inner flex flex-col gap-5 relative overflow-hidden">
@@ -102,7 +103,7 @@
                     </div>
                     <div>
                         <h4 class="font-semibold text-slate-900 dark:text-white">Eficiência Operacional</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Centralização total desde ordens de manutenção até ao controle de custos.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Centralização total desde ordens de manutenção até o controle de custos.</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-4">
@@ -110,7 +111,7 @@
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <div>
-                        <h4 class="font-semibold text-slate-900 dark:text-white">Mitigação de Paragens Frequentes</h4>
+                        <h4 class="font-semibold text-slate-900 dark:text-white">Redução de Paradas Frequentes</h4>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Antecipação e mitigação de quebras de equipamentos críticos por alertas de criticidade.</p>
                     </div>
                 </div>
@@ -135,14 +136,24 @@
             </p>
         </div>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-dark-800 border border-slate-200 dark:border-slate-700/50 rounded-xl p-6 shadow-sm hover:border-brand dark:hover:border-brand transition-all group">
+                <div class="w-12 h-12 rounded-xl bg-blue-100 text-brand dark:bg-brand/10 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-map-marked-alt"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Gêmeo Digital</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-xs mt-2 leading-relaxed">
+                    Planta interativa com estado das máquinas, telemetria, filtros, zoom e abertura rápida de ordens de serviço.
+                </p>
+            </div>
+
             <div class="bg-white dark:bg-dark-800 border border-slate-200 dark:border-slate-700/50 rounded-xl p-6 shadow-sm hover:border-brand dark:hover:border-brand transition-all group">
                 <div class="w-12 h-12 rounded-xl bg-brand/10 text-brand flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
                     <i class="fas fa-industry"></i>
                 </div>
                 <h3 class="font-bold text-lg text-slate-900 dark:text-white">Parque de Ativos</h3>
                 <p class="text-slate-500 dark:text-slate-400 text-xs mt-2 leading-relaxed">
-                    Registo em tempo real e monitorização de criticidade, temperaturas e status operacional do maquinário industrial.
+                    Registro em tempo real e monitoramento de criticidade, temperaturas e status operacional do maquinário industrial.
                 </p>
             </div>
 
@@ -150,9 +161,9 @@
                 <div class="w-12 h-12 rounded-xl bg-brand/10 text-brand flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
                     <i class="fas fa-boxes-stacked"></i>
                 </div>
-                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Controle de Stock MRO</h3>
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Controle de Estoque MRO</h3>
                 <p class="text-slate-500 dark:text-slate-400 text-xs mt-2 leading-relaxed">
-                    Rastreabilidade total de peças sobressalentes, níveis de stock mínimo com avisos visuais e exportador CSV nativo.
+                    Rastreabilidade total de peças sobressalentes, níveis de estoque mínimo com avisos visuais e exportação CSV.
                 </p>
             </div>
 
@@ -173,6 +184,16 @@
                 <h3 class="font-bold text-lg text-slate-900 dark:text-white">Gestão Financeira</h3>
                 <p class="text-slate-500 dark:text-slate-400 text-xs mt-2 leading-relaxed">
                     Auditoria de custos de manutenção crítica e balanceamento de despesas operacionais com gráficos interativos.
+                </p>
+            </div>
+
+            <div class="bg-white dark:bg-dark-800 border border-slate-200 dark:border-slate-700/50 rounded-xl p-6 shadow-sm hover:border-brand dark:hover:border-brand transition-all group">
+                <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Mapa de Consumo</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-xs mt-2 leading-relaxed">
+                    Comparação de energia, manutenção e MRO por área, com filtros e indicadores para apoiar decisões operacionais.
                 </p>
             </div>
         </div>
@@ -206,14 +227,14 @@
                     <div class="w-10 h-10 rounded-full bg-brand text-white font-bold flex items-center justify-center shadow-md shadow-brand/20">3</div>
                     <h3 class="font-bold text-base text-slate-900 dark:text-white md:mt-2">Formação Técnica</h3>
                 </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 md:mt-1 pl-14 md:pl-0">Treino prático direcionado a engenheiros, técnicos de manutenção e operadores para a utilização intuitiva das ferramentas de campo.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 md:mt-1 pl-14 md:pl-0">Treinamento prático direcionado a engenheiros, técnicos de manutenção e operadores para o uso intuitivo das ferramentas de campo.</p>
             </div>
             <div>
                 <div class="flex items-center gap-4 md:flex-col md:items-start">
                     <div class="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center shadow-md shadow-emerald-500/20">4</div>
                     <h3 class="font-bold text-base text-slate-900 dark:text-white md:mt-2">Operação Go-Live</h3>
                 </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 md:mt-1 pl-14 md:pl-0">Viragem completa do sistema antiga para o Nexus Industrial, iniciando a monitorização de auditorias financeiras e de OEE.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 md:mt-1 pl-14 md:pl-0">Migração completa do sistema anterior para o Nexus Industrial, iniciando o monitoramento das auditorias financeiras e do OEE.</p>
             </div>
         </div>
     </section>
@@ -221,10 +242,10 @@
     <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-16 bg-gradient-to-r from-brand/10 to-blue-600/10 dark:from-brand/5 dark:to-transparent border border-brand/20 dark:border-slate-800 rounded-3xl text-center relative overflow-hidden z-10">
         <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Pronto para testar a inteligência operacional?</h2>
         <p class="mt-3 text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-            Aceda ao ambiente restrito e interativo para simular contas de utilizadores, visualizar dashboards completos e testar os recursos do sistema web.
+            Acesse o ambiente restrito e interativo para simular contas de usuários, visualizar painéis completos e testar os recursos do sistema web.
         </p>
         <div class="mt-8">
-            <a href="login.html" class="inline-flex items-center gap-2 bg-brand hover:bg-blue-600 text-white font-bold px-7 py-3.5 rounded-xl shadow-lg shadow-brand/20 hover:scale-105 transition-all text-sm group">
+            <a href="public/pages/login.html" class="inline-flex items-center gap-2 bg-brand hover:bg-blue-600 text-white font-bold px-7 py-3.5 rounded-xl shadow-lg shadow-brand/20 hover:scale-105 transition-all text-sm group">
                 <span>Entrar no Sistema Web</span>
                 <i class="fas fa-external-link-alt text-xs transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"></i>
             </a>
@@ -238,7 +259,9 @@
         </div>
     </footer>
 
+    <script src="public/assets/js/ui-enhancements.js"></script>
     <script src="public/assets/js/index.js">  
     </script>
 </body>
 </html>
+

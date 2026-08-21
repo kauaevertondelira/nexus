@@ -1,27 +1,52 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD6gj_6e0WuGr6C_hJDkXBK7cI2EopWV1s",
-  authDomain: "nexus-iot-senai.firebaseapp.com",
-  databaseURL: "https://nexus-iot-senai-default-rtdb.firebaseio.com",
-  projectId: "nexus-iot-senai",
-  storageBucket: "nexus-iot-senai.firebasestorage.app",
-  messagingSenderId: "717361923500",
-  appId: "1:717361923500:web:9e55a4dcb002e049abe609",
-  measurementId: "G-JJ84BQSXJX"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+import { auth, db, getAllowedPages, revealProtectedPage } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { escapeHtml } from "./security-utils.js";
 
 // --- SISTEMA INTERNO DE NOTIFICAÇÕES GLOBAIS ---
-let systemNotifications = { assets: [], inventory: [] };
+let systemNotifications = { assets: [], inventory: [], orders: [], iot: [] };
 
 // --- MOTOR DE ANIMAÇÃO DE ESTADOS DOS CARDS (INTERPOLAÇÃO) ---
 const cardStates = { oee: 0, ativos: 0, os: 0, stock: 0 };
+let availabilityChart;
+
+function renderDashboardAssets(data = {}) {
+    const container = document.getElementById('dashboard-assets-list');
+    if (!container) return;
+    const score = (asset) => asset.status === 'danger' || Number(asset.temp) > 80 ? 3 : asset.status === 'online' ? 1 : 2;
+    const rows = Object.entries(data).sort((a, b) => score(b[1]) - score(a[1]) || Number(b[1].temp || 0) - Number(a[1].temp || 0)).slice(0, 4);
+    if (!rows.length) {
+        container.innerHTML = '<div class="dashboard-empty-inline"><i class="fas fa-circle-info"></i>Nenhum equipamento cadastrado.</div>';
+        return;
+    }
+    container.innerHTML = rows.map(([assetId, asset]) => {
+        const critical = asset.status === 'danger' || Number(asset.temp) > 80;
+        const online = asset.status === 'online' && !critical;
+        const state = critical ? ['Crítico', 'danger'] : online ? ['Operando', 'success'] : ['Desligado', 'neutral'];
+        const temperature = Number.isFinite(Number(asset.temp)) ? `${Number(asset.temp).toFixed(1)}°C` : '—';
+        return `<a href="ativo-detalhes.html?id=${encodeURIComponent(assetId)}" data-page="ativo-detalhes" class="dashboard-asset-row"><span class="dashboard-status-dot" data-tone="${state[1]}"></span><span class="min-w-0 flex-1"><strong>${escapeHtml(asset.name || assetId)}</strong><small>${escapeHtml(asset.area || 'Área não definida')}</small></span><span class="text-right"><strong>${temperature}</strong><small>${state[0]}</small></span></a>`;
+    }).join('');
+}
+
+function renderOrderSummary(data = {}) {
+    const orders = Object.values(data);
+    const todo = orders.filter((order) => order.status === 'todo').length;
+    const doing = orders.filter((order) => order.status === 'doing').length;
+    const done = orders.filter((order) => order.status === 'done').length;
+    const overdue = orders.filter((order) => {
+        if (order.status === 'done') return false;
+        const hours = { danger: 4, urgent: 12, normal: 72, low: 168 }[order.priority] || 72;
+        const dueAt = Number(order.dueAt) || ((Number(order.createdAt) || Date.now()) + hours * 3600000);
+        return dueAt < Date.now();
+    }).length;
+    const completion = orders.length ? Math.round(done / orders.length * 100) : 0;
+    document.getElementById('dash-os-todo').textContent = todo;
+    document.getElementById('dash-os-doing').textContent = doing;
+    document.getElementById('dash-os-done').textContent = done;
+    document.getElementById('dash-os-overdue').textContent = overdue;
+    document.getElementById('dash-os-progress-value').textContent = `${completion}%`;
+    document.getElementById('dash-os-progress').style.width = `${completion}%`;
+}
 
 function animateKpi(elementId, key, targetValue) {
     const el = document.getElementById(elementId);
@@ -61,7 +86,9 @@ function renderNotifications() {
     const badge = document.getElementById('bell-badge');
     const countEl = document.getElementById('notification-count');
 
-    const allAlerts = [...systemNotifications.assets, ...systemNotifications.inventory];
+    const allAlerts = [...systemNotifications.assets, ...systemNotifications.inventory, ...systemNotifications.orders, ...systemNotifications.iot];
+    window.NexusPendingAlerts = allAlerts;
+    window.NexusNotifications?.sync(allAlerts);
 
     if (allAlerts.length === 0) {
         badge.classList.add('hidden');
@@ -81,38 +108,14 @@ function renderNotifications() {
                             <i class="${alert.icon}"></i>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <p class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">${alert.title}</p>
-                            <p class="text-xxs text-slate-400 dark:text-slate-400 truncate mt-0.5">${alert.desc}</p>
+                            <p class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">${escapeHtml(alert.title)}</p>
+                            <p class="text-xxs text-slate-400 dark:text-slate-400 truncate mt-0.5">${escapeHtml(alert.desc)}</p>
                         </div>
                     </div>
                 `).join('');
     }
 }
 
-// --- MODO DE TESTE VISUAL (Bypass) ---
-if (firebaseConfig.apiKey === "SUA_API_KEY") {
-    document.getElementById('user-name').innerText = "Gestor Operacional";
-    document.getElementById('user-role').innerText = "Engenharia & PCM";
-    document.getElementById('user-photo').innerHTML = '<i class="fas fa-user-tie text-xl"></i>';
-    
-    animateKpi('kpi-oee', 'oee', 87);
-    animateKpi('kpi-ativos', 'ativos', 18);
-    animateKpi('kpi-os', 'os', 4);
-    animateKpi('kpi-stock', 'stock', 2);
-    
-    document.getElementById('critical-list').innerHTML = `
-                <div class="p-3 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl flex items-start gap-3">
-                    <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
-                    <div>
-                        <p class="text-xs font-bold text-red-600 dark:text-red-400">Extrusora Principal (EXT-001)</p>
-                        <p class="text-xxs text-red-500/80">Sobreaquecimento do Motor (88°C)</p>
-                    </div>
-                </div>`;
-
-    systemNotifications.assets = [{ type: 'danger', icon: 'fas fa-exclamation-circle', title: 'Extrusora Principal (EXT-001)', desc: 'Sobreaquecimento do Motor (88°C)' }];
-    systemNotifications.inventory = [{ type: 'warning', icon: 'fas fa-box-open', title: 'Estoque Crítico', desc: 'Componentes abaixo da quantidade mínima!' }];
-    renderNotifications();
-} else {
     // --- CONEXÃO REAL COM FIREBASE ---
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -127,10 +130,12 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
                     } else {
                         document.getElementById('user-photo').innerHTML = '<i class="fas fa-user text-xl"></i>';
                     }
+                    revealProtectedPage();
                 }
             });
         } else {
-            window.location.href = '../../index.html';
+            const currentPage = window.location.pathname.split('/').pop() || 'menu.html';
+            window.location.replace('login.html?return=' + encodeURIComponent(currentPage));
         }
     });
 
@@ -138,25 +143,29 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
     onValue(ref(db, 'assets'), (snapshot) => {
         const data = snapshot.val();
         let total = 0;
+        let availability = 0;
         let criticalHtml = '';
         systemNotifications.assets = []; 
 
         if (data) {
             const ativos = Object.values(data);
             total = ativos.length;
+            const onlineCount = ativos.filter((ativo) => ativo.status === 'online').length;
+            availability = total ? Math.round((onlineCount / total) * 100) : 0;
 
-            ativos.forEach(ativo => {
+            Object.entries(data).forEach(([assetId, ativo]) => {
                 if (ativo.status === 'danger' || ativo.temp > 80) {
                     criticalHtml += `
                                 <div class="p-3 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl flex items-start gap-3">
                                     <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
                                     <div>
-                                        <p class="text-xs font-bold text-red-600 dark:text-red-400">${ativo.name}</p>
-                                        <p class="text-xxs text-red-500/80">Sobreaquecimento / Falha (${ativo.temp}°C)</p>
+                                        <p class="text-xs font-bold text-red-600 dark:text-red-400">${escapeHtml(ativo.name || 'Ativo')}</p>
+                                        <p class="text-xxs text-red-500/80">Sobreaquecimento / Falha (${escapeHtml(ativo.temp)}°C)</p>
                                     </div>
                                 </div>`;
 
                     systemNotifications.assets.push({
+                        key: `asset:${assetId}`,
                         type: 'danger',
                         icon: 'fas fa-exclamation-circle',
                         title: ativo.name,
@@ -165,17 +174,27 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
                 }
             });
         }
+        renderDashboardAssets(data || {});
         
         // REATIVIDADE: Aplica contagem interpolada nos cards de Ativos e OEE
         animateKpi('kpi-ativos', 'ativos', total);
-        animateKpi('kpi-oee', 'oee', total > 0 ? 87 : 0);
+        animateKpi('kpi-oee', 'oee', availability);
+        if (availabilityChart) {
+            availabilityChart.data.labels.push(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+            availabilityChart.data.datasets[0].data.push(availability);
+            if (availabilityChart.data.labels.length > 7) {
+                availabilityChart.data.labels.shift();
+                availabilityChart.data.datasets[0].data.shift();
+            }
+            availabilityChart.update();
+        }
 
         const listEl = document.getElementById('critical-list');
         if (criticalHtml === '') {
             listEl.innerHTML = `
                         <div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500">
                             <i class="fas fa-check-circle text-3xl mb-2 text-green-500/40 dark:text-green-500/20"></i>
-                            <p class="text-xs text-center">Nenhum alerta crítico detetado.</p>
+                            <p class="text-xs text-center">Nenhum alerta crítico detectado.</p>
                         </div>`;
         } else {
             listEl.innerHTML = criticalHtml;
@@ -187,11 +206,25 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
     onValue(ref(db, 'work_orders'), (snapshot) => {
         const data = snapshot.val();
         let openOsCount = 0;
+        systemNotifications.orders = [];
         if (data) {
-            Object.values(data).forEach(os => {
-                if (os.status !== 'done') openOsCount++;
+            Object.entries(data).forEach(([orderId, os]) => {
+                if (os.status === 'done') return;
+                openOsCount++;
+                const slaHours = { danger: 4, urgent: 12, normal: 72, low: 168 }[os.priority] || 72;
+                const dueAt = Number(os.dueAt) || ((Number(os.createdAt) || Date.now()) + slaHours * 3600000);
+                if (dueAt < Date.now()) {
+                    systemNotifications.orders.push({
+                        key: `work-order:${orderId}`,
+                        type: 'danger',
+                        icon: 'fas fa-clock',
+                        title: os.title || 'O.S. com SLA atrasado',
+                        desc: `SLA vencido em ${new Date(dueAt).toLocaleString('pt-BR')}`
+                    });
+                }
             });
         }
+        renderOrderSummary(data || {});
         
         // REATIVIDADE VISUAL: Transforma a cor do ícone se a fila do PCM acumular
         const iconBox = document.getElementById('icon-os-box');
@@ -204,6 +237,7 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
         }
 
         animateKpi('kpi-os', 'os', openOsCount);
+        renderNotifications();
     });
 
     // 3. Contagem Real de Estoque Crítico + Alerta de Ruptura Injetado no DOM
@@ -213,15 +247,28 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
         systemNotifications.inventory = []; 
 
         if (data) {
-            Object.values(data).forEach(item => {
+            Object.entries(data).forEach(([itemId, item]) => {
                 if (item.qty <= item.min) {
                     critStockCount++;
                     systemNotifications.inventory.push({
+                        key: `inventory:${itemId}`,
                         type: 'warning',
                         icon: 'fas fa-box-open',
                         title: item.name || 'Item de Estoque',
                         desc: `Abaixo do mínimo (${item.qty}/${item.min})`
                     });
+                } else {
+                    const monthlyUse = Number(item.monthlyUse) || 0;
+                    const coverageDays = monthlyUse > 0 ? Math.floor((Number(item.qty) / monthlyUse) * 30) : null;
+                    if (coverageDays !== null && coverageDays <= 30) {
+                        systemNotifications.inventory.push({
+                            key: `inventory-forecast:${itemId}`,
+                            type: 'warning',
+                            icon: 'fas fa-hourglass-half',
+                            title: item.name || 'Item de Estoque',
+                            desc: `Ruptura estimada em ${coverageDays} dia(s)`
+                        });
+                    }
                 }
             });
         }
@@ -245,8 +292,23 @@ if (firebaseConfig.apiKey === "SUA_API_KEY") {
         animateKpi('kpi-stock', 'stock', critStockCount);
         renderNotifications();
     });
-}
 
+    // 4. Alertas validados pelo gateway MQTT (somente leitura no navegador)
+    onValue(ref(db, 'iot_alerts'), (snapshot) => {
+        systemNotifications.iot = [];
+        const data = snapshot.val() || {};
+        Object.entries(data).forEach(([alertId, alert]) => {
+            if (alert.acknowledged) return;
+            systemNotifications.iot.push({
+                key: `iot:${alertId}`,
+                type: alert.severity === 'critical' ? 'danger' : 'warning',
+                icon: 'fas fa-tower-broadcast',
+                title: alert.title || 'Alerta IoT',
+                desc: alert.message || 'Telemetria fora do limite'
+            });
+        });
+        renderNotifications();
+    });
 // --- CONTROLE DE EXIBIÇÃO DO DROPDOWN (SININHO) ---
 const bellBtn = document.getElementById('bell-btn');
 const dropdown = document.getElementById('notification-dropdown');
@@ -263,30 +325,54 @@ document.addEventListener('click', (e) => {
 });
 
 // 4. Inicialização do Gráfico (Chart.js)
-const ctx = document.getElementById('disponibilidadeChart').getContext('2d');
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Agora'],
-        datasets: [{
-            label: 'Disponibilidade (%)',
-            data: [95, 96, 85, 88, 92, 90, 94],
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4
-        }]
-    },
-    options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            y: { grid: { color: document.documentElement.classList.contains('dark') ? '#1e293b' : '#f1f5f9' }, min: 50, max: 100 },
-            x: { grid: { display: false } }
+function chartTheme() {
+    const dark = document.documentElement.classList.contains('dark');
+    return dark
+        ? { line: '#60a5fa', fill: 'rgba(96, 165, 250, 0.10)', grid: '#2b3c55', tick: '#94a3b8' }
+        : { line: '#5278a5', fill: 'rgba(82, 120, 165, 0.08)', grid: '#dde3ea', tick: '#6b7788' };
+}
+
+const chartCanvas = document.getElementById('disponibilidadeChart');
+if (window.Chart) {
+    const ctx = chartCanvas.getContext('2d');
+    const initialChartTheme = chartTheme();
+    availabilityChart = new window.Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Disponibilidade (%)',
+                data: [],
+                borderColor: initialChartTheme.line,
+                backgroundColor: initialChartTheme.fill,
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: initialChartTheme.grid }, ticks: { color: initialChartTheme.tick }, min: 50, max: 100 },
+                x: { grid: { display: false }, ticks: { color: initialChartTheme.tick } }
+            }
         }
-    }
-});
+    });
+
+    new MutationObserver(() => {
+        const palette = chartTheme();
+        availabilityChart.data.datasets[0].borderColor = palette.line;
+        availabilityChart.data.datasets[0].backgroundColor = palette.fill;
+        availabilityChart.options.scales.y.grid.color = palette.grid;
+        availabilityChart.options.scales.y.ticks.color = palette.tick;
+        availabilityChart.options.scales.x.ticks.color = palette.tick;
+        availabilityChart.update('none');
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+} else {
+    chartCanvas.hidden = true;
+    chartCanvas.parentElement.insertAdjacentHTML('beforeend', '<div class="dashboard-empty-inline"><i class="fas fa-chart-line"></i>O gráfico será exibido quando a biblioteca visual estiver disponível.</div>');
+}
 
 // ==========================================
 // CONTROLE DO MODO ESCURO (THEME)
@@ -307,139 +393,21 @@ if (themeBtn) {
 // ==========================================
 // CONTROLE DE ACESSO — Ocultar itens de menu por cargo
 // ==========================================
-const ROLE_PAGES = {
-    "Administrador":              ["menu", "ativos", "os", "estoque", "financeiro", "mapa-consumo"],
-    "Técnico de Manutenção":      ["menu", "ativos", "os"],
-    "Almoxarifado / Suprimentos": ["menu", "ativos", "os", "estoque", "mapa-consumo"]
-};
-
 function applyMenuRestrictions(allowedPages) {
-    const menuMap = {
-        "ativos":       'a[data-page="ativos"]',
-        "os":           'a[data-page="os"]',
-        "estoque":      'a[data-page="estoque"]',
-        "financeiro":   'a[data-page="financeiro"]',
-        "mapa-consumo": 'a[data-page="mapa-consumo"]',
-    };
-    Object.entries(menuMap).forEach(([page, selector]) => {
-        const el = document.querySelector(selector);
-        if (el) {
-            el.style.display = allowedPages.includes(page) ? '' : 'none';
-        }
+    document.querySelectorAll('[data-page]').forEach((element) => {
+        element.style.display = allowedPages.includes(element.dataset.page) ? '' : 'none';
     });
 }
 
 // Aplica restrições assim que o usuário for autenticado
-if (firebaseConfig.apiKey !== "SUA_API_KEY") {
-    onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, (user) => {
         if (user) {
             const userRef = ref(db, 'users/' + user.uid);
             onValue(userRef, (snap) => {
                 const data = snap.val();
                 if (data) {
-                    const allowed = data.allowedPages || ROLE_PAGES[data.role] || ["menu"];
-                    applyMenuRestrictions(allowed);
+                    applyMenuRestrictions(getAllowedPages(data));
                 }
             }, { onlyOnce: true });
         }
-    });
-}
-
-// --- 5. LOGICA DA SIDEBAR RETRÁTIL COM MEMÓRIA ---
-const sidebar = document.getElementById('sidebar');
-const toggleSidebarBtn = document.getElementById('toggle-sidebar');
-const sidebarIcon = document.getElementById('sidebar-icon');
-const sidebarTexts = document.querySelectorAll('.sidebar-text');
-const sidebarLogo = document.getElementById('sidebar-logo');
-const sidebarLogoMini = document.getElementById('sidebar-logo-mini');
-
-// Função centralizada para aplicar o visual da Sidebar
-function applySidebarState(isCollapsed, isInstant = false) {
-    if (isCollapsed) {
-        // Encolher Sidebar
-        sidebar.classList.remove('w-64');
-        sidebar.classList.add('w-20');
-        sidebarIcon.classList.add('rotate-180');
-        
-        // Esconder Textos
-        sidebarTexts.forEach(text => {
-            if (isInstant) {
-                text.classList.add('hidden', 'opacity-0');
-            } else {
-                text.classList.add('opacity-0');
-                setTimeout(() => text.classList.add('hidden'), 200);
-            }
-        });
-        
-        // Trocar Logo
-        sidebarLogo.classList.add('hidden');
-        sidebarLogoMini.classList.remove('hidden');
-    } else {
-        // Expandir Sidebar
-        sidebar.classList.remove('w-20');
-        sidebar.classList.add('w-64');
-        sidebarIcon.classList.remove('rotate-180');
-        
-        // Mostrar Textos
-        sidebarTexts.forEach(text => {
-            text.classList.remove('hidden');
-            if (isInstant) {
-                text.classList.remove('opacity-0');
-            } else {
-                setTimeout(() => text.classList.remove('opacity-0'), 10);
-            }
-        });
-        
-        // Trocar Logo
-        sidebarLogoMini.classList.add('hidden');
-        sidebarLogo.classList.remove('hidden');
-    }
-}
-
-// 1. LER MEMÓRIA: Verifica se há registo no localStorage ao carregar a página
-let isSidebarCollapsed = localStorage.getItem('nexus_sidebar_state') === 'collapsed';
-
-// Aplica o estado guardado instantaneamente (para não piscar ao trocar de página)
-applySidebarState(isSidebarCollapsed, true);
-
-// 2. AÇÃO DE CLIQUE: Alternar e gravar
-toggleSidebarBtn.addEventListener('click', () => {
-    isSidebarCollapsed = !isSidebarCollapsed;
-    
-    // Grava a nova preferência no navegador do utilizador
-    localStorage.setItem('nexus_sidebar_state', isSidebarCollapsed ? 'collapsed' : 'expanded');
-    
-    // Aplica o novo visual de forma suave (animada)
-    applySidebarState(isSidebarCollapsed, false);
 });
-
-// ==========================================
-// MARCADOR DE PÁGINA ATIVA AUTOMÁTICO
-// ==========================================
-function highlightActiveMenu() {
-    // Pega o nome do arquivo atual da URL (ex: 'os.html', 'ativos.html')
-    let currentPage = window.location.pathname.split('/').pop();
-    
-    // Fallback se estiver na raiz do sistema
-    if (currentPage === '' || currentPage === '/') {
-        currentPage = 'menu.html';
-    }
-
-    // Seleciona todos os links dentro da nav
-    const navLinks = document.querySelectorAll('#sidebar-nav .nav-link');
-
-    navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        
-        if (href === currentPage) {
-            // Remove as classes de inativo
-            link.classList.remove('text-slate-500', 'hover:bg-slate-100', 'hover:text-brand', 'dark:text-slate-400', 'dark:hover:bg-dark-800', 'dark:hover:text-white');
-            
-            // Adiciona as classes de ativo (Azul)
-            link.classList.add('bg-brand/10', 'text-brand', 'font-medium', 'border', 'border-brand/20');
-        }
-    });
-}
-
-// Executa ao carregar a página
-highlightActiveMenu();
