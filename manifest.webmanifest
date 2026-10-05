@@ -1,0 +1,72 @@
+{
+  "id": "./",
+  "name": "Nexus Industrial · Gestão e Manutenção",
+  "short_name": "Nexus",
+  "description": "Gestão de ativos, manutenção, estoque e operação industrial.",
+  "lang": "pt-BR",
+  "start_url": "./public/pages/login.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f5ef",
+  "theme_color": "#204cff",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "./public/assets/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./public/assets/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Visão global",
+      "url": "./public/pages/menu.html",
+      "icons": [
+        {
+          "src": "./public/assets/images/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Ordens de serviço",
+      "url": "./public/pages/os.html",
+      "icons": [
+        {
+          "src": "./public/assets/images/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Gêmeo digital",
+      "url": "./public/pages/mapa.html",
+      "icons": [
+        {
+          "src": "./public/assets/images/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Central IoT",
+      "url": "./public/pages/iot.html",
+      "icons": [
+        {
+          "src": "./public/assets/images/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
