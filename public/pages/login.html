@@ -10,17 +10,20 @@
 <link rel="apple-touch-icon" href="../../public/assets/images/icon-192.png">
 <link rel="manifest" href="../../manifest.webmanifest">
 <link rel="preload" href="../../public/assets/fonts/space-grotesk-500.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../../public/assets/css/nexus.css?v=4.0.0">
-<script src="../../public/assets/vendor/gsap/gsap.min.js?v=4.0.0" defer></script>
-<script src="../../public/assets/vendor/gsap/ScrollTrigger.min.js?v=4.0.0" defer></script>
-<script src="../../public/assets/vendor/swup/Swup.umd.js?v=4.0.0" defer></script>
-<script src="../../public/assets/vendor/jspdf/jspdf.umd.min.js?v=4.0.0" defer></script>
-<script src="../../public/assets/vendor/qrcode/qrcode.min.js?v=4.0.0" defer></script>
-<script src="../../public/assets/js/firebase-config.js?v=4.0.0" defer></script>
-<script src="../../public/assets/js/core.js?v=4.0.0" defer></script>
-<script src="../../public/assets/js/data.js?v=4.0.0" defer></script>
-<script src="../../public/assets/js/ui.js?v=4.0.0" defer></script>
-<script src="../../public/assets/js/views.js?v=4.0.0" defer></script>
-<script src="../../public/assets/js/motion.js?v=4.0.0" defer></script>
-<script src="../../public/assets/js/app.js?v=4.0.0" defer></script>
+<link rel="stylesheet" href="../../public/assets/css/nexus.css?v=4.1.1">
+<script src="../../public/assets/vendor/anime/anime.umd.min.js?v=4.1.1" defer></script>
+<script src="../../public/assets/vendor/motion/motion.js?v=4.1.1" defer></script>
+<script src="../../public/assets/vendor/gsap/gsap.min.js?v=4.1.1" defer></script>
+<script src="../../public/assets/vendor/gsap/ScrollTrigger.min.js?v=4.1.1" defer></script>
+<script src="../../public/assets/vendor/swup/Swup.umd.js?v=4.1.1" defer></script>
+<script src="../../public/assets/vendor/jspdf/jspdf.umd.min.js?v=4.1.1" defer></script>
+<script src="../../public/assets/vendor/qrcode/qrcode.min.js?v=4.1.1" defer></script>
+<script src="../../public/assets/js/firebase-config.js?v=4.1.1" defer></script>
+<script src="../../public/assets/js/core.js?v=4.1.1" defer></script>
+<script src="../../public/assets/js/data.js?v=4.1.1" defer></script>
+<script src="../../public/assets/js/ui.js?v=4.1.1" defer></script>
+<script src="../../public/assets/js/profile.js?v=4.1.1" defer></script>
+<script src="../../public/assets/js/views.js?v=4.1.1" defer></script>
+<script src="../../public/assets/js/motion.js?v=4.1.1" defer></script>
+<script src="../../public/assets/js/app.js?v=4.1.1" defer></script>
 </head><body><a class="skip-link" href="#conteudo">Ir para o conteúdo</a><div id="swup" data-page="login" class="transition-main"><main class="auth-layout" id="conteudo"><section class="auth-brand-panel"><a class="brand" data-swup href="../../index.html"><span class="brand-mark" aria-hidden="true"></span>NEXUS</a><div class="auth-graphic" aria-hidden="true">NX<span>/ 4.0</span></div><h2>Operação em movimento.<br>Informação no lugar.</h2><p>Uma visão conectada das máquinas, das equipes e do trabalho que mantém a indústria funcionando.</p><div class="auth-footer"><span>INDUSTRIAL OPERATING SYSTEM</span><span>NEXUS / 2026</span></div></section><section class="auth-form-panel"><a class="auth-home" data-swup href="../../index.html">Voltar à plataforma</a><div class="auth-form"><span class="eyebrow accent">NEXUS INDUSTRIAL</span><h1>Bem-vindo à operação.</h1><p>Acesse sua unidade ou explore a demonstração.</p><div class="auth-tabs" role="tablist" aria-label="Opções de acesso"><button class="auth-tab active" role="tab" aria-selected="true" data-auth-tab="login">Entrar</button><button class="auth-tab" role="tab" aria-selected="false" data-auth-tab="register">Solicitar acesso</button></div><form id="auth-form" data-tab="login"><p class="form-error" id="auth-error" role="alert"></p><div class="form-field" data-register-field hidden><label for="auth-name">Nome completo</label><input class="input" id="auth-name" name="name" autocomplete="name" minlength="2" maxlength="120" required disabled></div><div class="form-field"><label for="auth-email">E-mail profissional</label><input class="input" id="auth-email" name="email" type="email" autocomplete="username" placeholder="voce@empresa.com.br" required maxlength="180"></div><div class="form-field"><div class="spaced"><label for="auth-password" style="font-size:.8125rem;font-weight:500">Senha</label><button class="btn btn-ghost btn-sm" type="button" data-action="password-reset">Esqueci minha senha</button></div><input class="input" id="auth-password" name="password" type="password" autocomplete="current-password" placeholder="Sua senha" required minlength="6" maxlength="128"></div><div class="form-field" data-register-field hidden><label for="auth-role">Área de atuação</label><select class="input" id="auth-role" name="role" disabled><option>Técnico de Manutenção</option><option>Almoxarifado / Suprimentos</option><option>Supervisor de Produção</option></select><small>Contas novas aguardam aprovação de um administrador. Outros cargos são atribuídos pela administração.</small></div><button class="btn btn-primary" type="submit" id="auth-submit">Entrar na Nexus</button></form><div class="auth-divider">ou conheça a plataforma</div><button class="btn demo-enter" data-action="demo-enter">Explorar demonstração</button><p class="auth-help">A demonstração utiliza dados fictícios e não altera o Firebase.</p><button class="btn btn-ghost btn-sm" style="display:flex;margin:12px auto 0" data-action="complete-profile">Completar perfil de uma conta existente</button></div></section></main></div><noscript><div class="notice error" style="margin:20px">Ative o JavaScript para usar os módulos da Nexus. O site estático está carregado.</div></noscript></body></html>

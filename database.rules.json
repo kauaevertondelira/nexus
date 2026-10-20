@@ -18,7 +18,7 @@
           ".validate": "newData.val() === 'Administrador' || newData.val() === 'Técnico de Manutenção' || newData.val() === 'Almoxarifado / Suprimentos' || newData.val() === 'Gestor de Manutenção' || newData.val() === 'Planejador de Manutenção' || newData.val() === 'Comprador' || newData.val() === 'Supervisor de Produção' || newData.val() === 'Gestor Financeiro'"
         },
         "photoURL": {
-          ".validate": "newData.isString() && newData.val().length <= 1500000",
+          ".validate": "newData.isString() && newData.val().length <= 400000 && (newData.val() === '' || newData.val().beginsWith('https://') || newData.val().beginsWith('data:image/jpeg;base64,') || newData.val().beginsWith('data:image/png;base64,') || newData.val().beginsWith('data:image/webp;base64,'))",
           ".write": "auth != null && auth.uid === $uid && root.child('users').child($uid).exists()"
         },
         "$other": {

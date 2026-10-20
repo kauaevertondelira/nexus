@@ -4,6 +4,8 @@ Os arquivos visuais são distribuídos localmente para evitar que a interface de
 
 | Componente | Versão | Uso | Licença / origem |
 | --- | --- | --- | --- |
+| Anime.js | 4.5.0 | Entrada sequencial das letras da marca | MIT, [instalação oficial](https://animejs.com/documentation/getting-started/installation/), licença em `licenses/Anime-LICENSE.md` |
+| Motion (motion.dev) | 14.4.0 | Progresso de leitura e interação dos módulos com mouse e teclado | MIT, [instalação oficial](https://motion.dev/docs/quick-start), licença em `licenses/Motion-LICENSE.md` |
 | GSAP e ScrollTrigger | 3.15.0 | Entradas, sequência de elementos e scroll | [Standard License](https://gsap.com/standard-license), [instalação oficial](https://gsap.com/docs/v3/Installation/) |
 | Swup | 4.10.0 | Navegação entre HTMLs | MIT, [projeto oficial](https://github.com/swup/swup) |
 | Three.js | 0.186.1 | Motor e planta procedural | MIT, [projeto oficial](https://github.com/mrdoob/three.js) |

@@ -176,5 +176,5 @@
     if(this.mode==='demo'){Object.entries(updates).forEach(([path,value])=>this.setNested(path,value));this.persist();this.changed('batch');}
     else await this.db.ref().update(updates);
   };
-  N.resetDemo=function(){this.data=this.seed();this.persist();this.changed('all');};
+  N.resetDemo=function(){this.data=this.seed();this.user={...this.data.users.demo,role:sessionStorage.getItem('nexus-demo-role')||'Administrador'};this.persist();this.changed('all');};
 })(window.Nexus);

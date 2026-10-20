@@ -4,6 +4,10 @@ A pasta `nexus/` está pronta para virar a raiz do repositório. Preserve todos 
 
 ## Publicação
 
+**Atualização 4.1.1:** copie também `public/assets/js/profile.js`, as pastas `vendor/anime/` e `vendor/motion/`, `public/assets/images/nexus-logo.png`, o favicon `mark.svg`, as licenças e o `service-worker.js` atualizado. Publique novamente `database.rules.json` na aba Regras do Realtime Database para aplicar a validação da foto. Não é necessário configurar Firebase Storage. As regras podem ser publicadas sem modificar os registros existentes.
+
+Se as animações estiverem desativadas pelo dispositivo, clique em **Ativar animações** na landing ou escolha **Meu perfil → Aparência → Animações → Movimento completo**. Esta escolha vale somente para o site neste navegador.
+
 1. Extraia o ZIP. Abra o repositório de destino no GitHub Desktop e use **Repository → Show in Explorer**.
 2. Faça uma cópia da versão anterior fora do repositório. Copie **o conteúdo de `nexus/`** para a raiz do repositório, incluindo `public/`, `.github/`, `.nojekyll`, `404.html` e `service-worker.js`. A raiz deve conter `index.html`; evite criar um nível extra `nexus/nexus/`.
 3. No GitHub Desktop, revise a lista de arquivos, escreva uma mensagem de atualização, clique **Commit to main** e **Push origin**. Se sua branch tiver outro nome, use a branch escolhida no passo seguinte.

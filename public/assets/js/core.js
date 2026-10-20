@@ -3,7 +3,7 @@
   const script = document.currentScript;
   const base = new URL('../../../', script.src);
   const N = window.Nexus = {
-    base, version: '4.0.0', uid: '', user: null, mode: '', data: {}, unsubscribers: [],
+    base, version: '4.1.1', uid: '', user: null, mode: '', data: {}, unsubscribers: [],
     route: '', online: navigator.onLine, sync: 'idle', search: '', filter: 'all', layout: 'table',
     href: (page, query = '') => new URL('public/pages/' + page + '.html' + query, base).href,
     escape: value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),

@@ -1,4 +1,4 @@
-# NEXUS / Industrial Operating System 4.0
+# NEXUS / Industrial Operating System 4.1
 
 Gestão de máquinas industriais, manutenção e suprimentos em uma aplicação estática pronta para GitHub Pages. Abra `index.html` e escolha **Explorar demonstração**, ou publique a pasta completa e conecte sua conta Firebase.
 
@@ -29,11 +29,15 @@ O visual combina tipografia ampla, azul cobalto, detalhes em verde ácido e uma 
 
 ## Movimento e navegação
 
-GSAP + ScrollTrigger animam a entrada e a leitura dos blocos. Swup navega entre arquivos HTML reais. Three.js desenha um motor procedural na abertura e uma planta esquemática nos ativos. Fontes e bibliotecas visuais estão incluídas no projeto, com versões fixas e avisos em [THIRD-PARTY.md](THIRD-PARTY.md).
+Anime.js anima a marca; GSAP + ScrollTrigger coordenam as entradas e o movimento durante a rolagem; Motion (motion.dev) controla a barra de leitura e as interações dos módulos. Swup navega entre arquivos HTML reais. Three.js desenha o motor com resposta ao ponteiro e à rolagem e a planta esquemática nos ativos. Os efeitos, observadores e cenas são encerrados antes da troca de página e recriados ao retornar. Fontes e bibliotecas visuais estão incluídas no projeto, com versões fixas e avisos em [THIRD-PARTY.md](THIRD-PARTY.md).
 
 Os dados e formulários continuam disponíveis com movimento reduzido ou sem WebGL. A animação é complementar. Todas as páginas têm uma mensagem estática de recuperação caso o JavaScript falhe. O SDK Firebase é carregado por CDN somente quando se usa uma conta real; a demonstração funciona separadamente em armazenamento local.
 
+Na landing, **Ativar animações** permite escolher movimento completo mesmo quando o dispositivo pede movimento reduzido. A escolha fica salva neste navegador. Em **Meu perfil → Aparência → Animações**, há as opções completo, reduzido e seguir o dispositivo. O motor gira continuamente, com eixo em rotação e resposta ao ponteiro; as trocas de página aguardam a saída e a entrada animadas pelo GSAP. A marca ao lado de NEXUS usa a logo fornecida, preservada em `public/assets/images/nexus-logo.png`.
+
 ## Dados e permissões
+
+Em **Meu perfil**, escolha uma foto JPG, PNG ou WebP de até 8 MB e 24 megapixels. A prévia usa recorte central quadrado, reduzido para até 384 × 384 pixels. Clique em **Salvar perfil** para confirmar; **Remover foto** volta às iniciais depois de salvar. A foto aparece também no menu e no cabeçalho. Na demonstração, fica apenas no navegador. Em contas reais, o JPEG comprimido é gravado em `users/{uid}/photoURL` no Realtime Database, sem exigir Firebase Storage. Os rascunhos do formulário sobrevivem às atualizações em tempo real.
 
 Os oito cargos são Administrador, Técnico de Manutenção, Almoxarifado / Suprimentos, Gestor de Manutenção, Planejador de Manutenção, Comprador, Supervisor de Produção e Gestor Financeiro. O menu acompanha o cargo e as regras protegem gravações no banco. Consulte [FIREBASE-CONSOLE.md](FIREBASE-CONSOLE.md) para configurar e aprovar o primeiro administrador.
 

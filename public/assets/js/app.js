@@ -5,13 +5,15 @@
     const groups=['Operação','Manutenção','Inteligência','Suprimentos','Gestão','Sistema'];
     const hidden=['ativo-detalhes','os-detalhes','perfil'];
     const links=groups.map(group=>{const entries=Object.entries(this.routes).filter(([page,data])=>data[1]===group&&!hidden.includes(page)&&this.canAccess(page));if(!entries.length)return '';return '<div class="nav-group"><span class="nav-group-title">'+e(group)+'</span>'+entries.map(([page,data])=>'<a class="nav-link '+((page===this.route||(page==='ativos'&&this.route==='ativo-detalhes')||(page==='os'&&this.route==='os-detalhes'))?'active':'')+'" '+(page===this.route?'aria-current="page" ':'')+'data-swup href="'+this.href(page)+'">'+this.icon(data[2])+'<span>'+e(data[0])+'</span></a>').join('')+'</div>';}).join('');
-    const initials=(this.user.name||'NX').split(' ').map(s=>s[0]).slice(0,2).join('');
+    const avatar=this.avatarContent();
     const plant=this.entries('companies')[0]?.name||this.user.company||'Minha unidade';
-    document.querySelector('#swup').innerHTML='<div class="app-shell"><aside class="sidebar" id="sidebar"><a class="brand" data-swup href="'+this.href('menu')+'"><span class="brand-mark" aria-hidden="true"></span>NEXUS</a><div class="plant-selector">'+this.icon('machine')+'<div><strong>'+e(plant)+'</strong><small>Manutenção & operação</small></div></div><nav aria-label="Módulos do sistema">'+links+'</nav><div class="sidebar-footer"><button class="sidebar-support" data-action="support">'+this.icon('help')+'Central de suporte</button><div class="sidebar-person"><a class="avatar" data-swup href="'+this.href('perfil')+'" aria-label="Meu perfil">'+e(initials)+'</a><div class="grow"><a data-swup href="'+this.href('perfil')+'"><strong>'+e(this.user.name)+'</strong></a><small>'+e(this.user.role)+'</small></div><button class="icon-btn" data-action="logout" aria-label="Sair do sistema">'+this.icon('logout')+'</button></div></div></aside><div class="app-workspace"><header class="topbar"><div class="flex"><button class="icon-btn menu-button" data-action="mobile-menu" aria-label="Abrir navegação" aria-controls="sidebar" aria-expanded="false">'+this.icon('menu')+'</button><div class="breadcrumb"><span>'+e(this.routes[this.route]?.[1]||'Sistema')+'</span><span aria-hidden="true">/</span><strong>'+e(this.routes[this.route]?.[0]||'NEXUS')+'</strong></div></div><div class="topbar-actions"><span class="status-connection '+(this.mode==='demo'?'demo':this.online?'online':'offline')+'" id="connection-status"><span class="dot"></span>'+(this.mode==='demo'?'Demonstração local':this.online?'Firebase conectado':'Sem conexão')+'</span><button class="icon-btn" data-action="global-search" aria-label="Buscar em todos os módulos">'+this.icon('search')+'</button><button class="icon-btn" data-action="theme" aria-label="Alternar tema">'+this.icon('moon')+'</button><a class="icon-btn" data-swup href="'+this.href('notificacoes')+'" aria-label="Abrir notificações">'+this.icon('bell')+'</a><a class="avatar" data-swup href="'+this.href('perfil')+'" aria-label="Abrir perfil">'+e(initials)+'</a></div></header>'+(this.mode==='demo'?'<div class="demo-banner"><span><strong>DEMONSTRAÇÃO</strong> · Dados fictícios salvos apenas neste navegador.</span><a href="'+this.href('login')+'" data-action="leave-demo">Entrar com minha conta</a></div>':'')+'<main class="workspace" id="conteudo"><div id="view-body"></div><footer class="workspace-footer"><span>NEXUS / INDUSTRIAL OPERATING SYSTEM</span><span>4.0 · '+(this.mode==='demo'?'DEMO':'REALTIME DATABASE')+'</span></footer></main></div></div>';
+    document.querySelector('#swup').innerHTML='<div class="app-shell"><aside class="sidebar" id="sidebar"><a class="brand" data-swup href="'+this.href('menu')+'"><span class="brand-mark" aria-hidden="true"></span>NEXUS</a><div class="plant-selector">'+this.icon('machine')+'<div><strong>'+e(plant)+'</strong><small>Manutenção & operação</small></div></div><nav aria-label="Módulos do sistema">'+links+'</nav><div class="sidebar-footer"><button class="sidebar-support" data-action="support">'+this.icon('help')+'Central de suporte</button><div class="sidebar-person"><a class="avatar" data-swup href="'+this.href('perfil')+'" aria-label="Meu perfil">'+avatar+'</a><div class="grow"><a data-swup href="'+this.href('perfil')+'"><strong>'+e(this.user.name)+'</strong></a><small>'+e(this.user.role)+'</small></div><button class="icon-btn" data-action="logout" aria-label="Sair do sistema">'+this.icon('logout')+'</button></div></div></aside><div class="app-workspace"><header class="topbar"><div class="flex"><button class="icon-btn menu-button" data-action="mobile-menu" aria-label="Abrir navegação" aria-controls="sidebar" aria-expanded="false">'+this.icon('menu')+'</button><div class="breadcrumb"><span>'+e(this.routes[this.route]?.[1]||'Sistema')+'</span><span aria-hidden="true">/</span><strong>'+e(this.routes[this.route]?.[0]||'NEXUS')+'</strong></div></div><div class="topbar-actions"><span class="status-connection '+(this.mode==='demo'?'demo':this.online?'online':'offline')+'" id="connection-status"><span class="dot"></span>'+(this.mode==='demo'?'Demonstração local':this.online?'Firebase conectado':'Sem conexão')+'</span><button class="icon-btn" data-action="global-search" aria-label="Buscar em todos os módulos">'+this.icon('search')+'</button><button class="icon-btn" data-action="theme" aria-label="Alternar tema">'+this.icon('moon')+'</button><a class="icon-btn" data-swup href="'+this.href('notificacoes')+'" aria-label="Abrir notificações">'+this.icon('bell')+'</a><a class="avatar" data-swup href="'+this.href('perfil')+'" aria-label="Abrir perfil">'+avatar+'</a></div></header>'+(this.mode==='demo'?'<div class="demo-banner"><span><strong>DEMONSTRAÇÃO</strong> · Dados fictícios salvos apenas neste navegador.</span><a href="'+this.href('login')+'" data-action="leave-demo">Entrar com minha conta</a></div>':'')+'<main class="workspace" id="conteudo"><div id="view-body"></div><footer class="workspace-footer"><span>NEXUS / INDUSTRIAL OPERATING SYSTEM</span><span>4.0 · '+(this.mode==='demo'?'DEMO':'REALTIME DATABASE')+'</span></footer></main></div></div>';
   };
   N.refresh=function(animate=false){
     if(!document.querySelector('#view-body')||!this.user)return;
+    const viewBody=document.querySelector('#view-body'),route=this.route;
     cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{
+      if(!viewBody.isConnected||this.route!==route||!this.user)return;
       const active=document.activeElement,id=active?.id,selection=active?.tagName==='INPUT'&&['search','text'].includes(active.type)?[active.selectionStart,active.selectionEnd]:null;
       const view=this.views[this.route];this.exportRows=[];this.exportColumns=[];if(this.route==='mapa')this.twinDispose?.();
       try{const notice=this.mode==='firebase'&&Object.keys(this.readErrors||{}).length?'<div class="notice warning" style="margin-bottom:22px" role="status">Algumas coleções não puderam ser carregadas. Reconecte ou confira as permissões antes de interpretar indicadores ou exportar um backup.</div>':'';document.querySelector('#view-body').innerHTML=notice+(view?view.call(this):this.empty('Página indisponível','Use o menu para navegar.'));}catch(error){console.error('Falha na página',error);document.querySelector('#view-body').innerHTML='<div class="notice error">'+e('Não foi possível exibir esta página. '+this.errorText(error))+'</div>';} 
@@ -22,9 +24,9 @@
   N.errorScreen=function(title,text){document.querySelector('#swup').innerHTML='<main class="boot-state" id="conteudo"><a class="brand" href="'+this.base.href+'"><span class="brand-mark" aria-hidden="true"></span>NEXUS</a>'+this.icon('shield')+'<h1>'+e(title)+'</h1><p>'+e(text)+'</p><div class="hero-actions"><a class="btn btn-primary" href="'+this.href('login')+'">Voltar ao acesso</a><button class="btn" data-action="retry">Tentar novamente</button><a class="btn" href="'+this.href('login','?demo=1')+'">Explorar demonstração</a></div></main>';};
   N.boot=async function(){
     const sequence=++bootSequence,container=document.querySelector('#swup');if(!container)return;
-    this.twinDispose?.();this.heroDispose?.();this.closeModal(false);this.search='';this.filter='all';this.route=container.dataset.page||'index';this.currentOrder=null;this.currentAsset=null;
+    this.cleanupMotion?.();this.resetProfileDraft?.();this.closeModal(false);this.search='';this.filter='all';this.route=container.dataset.page||'index';this.currentOrder=null;this.currentAsset=null;
     if(this.route==='index'){this.initLanding?.();return;}
-    if(this.route==='login'){this.initLogin();return;}
+    if(this.route==='login'){this.initLogin();this.animateAuth?.();return;}
     if(this.route==='offline')return;
     if(new URLSearchParams(location.search).get('demo')==='1')this.beginDemo();
     try{
@@ -35,15 +37,15 @@
         else this.errorScreen('Entre para abrir a Nexus','Use uma conta autorizada ou explore o ambiente de demonstração.');return;
       }
       if(!this.canAccess(this.route)){this.errorScreen('Acesso restrito ao seu cargo','Entre com uma conta autorizada para este módulo.');return;}
-      this.renderShell();this.refresh(true);this.registerPWA();
+      this.renderShell();this.refresh(true);await new Promise(resolve=>requestAnimationFrame(resolve));this.registerPWA();
       notificationsSeen=new Set(this.notifications().map(n=>n.id));
     }catch(error){if(sequence===bootSequence)this.errorScreen('Não foi possível conectar',this.errorText(error));}
   };
   N.initLogin=function(){
-    if(new URLSearchParams(location.search).get('demo')==='1'){this.beginDemo();location.assign(this.href('menu'));return;}
+    if(new URLSearchParams(location.search).get('demo')==='1'){this.beginDemo();this.go('menu');return;}
     document.querySelector('#auth-error')?.replaceChildren();
   };
-  N.go=function(page,query=''){const url=this.href(page,query);if(this.swup)this.swup.navigate(url);else location.assign(url);};
+  N.go=function(page,query=''){const url=this.href(page,query);if(this.swup)return this.swup.navigate(url);else location.assign(url);};
   N.simpleForm=function(title,fields,save,note='',extra=''){
     const root=this.modal(title,(note?'<div class="notice" style="margin-bottom:22px">'+e(note)+'</div>':'')+'<form id="simple-form"><p class="form-error" id="simple-error" role="alert"></p><div class="form-grid">'+fields.map(f=>this.formField(f)).join('')+'</div></form>'+extra,'<button class="btn" data-action="close-modal">Cancelar</button><button class="btn btn-primary" type="submit" form="simple-form">Confirmar</button>');
     root.querySelector('form').addEventListener('submit',async event=>{event.preventDefault();const btn=root.querySelector('[type=submit]');btn.disabled=true;try{await save(new FormData(event.currentTarget));this.closeModal();this.refresh();}catch(error){root.querySelector('#simple-error').textContent=this.errorText(error);btn.disabled=false;}});return root;
@@ -138,6 +140,9 @@
   N.handleAction=async function(action,target){
     const {id,path,status}=target.dataset;
     switch(action){
+      case 'motion-toggle':this.setMotionPreference(document.documentElement.dataset.motion==='reduced'?'full':'reduced');break;
+      case 'profile-photo-choose':document.querySelector('#profile-photo')?.click();break;
+      case 'profile-photo-remove':this.removeProfilePhoto();break;
       case 'new':this.openEditor(path,'',target.dataset.nested||'');break;
       case 'edit':this.openEditor(path,id,target.dataset.nested||'');break;
       case 'delete':this.confirm('Excluir cadastro','Excluir '+id+'? Esta operação remove o cadastro do banco. Exporte uma cópia se precisar preservar este registro.',async()=>{await this.remove(path,id);this.toast('Cadastro excluído.');this.refresh();},'Excluir');break;
@@ -169,8 +174,8 @@
       case 'inspection-run':this.executeInspection(id);break;case 'inspection-details':this.showInspection(id);break;
       case 'alert-ack':await this.save('iot_alerts',id,{acknowledged:true,acknowledgedAt:Date.now(),acknowledgedByUid:this.uid});this.toast('Alerta reconhecido.');this.refresh();break;
       case 'user-edit':this.manageUser(id);break;case 'backup-export':this.backup();break;case 'backup-import':this.restore();break;
-      case 'demo-reset':this.confirm('Restaurar demonstração','Substituir os registros locais pelos exemplos iniciais?',async()=>{this.resetDemo();this.toast('Demonstração restaurada.');this.refresh();});break;
-      case 'demo-enter':this.beginDemo();location.assign(this.href('menu'));break;
+      case 'demo-reset':this.confirm('Restaurar demonstração','Substituir os registros locais pelos exemplos iniciais?',async()=>{this.resetDemo();this.resetProfileDraft();this.renderShell();this.toast('Demonstração restaurada.');this.refresh();});break;
+      case 'demo-enter':this.beginDemo();this.go('menu');break;
       case 'password-reset':{
         const email=document.querySelector('#auth-email')?.value.trim();if(!email)throw new Error('Informe seu e-mail no campo de acesso para receber o link de recuperação.');
         await this.sdk();await this.auth.sendPasswordResetEmail(email);this.toast('Se o e-mail estiver cadastrado, você receberá as instruções de recuperação.');break;
@@ -179,7 +184,7 @@
       case 'theme':document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';localStorage.setItem('nexus-theme',document.documentElement.dataset.theme);break;
       case 'support':this.support();break;case 'global-search':this.globalSearch();break;
       case 'mobile-menu':this.toggleMenu();break;case 'mobile-close':this.toggleMenu(false);break;
-      case 'logout':case 'leave-demo':sessionStorage.removeItem('nexus-mode');this.disconnect();if(this.auth?.currentUser)await this.auth.signOut();location.assign(this.href('login'));break;
+      case 'logout':case 'leave-demo':sessionStorage.removeItem('nexus-mode');this.disconnect();if(this.auth?.currentUser)await this.auth.signOut();this.go('login');break;
       case 'twin-select':this.selectTwin?.(id);break;case 'twin-reset':this.twinReset?.();break;
       case 'vlibras':if(document.querySelector('[vw]')){this.toast('O VLibras já está carregado.');break;} {const box=document.createElement('div');box.setAttribute('vw','');box.className='enabled';box.innerHTML='<div vw-access-button class="active"></div><div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div>';document.body.append(box);const script=document.createElement('script');script.src='https://vlibras.gov.br/app/vlibras-plugin.js';script.onload=()=>{if(window.VLibras)new VLibras.Widget('https://vlibras.gov.br/app');this.toast('VLibras carregado.');};script.onerror=()=>{box.remove();script.remove();this.toast('O serviço VLibras está indisponível.','error');};document.head.append(script);this.toast('Carregando o serviço oficial VLibras.');}break;
       case 'notify-enable':if(!('Notification'in window))throw new Error('Este navegador não oferece notificações.');{const permission=await Notification.requestPermission();if(permission==='granted'){localStorage.setItem('nexus-notifications','enabled');this.toast('Avisos locais ativados.');}else this.toast('Notificações não foram autorizadas.','warning');}break;
@@ -205,7 +210,7 @@
         if(profile?.missing){this.showCompleteProfile();return;}
         if(profile?.blocked)throw new Error(profile.blocked==='pending'?'Sua conta aguarda aprovação do administrador.':'Seu acesso foi bloqueado. Consulte o administrador.');
         if(profile?.invalid)throw new Error('O cargo do seu perfil não é válido. Consulte o administrador.');
-        location.assign(this.href('menu'));
+        this.go('menu');
       }
     }catch(err){error.textContent=this.errorText(err);}finally{button.disabled=false;}
   };
@@ -217,21 +222,32 @@
     const target=event.target.closest('[data-action]');if(target){event.preventDefault();try{await N.handleAction(target.dataset.action,target);}catch(error){N.toast(N.errorText(error),'error');}return;}
     const tab=event.target.closest('[data-auth-tab]');if(tab){const mode=tab.dataset.authTab;document.querySelectorAll('[data-auth-tab]').forEach(b=>{b.classList.toggle('active',b===tab);b.setAttribute('aria-selected',String(b===tab));});const form=document.querySelector('#auth-form');form.dataset.tab=mode;document.querySelectorAll('[data-register-field]').forEach(field=>{field.hidden=mode!=='register';field.querySelectorAll('input,select').forEach(i=>i.disabled=mode!=='register');});document.querySelector('#auth-submit').textContent=mode==='register'?'Solicitar acesso':'Entrar na Nexus';document.querySelector('#auth-error').textContent='';}
   });
-  document.addEventListener('input',event=>{if(event.target.id==='view-search'){N.search=event.target.value;N.refresh();}});
+  document.addEventListener('input',event=>{if(['profile-name','profile-company'].includes(event.target.id)){N.profileState()[event.target.name]=event.target.value;if(event.target.id==='profile-name')N.updatePhotoPreview();}if(event.target.id==='view-search'){N.search=event.target.value;N.refresh();}});
   document.addEventListener('change',async event=>{
     const target=event.target;
+    if(target.id==='motion-preference')N.setMotionPreference(target.value);
+    if(target.id==='profile-photo'&&target.files?.[0]){const file=target.files[0];target.value='';await N.chooseProfilePhoto(file);}
     if(target.id==='view-filter'){N.filter=target.value;N.refresh();}
     if(target.id==='demo-role'){sessionStorage.setItem('nexus-demo-role',target.value);N.user.role=target.value;N.renderShell();N.refresh();}
     if(target.matches('[data-check-id]')){try{await N.save('work_order_checklists/'+target.dataset.orderId,target.dataset.checkId,{done:target.checked});}catch(error){target.checked=!target.checked;N.toast(N.errorText(error),'error');}}
   });
+  document.addEventListener('error',event=>{if(event.target.matches?.('.avatar img'))event.target.remove();},true);
   document.addEventListener('submit',async event=>{
     const form=event.target;
     if(form.id==='auth-form'){event.preventDefault();await N.loginSubmit(form);}
     if(form.id==='comment-form'){event.preventDefault();const button=form.querySelector('button');button.disabled=true;try{await N.save('work_order_comments/'+form.dataset.orderId,'',{text:String(new FormData(form).get('text')).trim(),userUid:N.uid,userName:N.user.name,link:''});form.reset();N.refresh();N.toast('Mensagem registrada.');}catch(error){N.toast(N.errorText(error),'error');button.disabled=false;}}
-    if(form.id==='profile-form'){event.preventDefault();const button=form.querySelector('button');button.disabled=true;try{const data=new FormData(form),value={name:String(data.get('name')).trim(),company:String(data.get('company')).trim()};if(N.mode==='demo'){N.user={...N.user,...value};N.data.users.demo={...N.data.users.demo,...value};N.persist();}else await N.db.ref('users/'+N.uid).update(value);N.renderShell();N.refresh();N.toast('Perfil salvo.');}catch(error){document.querySelector('#profile-error').textContent=N.errorText(error);button.disabled=false;}}
+    if(form.id==='profile-form'){
+      event.preventDefault();if(N.profileSaving||N.profilePhotoBusy)return;
+      const data=new FormData(form),uid=N.uid,draft=N.profileState();N.profileSaving=true;N.updatePhotoPreview();
+      try{
+        await N.saveProfile({...draft,name:data.get('name'),company:data.get('company')});
+        if(N.route==='perfil'&&N.uid===uid&&N.profileDraft===draft){N.resetProfileDraft();N.renderShell();N.refresh();N.toast('Perfil salvo.');}
+      }catch(error){const target=document.querySelector('#profile-error');if(target&&N.profileDraft===draft)target.textContent=N.errorText(error);}
+      finally{if(N.profileDraft===draft){N.profileSaving=false;N.updatePhotoPreview();}}
+    }
   });
   document.addEventListener('nexus:data',event=>{if(N.route==='mapa'&&!['assets','batch','all'].includes(event.detail?.path)){N.twinUpdate?.();}else N.refresh();if(localStorage.getItem('nexus-notifications')==='enabled'&&window.Notification?.permission==='granted'&&N.user){const current=N.notifications();current.filter(n=>!notificationsSeen.has(n.id)).forEach(n=>{new Notification('Nexus · '+n.title,{body:n.text,tag:n.id});notificationsSeen.add(n.id);});}});
-  document.addEventListener('nexus:profile',()=>{if(!N.user)return;if(!N.canAccess(N.route)){N.errorScreen('Seu acesso foi atualizado','O administrador alterou seu acesso a este módulo.');return;}N.renderShell();N.refresh();});
+  document.addEventListener('nexus:profile',()=>{if(!N.user||['index','login','offline'].includes(N.route))return;if(!N.canAccess(N.route)){N.errorScreen('Seu acesso foi atualizado','O administrador alterou seu acesso a este módulo.');return;}N.renderShell();N.refresh();});
   document.addEventListener('nexus:connection',()=>{const target=document.querySelector('#connection-status');if(target){target.className='status-connection '+(N.mode==='demo'?'demo':N.online?'online':'offline');target.innerHTML='<span class="dot"></span>'+(N.mode==='demo'?'Demonstração local':N.online?'Firebase conectado':'Sem conexão');}});
   window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;});
   window.addEventListener('online',()=>{N.online=true;});window.addEventListener('offline',()=>{N.online=false;document.dispatchEvent(new CustomEvent('nexus:connection'));});
