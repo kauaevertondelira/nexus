@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.2.0",
+    "firebase-tools": "^15.34.2",
+    "playwright": "1.56.1"
+  },
+  "name": "nexus-qa",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "browser": "node production.browser.mjs",
+    "firebase": "firebase emulators:exec --only database --project demo-nexus-production --config ../firebase.emulator.json \"node production.firebase.mjs\""
+  }
+}

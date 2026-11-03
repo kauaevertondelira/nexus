@@ -61,3 +61,11 @@ Confira no simulador de regras do Console: visitante sem login não lê ativos; 
 Depois, use uma conta aprovada para cadastrar um ativo de validação e uma O.S., confirmar a gravação no Console e abrir em outra sessão. Esta entrega verificou os arquivos e os fluxos em demonstração; não publicou as regras nem executou gravações no seu Firebase real.
 
 Para sensores, veja [gateway/README.md](gateway/README.md). A aplicação mostra o momento de recebimento e considera antiga uma leitura com mais de cinco minutos. Ausência de leitura não é convertida em medição fictícia no ambiente real.
+
+## Produção por câmera — 4.2
+
+Publique o arquivo de regras atualizado antes de usar Produção com sua conta real. As novas coleções são `production_sessions`, `production_events`, `production_totals` e `production_session_totals`. A configuração pública do projeto foi preservada. A interface começa sem registros de produção; não importe a demonstração.
+
+Eventos de câmera e lançamentos manuais autenticados são distintos da telemetria do gateway. Uma peça só é aceita com seu evento novo e os dois incrementos na mesma escrita. A sessão deve estar aberta e pertencer à conta que envia. Os totais e eventos não são restaurados pelo importador de backup da interface. Para preservar o histórico inteiro, exporte o banco pelo Console.
+
+Veja [PRODUCAO-CAMERA.md](PRODUCAO-CAMERA.md) para operação, APK e teste de aceite.

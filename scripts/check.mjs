@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const failures=[];let references=0;
-const files=[];const walk=dir=>{for(const item of fs.readdirSync(dir,{withFileTypes:true})){if(['.git','node_modules'].includes(item.name))continue;const p=path.join(dir,item.name);item.isDirectory()?walk(p):files.push(p);}};walk(root);
+const files=[];const walk=dir=>{for(const item of fs.readdirSync(dir,{withFileTypes:true})){if(['.git','node_modules','.gradle','build','results'].includes(item.name))continue;const p=path.join(dir,item.name);item.isDirectory()?walk(p):files.push(p);}};walk(root);
 const verify=(source,ref)=>{
  if(!ref||/^(?:https?:|data:|blob:|mailto:|tel:|#|\/\/)/i.test(ref))return;
  if(ref.startsWith('/')){failures.push(path.relative(root,source)+': caminho absoluto quebra repositórios Pages: '+ref);return;}

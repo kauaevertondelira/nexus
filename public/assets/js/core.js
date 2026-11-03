@@ -3,7 +3,7 @@
   const script = document.currentScript;
   const base = new URL('../../../', script.src);
   const N = window.Nexus = {
-    base, version: '4.1.1', uid: '', user: null, mode: '', data: {}, unsubscribers: [],
+    base, version: '4.2.0', uid: '', user: null, mode: '', data: {}, unsubscribers: [],
     route: '', online: navigator.onLine, sync: 'idle', search: '', filter: 'all', layout: 'table',
     href: (page, query = '') => new URL('public/pages/' + page + '.html' + query, base).href,
     escape: value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
@@ -23,6 +23,7 @@
   N.routes = {
     menu: ['Visão global','Operação','grid'],
     ativos: ['Parque de ativos','Operação','machine'],
+    producao: ['Produção','Operação','chart'],
     'ativo-detalhes': ['Ficha do ativo','Operação','machine'],
     os: ['Ordens de serviço','Manutenção','tool'],
     'os-detalhes': ['Detalhes da ordem','Manutenção','tool'],
@@ -45,7 +46,7 @@
     continuidade: ['Continuidade e auditoria','Sistema','shield'],
     perfil: ['Meu perfil','Sistema','user']
   };
-  const common = ['menu','perfil','notificacoes','ativos','ativo-detalhes','mapa'];
+  const common = ['menu','perfil','notificacoes','ativos','ativo-detalhes','mapa','producao'];
   const maintenance = ['os','os-detalhes','planejamento','preventiva','solicitacoes','tecnico','inspecoes','confiabilidade','iot','mapa-consumo'];
   N.access = {
     'Administrador': Object.keys(N.routes),
@@ -109,6 +110,7 @@
   N.icon = function(name, cls = '') {
     const paths = {
       grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+      camera:'<rect x="2" y="6" width="20" height="15" rx="2"/><path d="m7 6 2-3h6l2 3"/><circle cx="12" cy="13" r="4"/>',
       machine:'<path d="M3 21h18M5 21V9h14v12M8 9V4h8v5M9 13h6M9 17h6"/>',
       tool:'<path d="M14.7 6.3a5 5 0 0 1 6.4-1.1l-3.6 3.6 2.8 2.8 3.6-3.6a5 5 0 0 1-6.4 6.4L8 22a2.1 2.1 0 0 1-3-3l7.6-7.6a5 5 0 0 1 2.1-5.1Z" transform="translate(-2 -1)"/>',
       calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18M8 15h2M14 15h2"/>',

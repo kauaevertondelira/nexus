@@ -1,7 +1,7 @@
 (function(N) {
   'use strict';
   const DEMO_KEY='nexus-industrial-demo-v4';
-  N.collections=['assets','inventory','work_orders','maintenance_plans','maintenance_requests','suppliers','purchase_requests','supplier_contracts','asset_warranties','inspection_routes','inspection_executions','inspection_results','telemetry','iot_device_config','iot_alerts','asset_documents','work_order_checklists','work_order_time_entries','work_order_parts','work_order_comments','work_order_activity','companies'];
+  N.collections=['assets','inventory','work_orders','maintenance_plans','maintenance_requests','suppliers','purchase_requests','supplier_contracts','asset_warranties','inspection_routes','inspection_executions','inspection_results','telemetry','production_sessions','production_totals','production_session_totals','iot_device_config','iot_alerts','asset_documents','work_order_checklists','work_order_time_entries','work_order_parts','work_order_comments','work_order_activity','companies'];
   let sdkPromise, authPromise, readyPromise;
   N.sdk = async function() {
     if (sdkPromise) return sdkPromise;
@@ -72,7 +72,7 @@
       'PM-003':{name:'Lubrificação da prensa',assetId:'P-301',frequencyDays:15,nextDueAt:due(4),estimatedHours:2,active:true,checklist:'Inspecionar mangueiras\nLubrificar guias\nVerificar pressão'},
       'PM-004':{name:'Revisão da célula robotizada',assetId:'R-011',frequencyDays:90,nextDueAt:due(11),estimatedHours:3,active:true,checklist:'Conferir cabos\nInspecionar redutor\nValidar ciclo'}
     };
-    return {assets,inventory,work_orders,maintenance_plans:plans,suppliers,
+    return {production_sessions:{},production_totals:{},production_session_totals:{},production_events:{},assets,inventory,work_orders,maintenance_plans:plans,suppliers,
       companies:{'planta-01':{name:'Planta industrial · Demonstração',city:'São Paulo'}},
       maintenance_requests:{'SOL-001':{title:'Ruído no eixo do CNC',assetId:'M-204',description:'Ruído intermitente durante a usinagem em alta rotação.',priority:'urgent',status:'new',requesterUid:'demo',requesterName:'Produção · Turno A',createdAt:due(-0.25)}},
       purchase_requests:{'SC-001':{itemName:'Rolamento 6205-2RS',inventoryId:'PEC-001',supplierId:'FOR-001',qty:10,estimatedUnitCost:85,justification:'Reposição do estoque mínimo para atender as preventivas.',priority:'urgent',status:'submitted',requesterUid:'demo',createdAt:due(-2)},'SC-002':{itemName:'Correia dentada HTD 8M',inventoryId:'PEC-003',supplierId:'FOR-001',qty:4,estimatedUnitCost:220,justification:'Reposição para a linha de envase.',priority:'normal',status:'ordered',requesterUid:'demo',createdAt:due(-5)}},
@@ -122,7 +122,7 @@
     })().catch(error=>{readyPromise=null;throw error;});
     return readyPromise;
   };
-  N.disconnect = function() { this.unsubscribers.forEach(fn=>fn());this.unsubscribers=[];if(this.profileRef)this.profileRef.off('value',this.profileCallback);if(this.db)this.db.ref('.info/connected').off();readyPromise=null;authPromise=null;this.user=null;this.data={};this.readErrors={}; };
+  N.disconnect = function() { this.stopProductionSync?.();this.unsubscribers.forEach(fn=>fn());this.unsubscribers=[];if(this.profileRef)this.profileRef.off('value',this.profileCallback);if(this.db)this.db.ref('.info/connected').off();readyPromise=null;authPromise=null;this.user=null;this.data={};this.readErrors={}; };
   N.getNested = function(path) { return path.split('/').reduce((obj,key)=>obj?.[key],this.data); };
   N.setNested = function(path,value) { const keys=path.split('/');let obj=this.data;keys.slice(0,-1).forEach(k=>{obj[k]=obj[k]||{};obj=obj[k];});if(value===null)delete obj[keys.at(-1)];else obj[keys.at(-1)]=value; };
   N.checkWritable = function(path) {
@@ -147,6 +147,7 @@
     if((path+'/'+id).split('/').some(k=>!k||/[.#$\[\]]/.test(k)||['__proto__','prototype','constructor'].includes(k)))throw new Error('Caminho inválido.');
     this.checkWritable(path);if(path==='work_orders'&&!this.isAdmin())throw new Error('Somente o administrador pode excluir ordens.');
     if(path==='assets'&&this.entries('work_orders').some(o=>o.assetId===id))throw new Error('Este ativo possui ordens vinculadas. Preserve seu histórico e altere o status para Parada.');
+    if(path==='assets'&&this.entries('production_sessions').some(s=>s.assetId===id))throw new Error('Este ativo possui histórico de produção. Preserve o cadastro para manter os vínculos da contagem.');
     if(path==='suppliers'&&this.entries('supplier_contracts').some(c=>c.supplierId===id))throw new Error('Este fornecedor possui contratos vinculados. Desative o cadastro.');
     if(this.mode==='demo'){this.setNested(path+'/'+id,null);this.persist();this.changed(path);}else await this.db.ref(path+'/'+id).remove();
     await this.audit('Excluiu '+id,path,id);
@@ -176,5 +177,5 @@
     if(this.mode==='demo'){Object.entries(updates).forEach(([path,value])=>this.setNested(path,value));this.persist();this.changed('batch');}
     else await this.db.ref().update(updates);
   };
-  N.resetDemo=function(){this.data=this.seed();this.user={...this.data.users.demo,role:sessionStorage.getItem('nexus-demo-role')||'Administrador'};this.persist();this.changed('all');};
+  N.resetDemo=function(){if(this.pendingProduction?.().length)throw new Error('Sincronize a fila local de produção antes de restaurar a demonstração.');this.data=this.seed();this.user={...this.data.users.demo,role:sessionStorage.getItem('nexus-demo-role')||'Administrador'};this.persist();this.changed('all');};
 })(window.Nexus);

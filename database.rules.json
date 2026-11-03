@@ -802,6 +802,115 @@
           ".validate": "newData.isNumber() && newData.val() >= 0"
         }
       }
+    },
+    "production_sessions": {
+      ".read": "(auth != null && root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('accessStatus').val() !== 'pending' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'blocked' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'disabled' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'suspended') && (auth != null)",
+      ".indexOn": [
+        "startedAt",
+        "assetId"
+      ],
+      "$sessionId": {
+        ".write": "(((auth != null && root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('accessStatus').val() !== 'pending' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'blocked' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'disabled' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'suspended') && (auth != null)) && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção' || root.child('users').child(auth.uid).child('role').val() === 'Gestor de Manutenção' || root.child('users').child(auth.uid).child('role').val() === 'Supervisor de Produção')) && (newData.exists()) && ((!data.exists() && newData.child('createdByUid').val() === auth.uid && newData.child('status').val() === 'open' || data.exists() && data.child('createdByUid').val() === auth.uid && data.child('status').val() === 'open' && newData.child('status').val() === 'closed'))",
+        ".validate": "(newData.hasChildren(['assetId','label','status','createdByUid','startedAt'])) && (!data.exists() || (newData.child('assetId').val() === data.child('assetId').val() && newData.child('label').val() === data.child('label').val() && newData.child('createdByUid').val() === data.child('createdByUid').val() && newData.child('startedAt').val() === data.child('startedAt').val())) && ((newData.child('status').val() === 'open' && !newData.child('endedAt').exists()) || (newData.child('status').val() === 'closed' && newData.child('endedAt').val() === now))",
+        "assetId": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100 && root.child('assets').child(newData.val()).exists()"
+        },
+        "label": {
+          ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 100"
+        },
+        "createdByUid": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+        "startedAt": {
+          ".validate": "newData.isNumber() && ((!data.exists() && newData.val() === now) || newData.val() === data.val())"
+        },
+        "endedAt": {
+          ".validate": "newData.isNumber() && newData.val() === now && newData.val() >= newData.parent().child('startedAt').val()"
+        },
+        "status": {
+          ".validate": "newData.val() === 'open' || newData.val() === 'closed'"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "production_totals": {
+      ".read": "(auth != null && root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('accessStatus').val() !== 'pending' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'blocked' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'disabled' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'suspended') && (auth != null)",
+      "$assetId": {
+        ".write": "(((auth != null && root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('accessStatus').val() !== 'pending' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'blocked' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'disabled' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'suspended') && (auth != null)) && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção' || root.child('users').child(auth.uid).child('role').val() === 'Gestor de Manutenção' || root.child('users').child(auth.uid).child('role').val() === 'Supervisor de Produção')) && (newData.exists())",
+        ".validate": "(newData.hasChildren(['count','lastEventId','updatedAt','lastSessionId'])) && (!root.child('production_events').child($assetId).child(newData.child('lastEventId').val()).exists()) && (newData.parent().parent().child('production_events').child($assetId).child(newData.child('lastEventId').val()).exists()) && (newData.parent().parent().child('production_events').child($assetId).child(newData.child('lastEventId').val()).child('sessionId').val() === newData.child('lastSessionId').val()) && (newData.parent().parent().child('production_events').child($assetId).child(newData.child('lastEventId').val()).child('createdByUid').val() === auth.uid) && (newData.parent().parent().child('production_events').child($assetId).child(newData.child('lastEventId').val()).child('receivedAt').val() === now) && (root.child('production_sessions').child(newData.child('lastSessionId').val()).child('status').val() === 'open') && (root.child('production_sessions').child(newData.child('lastSessionId').val()).child('createdByUid').val() === auth.uid) && (root.child('production_sessions').child(newData.child('lastSessionId').val()).child('assetId').val() === $assetId) && (root.child('assets').child($assetId).exists())",
+        "count": {
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() > 0 && newData.val() <= 9007199254740991 && ((!data.exists() && newData.val() === 1) || (data.isNumber() && newData.val() === data.val() + 1))"
+        },
+        "lastEventId": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber() && newData.val() === now"
+        },
+        "lastSessionId": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "production_session_totals": {
+      ".read": "(auth != null && root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('accessStatus').val() !== 'pending' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'blocked' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'disabled' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'suspended') && (auth != null)",
+      "$sessionId": {
+        ".write": "(((auth != null && root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('accessStatus').val() !== 'pending' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'blocked' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'disabled' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'suspended') && (auth != null)) && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção' || root.child('users').child(auth.uid).child('role').val() === 'Gestor de Manutenção' || root.child('users').child(auth.uid).child('role').val() === 'Supervisor de Produção')) && (newData.exists())",
+        ".validate": "(newData.hasChildren(['count','lastEventId','updatedAt','assetId'])) && (!root.child('production_events').child(newData.child('assetId').val()).child(newData.child('lastEventId').val()).exists()) && (newData.parent().parent().child('production_events').child(newData.child('assetId').val()).child(newData.child('lastEventId').val()).exists()) && (newData.parent().parent().child('production_events').child(newData.child('assetId').val()).child(newData.child('lastEventId').val()).child('sessionId').val() === $sessionId) && (newData.parent().parent().child('production_events').child(newData.child('assetId').val()).child(newData.child('lastEventId').val()).child('createdByUid').val() === auth.uid) && (newData.parent().parent().child('production_events').child(newData.child('assetId').val()).child(newData.child('lastEventId').val()).child('receivedAt').val() === now) && (root.child('production_sessions').child($sessionId).child('status').val() === 'open') && (root.child('production_sessions').child($sessionId).child('createdByUid').val() === auth.uid) && (root.child('production_sessions').child($sessionId).child('assetId').val() === newData.child('assetId').val()) && (root.child('assets').child(newData.child('assetId').val()).exists())",
+        "count": {
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() > 0 && newData.val() <= 9007199254740991 && ((!data.exists() && newData.val() === 1) || (data.isNumber() && newData.val() === data.val() + 1))"
+        },
+        "lastEventId": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber() && newData.val() === now"
+        },
+        "assetId": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "production_events": {
+      "$assetId": {
+        ".read": "(auth != null && root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('accessStatus').val() !== 'pending' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'blocked' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'disabled' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'suspended') && (auth != null)",
+        ".indexOn": [
+          "receivedAt"
+        ],
+        "$eventId": {
+          ".write": "(((auth != null && root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('accessStatus').val() !== 'pending' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'blocked' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'disabled' && root.child('users').child(auth.uid).child('accessStatus').val() !== 'suspended') && (auth != null)) && (root.child('users').child(auth.uid).child('role').val() === 'Administrador' || root.child('users').child(auth.uid).child('role').val() === 'Técnico de Manutenção' || root.child('users').child(auth.uid).child('role').val() === 'Gestor de Manutenção' || root.child('users').child(auth.uid).child('role').val() === 'Supervisor de Produção')) && (!data.exists()) && (newData.exists())",
+          ".validate": "(newData.hasChildren(['assetId','sessionId','source','createdByUid','detectedAt','receivedAt'])) && (newData.child('assetId').val() === $assetId) && (root.child('production_sessions').child(newData.child('sessionId').val()).child('assetId').val() === $assetId) && (root.child('production_sessions').child(newData.child('sessionId').val()).child('createdByUid').val() === auth.uid) && (root.child('production_sessions').child(newData.child('sessionId').val()).child('status').val() === 'open') && (newData.parent().parent().parent().child('production_totals').child($assetId).child('lastEventId').val() === $eventId) && (newData.parent().parent().parent().child('production_totals').child($assetId).child('count').val() === (root.child('production_totals').child($assetId).child('count').exists() ? root.child('production_totals').child($assetId).child('count').val() + 1 : 1)) && (newData.parent().parent().parent().child('production_totals').child($assetId).child('updatedAt').val() === now) && (newData.parent().parent().parent().child('production_session_totals').child(newData.child('sessionId').val()).child('lastEventId').val() === $eventId) && (newData.parent().parent().parent().child('production_session_totals').child(newData.child('sessionId').val()).child('count').val() === (root.child('production_session_totals').child(newData.child('sessionId').val()).child('count').exists() ? root.child('production_session_totals').child(newData.child('sessionId').val()).child('count').val() + 1 : 1)) && (newData.parent().parent().parent().child('production_session_totals').child(newData.child('sessionId').val()).child('updatedAt').val() === now)",
+          "assetId": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100 && newData.val() === $assetId"
+          },
+          "sessionId": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+          },
+          "source": {
+            ".validate": "newData.val() === 'camera' || newData.val() === 'manual'"
+          },
+          "createdByUid": {
+            ".validate": "newData.isString() && newData.val() === auth.uid"
+          },
+          "detectedAt": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= now + 300000"
+          },
+          "receivedAt": {
+            ".validate": "newData.isNumber() && newData.val() === now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
     }
   }
 }

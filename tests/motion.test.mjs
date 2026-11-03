@@ -11,7 +11,7 @@ function motion({systemReduced=true,saved=null,engine=true}={}){
   const media={matches:systemReduced,addEventListener(){}};
   const gsap={context:fn=>{fn();return {revert(){}};},set(){},to:(target,options)=>{const tween={kill:()=>options.onInterrupt?.()};pending.push(options);return tween;},fromTo:(target,from,options)=>{const tween={kill:()=>options.onInterrupt?.()};pending.push(options);return tween;}};
   class Swup{constructor(options){this.options=options;this.hooks={replace:(key,fn)=>hooks.set(key,fn),before:(key,fn)=>hooks.set(key,fn),on:(key,fn)=>hooks.set(key,fn)};}}
-  const N={base:new URL('https://example.github.io/nexus/'),version:'4.1.1',route:'',boot:async()=>{},toggleMenu(){},closeModal(){}};
+  const N={base:new URL('https://example.github.io/nexus/'),version:'4.2.0',route:'',boot:async()=>{},toggleMenu(){},closeModal(){}};
   const window={Nexus:N,gsap:engine?gsap:undefined,Swup,addEventListener(){}};
   const context=vm.createContext({window,document,matchMedia:()=>media,localStorage:{getItem:key=>data.get(key)||null,setItem:(key,value)=>data.set(key,value)},location:{protocol:'https:'},URL,Promise,console,gsap});
   vm.runInContext(source,context);return {N,root,data,media,pending,hooks,classes,workspace};

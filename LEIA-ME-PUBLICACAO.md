@@ -4,7 +4,7 @@ A pasta `nexus/` está pronta para virar a raiz do repositório. Preserve todos 
 
 ## Publicação
 
-**Atualização 4.1.1:** copie também `public/assets/js/profile.js`, as pastas `vendor/anime/` e `vendor/motion/`, `public/assets/images/nexus-logo.png`, o favicon `mark.svg`, as licenças e o `service-worker.js` atualizado. Publique novamente `database.rules.json` na aba Regras do Realtime Database para aplicar a validação da foto. Não é necessário configurar Firebase Storage. As regras podem ser publicadas sem modificar os registros existentes.
+**Atualização 4.2:** publique a nova página `public/pages/producao.html`, os módulos `production-engine.js`, `production-data.js` e `production.js`, os demais arquivos atualizados e o novo `service-worker.js`. Publique também o novo `database.rules.json` para permitir a contagem com validação atômica. O guia de uso e ativação está em [PRODUCAO-CAMERA.md](PRODUCAO-CAMERA.md). O APK abre o mesmo endereço HTTPS desta publicação.
 
 Se as animações estiverem desativadas pelo dispositivo, clique em **Ativar animações** na landing ou escolha **Meu perfil → Aparência → Animações → Movimento completo**. Esta escolha vale somente para o site neste navegador.
 
@@ -31,7 +31,7 @@ O workflow **Verificar integridade da Nexus** testa os arquivos; a publicação 
 
 ## Se a versão antiga continuar aparecendo
 
-Primeiro confira se o deploy da atualização terminou. Depois recarregue sem cache ou abra em uma janela privativa. Para remover um service worker antigo, use as ferramentas do navegador em **Application → Service Workers → Unregister**, somente no domínio/caminho do seu projeto. Limpar o armazenamento do site também apaga a demonstração local e preferências; exporte o que precisar antes.
+Primeiro confira se o deploy da atualização terminou. Depois recarregue sem cache ou abra em uma janela privativa. Para remover um service worker antigo, use as ferramentas do navegador em **Application → Service Workers → Unregister**, somente no domínio/caminho do seu projeto. Limpar o armazenamento do site apaga a demonstração, preferências e peças ainda na fila local. Sincronize todas as peças pendentes e exporte o que precisar antes.
 
 Evite reutilizar o mesmo endereço local de outro projeto com um service worker antigo. O servidor de prévia aceita uma porta diferente por `NEXUS_PORT` quando necessário.
 

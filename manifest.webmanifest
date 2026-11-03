@@ -67,6 +67,16 @@
           "sizes": "192x192"
         }
       ]
+    },
+    {
+      "name": "Produção por câmera",
+      "url": "./public/pages/producao.html",
+      "icons": [
+        {
+          "src": "./public/assets/images/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

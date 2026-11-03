@@ -24,7 +24,7 @@
   N.errorScreen=function(title,text){document.querySelector('#swup').innerHTML='<main class="boot-state" id="conteudo"><a class="brand" href="'+this.base.href+'"><span class="brand-mark" aria-hidden="true"></span>NEXUS</a>'+this.icon('shield')+'<h1>'+e(title)+'</h1><p>'+e(text)+'</p><div class="hero-actions"><a class="btn btn-primary" href="'+this.href('login')+'">Voltar ao acesso</a><button class="btn" data-action="retry">Tentar novamente</button><a class="btn" href="'+this.href('login','?demo=1')+'">Explorar demonstração</a></div></main>';};
   N.boot=async function(){
     const sequence=++bootSequence,container=document.querySelector('#swup');if(!container)return;
-    this.cleanupMotion?.();this.resetProfileDraft?.();this.closeModal(false);this.search='';this.filter='all';this.route=container.dataset.page||'index';this.currentOrder=null;this.currentAsset=null;
+    this.stopProductionWatch?.();this.cleanupMotion?.();this.resetProfileDraft?.();this.closeModal(false);this.search='';this.filter='all';this.route=container.dataset.page||'index';this.currentOrder=null;this.currentAsset=null;if(this.route==='producao')this.productionAssetId=new URLSearchParams(location.search).get('asset')||'';
     if(this.route==='index'){this.initLanding?.();return;}
     if(this.route==='login'){this.initLogin();this.animateAuth?.();return;}
     if(this.route==='offline')return;
@@ -37,7 +37,7 @@
         else this.errorScreen('Entre para abrir a Nexus','Use uma conta autorizada ou explore o ambiente de demonstração.');return;
       }
       if(!this.canAccess(this.route)){this.errorScreen('Acesso restrito ao seu cargo','Entre com uma conta autorizada para este módulo.');return;}
-      this.renderShell();this.refresh(true);await new Promise(resolve=>requestAnimationFrame(resolve));this.registerPWA();
+      this.renderShell();this.refresh(true);this.startProductionSync?.();await new Promise(resolve=>requestAnimationFrame(resolve));this.registerPWA();
       notificationsSeen=new Set(this.notifications().map(n=>n.id));
     }catch(error){if(sequence===bootSequence)this.errorScreen('Não foi possível conectar',this.errorText(error));}
   };
@@ -140,6 +140,9 @@
   N.handleAction=async function(action,target){
     const {id,path,status}=target.dataset;
     switch(action){
+      case 'production-new':this.newProductionSession(id);break;
+      case 'production-camera':this.openProductionCamera(id);break;
+      case 'production-sync':await this.flushProduction();if(this.productionSync.error)throw new Error(this.productionSync.error);this.toast(this.pendingProduction().length?'Há peças aguardando conexão.':'Fila de produção sincronizada.');break;
       case 'motion-toggle':this.setMotionPreference(document.documentElement.dataset.motion==='reduced'?'full':'reduced');break;
       case 'profile-photo-choose':document.querySelector('#profile-photo')?.click();break;
       case 'profile-photo-remove':this.removeProfilePhoto();break;
@@ -225,6 +228,7 @@
   document.addEventListener('input',event=>{if(['profile-name','profile-company'].includes(event.target.id)){N.profileState()[event.target.name]=event.target.value;if(event.target.id==='profile-name')N.updatePhotoPreview();}if(event.target.id==='view-search'){N.search=event.target.value;N.refresh();}});
   document.addEventListener('change',async event=>{
     const target=event.target;
+    if(target.id==='production-asset'){N.productionAssetId=target.value;N.refresh();}
     if(target.id==='motion-preference')N.setMotionPreference(target.value);
     if(target.id==='profile-photo'&&target.files?.[0]){const file=target.files[0];target.value='';await N.chooseProfilePhoto(file);}
     if(target.id==='view-filter'){N.filter=target.value;N.refresh();}

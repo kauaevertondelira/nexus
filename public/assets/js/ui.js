@@ -16,7 +16,7 @@
     root.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();this.closeModal();}if(event.key==='Tab'){const f=[...root.querySelectorAll('button,input,select,textarea,a[href]')].filter(e=>!e.disabled&&e.getClientRects().length);if(!f.length)return;const first=f[0],last=f.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}});
     return root;
   };
-  N.closeModal=function(restore=true){document.querySelector('#modal-root')?.remove();document.body.style.overflow='';const page=document.querySelector('#swup');if(page)page.inert=false;if(restore&&previousFocus?.isConnected)previousFocus.focus();this.editor=null;};
+  N.closeModal=function(restore=true){document.dispatchEvent(new CustomEvent('nexus:modal-close'));document.querySelector('#modal-root')?.remove();document.body.style.overflow='';const page=document.querySelector('#swup');if(page)page.inert=false;if(restore&&previousFocus?.isConnected)previousFocus.focus();this.editor=null;};
   N.confirm=function(title,text,action,button='Confirmar'){
     const root=this.modal(title,'<p class="detail-description">'+esc(text)+'</p><p class="form-error" id="confirm-error" role="alert"></p>','<button class="btn" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="confirm-action">'+esc(button)+'</button>',true);
     root.querySelector('#confirm-action').addEventListener('click',async event=>{event.currentTarget.disabled=true;try{await action();this.closeModal();}catch(error){root.querySelector('#confirm-error').textContent=this.errorText(error);event.currentTarget.disabled=false;}});
