@@ -1,6 +1,6 @@
 {
   "name": "nexus-industrial",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "private": true,
   "type": "module",
   "description": "Aplicação estática pronta para GitHub Pages. Sem instalação ou build para publicar.",

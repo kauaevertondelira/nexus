@@ -1,4 +1,4 @@
-# Nexus 4.2 — produção por câmera
+# Nexus 4.2.1 — produção por câmera
 
 Esta atualização acrescenta contagem de passagens por máquina, sem substituir o design existente. Web, PWA e APK usam a mesma aplicação e o mesmo Firebase. A câmera funciona como uma simulação de sensor: qualquer objeto ou mão que atravesse a região calibrada pode gerar uma peça.
 
@@ -66,7 +66,7 @@ Para aceitar a instalação, abra a mesma máquina no celular e no computador. P
 
 - `npm test`: integridade dos arquivos e testes nativos de lógica, incluindo detector, fila, repetição, desconexão e papéis. Sem instalar pacotes.
 - `npm ci --prefix qa`: dependências opcionais dos testes de integração.
-- Com a prévia aberta por `npm run preview`, execute `npm --prefix qa run browser`; instale o navegador de teste com `npx --prefix qa playwright install chromium --only-shell` se necessário. `NEXUS_PREVIEW_URL` aceita outro endereço ou uma URL `file:///.../nexus-main/` para QA da demonstração sem servidor HTTP.
+- Execute `npm --prefix qa run browser`; instale o navegador de teste com `npx --prefix qa playwright install chromium --only-shell` se necessário. O padrão usa arquivos locais servidos na memória do navegador em uma origem HTTPS de teste e percorre a navegação Swup desde a entrada. Não há dependência de servidor HTTP ou banco real. `NEXUS_PREVIEW_URL` permite apontar o ensaio de câmera para outra prévia; os testes de entrada continuam usando o ambiente isolado.
 - Com Java disponível, `npm --prefix qa run firebase` inicia um banco emulado local do projeto fictício `demo-nexus-production` e verifica escritas concorrentes, permissões e integridade. Não usa o Firebase do usuário. Em ambientes de QA com restrição ao transporte GET local, `NEXUS_QA_METHOD_OVERRIDE=1` usa o [método alternativo documentado](https://firebase.google.com/docs/reference/rest/database#method_override), somente no teste.
 
 Consulte `VALIDACAO-4.2.md` para os resultados e os limites da validação desta entrega.

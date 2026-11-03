@@ -1,8 +1,20 @@
-# NEXUS / Industrial Operating System 4.1
+# NEXUS / Industrial Operating System 4.2
 
 Gestão de máquinas industriais, manutenção e suprimentos em uma aplicação estática pronta para GitHub Pages. Abra `index.html` e escolha **Explorar demonstração**, ou publique a pasta completa e conecte sua conta Firebase.
 
 **Para publicar, comece por [LEIA-ME-PUBLICACAO.md](LEIA-ME-PUBLICACAO.md).** O fluxo usa GitHub Desktop e Console Firebase. Não há instalação, build, Firebase CLI ou servidor obrigatório para o site.
+
+## Correção 4.2.1 — entrada e navegação
+
+Esta versão corrige `productionSummary is not a function` e `productionView is not a function` ao entrar pela página inicial. `index.html`, `offline.html` e as páginas internas agora carregam o mesmo runtime antes de iniciar a navegação Swup. O cache foi atualizado para 4.2.1, com revalidação dos arquivos da interface. Os testes de navegador agora percorrem o início e o acesso antes dos módulos, usando o Swup real em desktop e viewport móvel.
+
+Use [CORRECAO-4.2.1.md](CORRECAO-4.2.1.md) para atualizar a publicação. O APK existente recebe esta correção pelo site que ele abre; não houve alteração no código nativo ou nas regras do Firebase nesta correção.
+
+## Produção por câmera — atualização 4.2
+
+A nova área **Produção** vincula sessões a máquinas e conta uma peça por passagem de objeto ou mão pela câmera. Os eventos, o total da máquina e o total da sessão são gravados juntos no Firebase. Há calibração, proteção contra repetição, fila local para desconexão, origem manual identificada e histórico imutável. Os totais também aparecem na Visão global, na ficha do ativo e no painel executivo. A identidade visual foi preservada.
+
+O projeto Android em `android/` gera um APK que abre a mesma versão web HTTPS e usa a mesma conta/banco. **Siga [PRODUCAO-CAMERA.md](PRODUCAO-CAMERA.md) para publicar as novas regras, configurar o APK e iniciar a contagem.** Os testes desta atualização estão em [VALIDACAO-4.2.md](VALIDACAO-4.2.md).
 
 ## O que foi resgatado
 
@@ -20,6 +32,7 @@ As 24 páginas listadas pelo service worker original foram reconstruídas. Os oi
 | Programação | Agenda de sete dias, planos preventivos e geração de O.S., solicitações e conversão em ordens |
 | Campo | Meu trabalho, rotas de inspeção, medições e histórico de resultados |
 | Inteligência | Confiabilidade, priorização por condição, MTBF/MTTR, mapa 3D, energia e consumo |
+| Produção | Sessões por máquina, sensor por câmera, contagem +1, fila e histórico em tempo real, APK Android |
 | IoT | Cadastro de dispositivos, limites de atenção/críticos, leituras, indicação de dado antigo e reconhecimento de alertas |
 | Suprimentos | Estoque com transação de saldo e histórico, fornecedores, compras e etapas de aprovação/recebimento |
 | Gestão | Contratos, garantias, financeiro operacional, painel executivo e exportações CSV/PDF |
@@ -67,7 +80,7 @@ As notificações locais dependem do navegador e da página em uso. Não foi inc
 ```text
 nexus/
   index.html                   Abertura
-  public/pages/                24 páginas de acesso e operação
+  public/pages/                25 páginas de acesso e operação
   public/assets/css/           Design responsivo
   public/assets/js/            Regras da interface, dados, telas e movimento
   public/assets/vendor/        Bibliotecas visuais incluídas
@@ -77,6 +90,8 @@ nexus/
   gateway/server.mjs           Ponte HTTP opcional para sensores
   scripts/                     Auditoria e servidor de prévia opcional
   tests/                       Testes de lógica
+  qa/                          Integração opcional com navegador e emulador Firebase
+  android/                     APK conectado ao site HTTPS
 ```
 
 O browser fala diretamente com Authentication e Realtime Database. O [gateway opcional](gateway/README.md) usa Node e REST autenticado em um servidor confiável para receber sensores. GitHub Pages hospeda os arquivos do site; o gateway precisa executar separadamente.

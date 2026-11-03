@@ -1,31 +1,31 @@
 /* Cache exclusivo da interface. Dados Firebase e credenciais não entram aqui. */
 const CACHE_PREFIX='nexus-static-'+encodeURIComponent(new URL(self.registration.scope).pathname)+'-';
-const CACHE=CACHE_PREFIX+'4.2.0';
+const CACHE=CACHE_PREFIX+'4.2.1';
 const SHELL=[
   "./",
   "./index.html",
   "./offline.html",
   "./manifest.webmanifest",
-  "./public/assets/css/nexus.css?v=4.2.0",
-  "./public/assets/vendor/anime/anime.umd.min.js?v=4.2.0",
-  "./public/assets/vendor/motion/motion.js?v=4.2.0",
-  "./public/assets/vendor/gsap/gsap.min.js?v=4.2.0",
-  "./public/assets/vendor/gsap/ScrollTrigger.min.js?v=4.2.0",
-  "./public/assets/vendor/swup/Swup.umd.js?v=4.2.0",
-  "./public/assets/vendor/jspdf/jspdf.umd.min.js?v=4.2.0",
-  "./public/assets/vendor/qrcode/qrcode.min.js?v=4.2.0",
-  "./public/assets/js/firebase-config.js?v=4.2.0",
-  "./public/assets/js/core.js?v=4.2.0",
-  "./public/assets/js/data.js?v=4.2.0",
-  "./public/assets/js/ui.js?v=4.2.0",
-  "./public/assets/js/profile.js?v=4.2.0",
-  "./public/assets/js/production-engine.js?v=4.2.0",
-  "./public/assets/js/production-data.js?v=4.2.0",
-  "./public/assets/js/production.js?v=4.2.0",
-  "./public/assets/js/views.js?v=4.2.0",
-  "./public/assets/js/motion.js?v=4.2.0",
-  "./public/assets/js/app.js?v=4.2.0",
-  "./public/assets/js/twin.js?v=4.2.0",
+  "./public/assets/css/nexus.css?v=4.2.1",
+  "./public/assets/vendor/anime/anime.umd.min.js?v=4.2.1",
+  "./public/assets/vendor/motion/motion.js?v=4.2.1",
+  "./public/assets/vendor/gsap/gsap.min.js?v=4.2.1",
+  "./public/assets/vendor/gsap/ScrollTrigger.min.js?v=4.2.1",
+  "./public/assets/vendor/swup/Swup.umd.js?v=4.2.1",
+  "./public/assets/vendor/jspdf/jspdf.umd.min.js?v=4.2.1",
+  "./public/assets/vendor/qrcode/qrcode.min.js?v=4.2.1",
+  "./public/assets/js/firebase-config.js?v=4.2.1",
+  "./public/assets/js/core.js?v=4.2.1",
+  "./public/assets/js/data.js?v=4.2.1",
+  "./public/assets/js/ui.js?v=4.2.1",
+  "./public/assets/js/profile.js?v=4.2.1",
+  "./public/assets/js/production-engine.js?v=4.2.1",
+  "./public/assets/js/production-data.js?v=4.2.1",
+  "./public/assets/js/production.js?v=4.2.1",
+  "./public/assets/js/views.js?v=4.2.1",
+  "./public/assets/js/motion.js?v=4.2.1",
+  "./public/assets/js/app.js?v=4.2.1",
+  "./public/assets/js/twin.js?v=4.2.1",
   "./public/assets/vendor/three/three.module.min.js",
   "./public/assets/vendor/three/three.core.min.js",
   "./public/assets/vendor/three/three.core.js",
@@ -70,5 +70,5 @@ self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=
 self.addEventListener('fetch',event=>{
  const request=event.request,url=new URL(request.url);
  if(request.method!=='GET'||url.origin!==self.location.origin||!url.pathname.startsWith(new URL(self.registration.scope).pathname)||request.headers.has('Authorization')||(!allowed.has(url.pathname)&&request.mode!=='navigate'))return;
- event.respondWith(fetch(request).then(response=>{if(response.ok&&allowed.has(url.pathname)){const copy=response.clone();event.waitUntil(caches.open(CACHE).then(cache=>cache.put(request,copy)));}return response;}).catch(async()=>{const cache=await caches.open(CACHE),cached=await cache.match(request,{ignoreSearch:true});return cached||(request.mode==='navigate'?await cache.match(new URL('./offline.html',self.location.href).href):Response.error());}));
+ event.respondWith(fetch(request,{cache:'no-cache'}).then(response=>{if(response.ok&&allowed.has(url.pathname)){const copy=response.clone();event.waitUntil(caches.open(CACHE).then(cache=>cache.put(request,copy)));}return response;}).catch(async()=>{const cache=await caches.open(CACHE),cached=await cache.match(request,{ignoreSearch:true});return cached||(request.mode==='navigate'?await cache.match(new URL('./offline.html',self.location.href).href):Response.error());}));
 });
