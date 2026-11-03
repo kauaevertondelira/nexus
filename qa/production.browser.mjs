@@ -2,12 +2,14 @@ import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-const base=process.env.NEXUS_PREVIEW_URL||'http://127.0.0.1:4173/nexus/';
+import {siteURL,serveLocalSite} from './site-fixture.mjs';
+const base=process.env.NEXUS_PREVIEW_URL||siteURL;
 const browser=await chromium.launch({headless:true,...(process.env.NEXUS_BROWSER_PATH?{executablePath:process.env.NEXUS_BROWSER_PATH}:{})});
 const output=new URL('./results/',import.meta.url);await fs.mkdir(output,{recursive:true});
 const errors=[];
 try {
-  const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
+  const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce',serviceWorkers:'block'});
+  if(base===siteURL)await serveLocalSite(context);
   await context.addInitScript(()=>{
     const canvas=document.createElement('canvas');canvas.width=640;canvas.height=480;
     const ctx=canvas.getContext('2d');window.testSensor={present:false,deny:false,tracks:[]};

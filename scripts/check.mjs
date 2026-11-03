@@ -5,6 +5,8 @@ import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const failures=[];let references=0;
+const sharedRuntime=['firebase-config','core','data','ui','profile','production-engine','production-data','production','views','motion','app'];
+const release=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version;
 const files=[];const walk=dir=>{for(const item of fs.readdirSync(dir,{withFileTypes:true})){if(['.git','node_modules','.gradle','build','results'].includes(item.name))continue;const p=path.join(dir,item.name);item.isDirectory()?walk(p):files.push(p);}};walk(root);
 const verify=(source,ref)=>{
  if(!ref||/^(?:https?:|data:|blob:|mailto:|tel:|#|\/\/)/i.test(ref))return;
@@ -18,6 +20,11 @@ for(const source of files){const extension=path.extname(source);if(!['.html','.c
  if(text.includes('\uFFFD'))failures.push(path.relative(root,source)+': codificação inválida');
  if(extension==='.html'){
    for(const match of text.matchAll(/\b(?:src|href)\s*=\s*["']([^"']+)["']/g))verify(source,match[1]);
+   const runtime=[...text.matchAll(/<script\b([^>]*?)\bsrc=["']([^"']*\/assets\/js\/([^/"'?]+)\.js(?:\?[^"']*)?)["']([^>]*)>/g)];
+   if(runtime.some(match=>match[3]==='app')){
+     if(runtime.map(match=>match[3]).join('|')!==sharedRuntime.join('|'))failures.push(path.relative(root,source)+': runtime compartilhado ausente ou fora de ordem; navegação Swup mantém os scripts da página inicial.');
+     for(const match of runtime){if(!/\bdefer\b/.test(match[1]+match[4])||!match[2].endsWith('?v='+release))failures.push(path.relative(root,source)+': script precisa de defer e versão '+release+': '+match[2]);}
+   }
    if(!/<html[^>]+lang="pt-BR"/.test(text))failures.push(path.relative(root,source)+': idioma ausente');
    if(!text.includes('name="viewport"'))failures.push(path.relative(root,source)+': viewport ausente');
    if(!/<h1\b/.test(text))failures.push(path.relative(root,source)+': título principal ausente');
@@ -33,6 +40,8 @@ const pages=JSON.parse(fs.readFileSync(path.join(root,'public/assets/data/routes
 const views=fs.readFileSync(path.join(root,'public/assets/js/views.js'),'utf8');
 for(const page of Object.keys(pages)){if(!fs.existsSync(path.join(root,'public/pages',page+'.html')))failures.push('Página prevista ausente: '+page);if(page!=='login'&&!views.includes('N.views.'+page+'=')&&!views.includes("N.views['"+page+"']="))failures.push('Módulo sem renderizador: '+page);}
 const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8'),shell=JSON.parse(sw.match(/const SHELL=(\[[\s\S]*?\]);/)[1]);for(const ref of shell)verify(path.join(root,'service-worker.js'),ref);
+for(const name of sharedRuntime)if(!shell.includes('./public/assets/js/'+name+'.js?v='+release))failures.push('Cache sem o módulo '+name+' da versão '+release+'.');
+if(!sw.includes("const CACHE=CACHE_PREFIX+'"+release+"'"))failures.push('Versão do cache difere da versão da aplicação.');
 if(!fs.existsSync(path.join(root,'.nojekyll')))failures.push('.nojekyll ausente');
 const rules=JSON.parse(fs.readFileSync(path.join(root,'database.rules.json'),'utf8')).rules;
 if(rules['.read']!==false||rules['.write']!==false)failures.push('A raiz do banco precisa negar acesso por padrão.');
