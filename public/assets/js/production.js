@@ -1,6 +1,6 @@
 (function(N) {
   'use strict';
-  const e=N.escape,icon=N.icon;
+  const e=N.escape,icon=N.icon,sensorDefaults=N.PassageDetector.defaults;
   let camera=null,watch=null,recent=[],watchError='';
   const sourceLabel=value=>value==='camera'?'Câmera':'Manual';
   N.productionSummary=function(assetId='') {
@@ -46,7 +46,11 @@
   };
   N.stopProductionCamera=function() {
     if(!camera)return;const state=camera;camera=null;
-    clearTimeout(state.timer);state.stream?.getTracks().forEach(track=>track.stop());
+    if(state.frameRequest!==undefined) {
+      if(state.videoFrames)state.video.cancelVideoFrameCallback(state.frameRequest);
+      else cancelAnimationFrame(state.frameRequest);
+    }
+    state.stream?.getTracks().forEach(track=>track.stop());
     if(state.video)state.video.srcObject=null;
     state.releaseLock?.();state.wakeLock?.release().catch(()=>{});
   };
@@ -59,9 +63,9 @@
       '<p class="tagline">'+e(this.asset(session.assetId).name||session.assetId)+' · '+e(session.assetId)+'</p><div class="camera-preview"><video id="production-video" autoplay muted playsinline aria-label="Prévia local da câmera"></video><div class="camera-region" aria-hidden="true"><span>Área de passagem</span></div><p id="camera-placeholder">Ative a câmera e mantenha esta área livre.</p></div>'+
       '<div class="production-camera-stats"><div><small>Peças nesta sessão</small><strong id="camera-session-count">0</strong></div><div><small>Total da máquina</small><strong id="camera-asset-count">0</strong></div><div><small>Na fila deste aparelho</small><strong id="camera-pending">0</strong></div></div>'+
       '<p class="notice" id="camera-status" role="status" aria-live="polite">Câmera desativada. Nenhuma passagem será contada até calibrar.</p><p class="tagline" id="camera-sync" aria-live="polite"></p><p class="form-error" id="camera-sync-error" role="alert"></p><button class="btn btn-sm" id="camera-sync-retry" data-action="production-sync" hidden>Sincronizar fila</button><p class="form-error" id="camera-error" role="alert"></p>'+
-      '<div class="form-grid production-section"><div class="form-field"><label for="camera-sensitivity">Sensibilidade</label><select class="input" id="camera-sensitivity"><option value="normal">Normal</option><option value="high">Alta · objetos menores</option><option value="low">Baixa · menos interferência</option></select></div><div class="form-field"><label for="camera-cooldown">Intervalo mínimo entre peças (ms)</label><input class="input" id="camera-cooldown" type="number" min="300" max="10000" step="100" value="800"></div></div>'+
+      '<div class="form-grid production-section"><div class="form-field"><label for="camera-sensitivity">Sensibilidade</label><select class="input" id="camera-sensitivity"><option value="high" selected>Alta · peças pequenas / pouco contraste</option><option value="normal">Normal</option><option value="low">Baixa · menos interferência</option></select></div><div class="form-field"><label for="camera-cooldown">Intervalo mínimo entre peças (ms)</label><input class="input" id="camera-cooldown" type="number" min="'+sensorDefaults.minCooldownMs+'" max="'+sensorDefaults.maxCooldownMs+'" step="10" value="'+sensorDefaults.cooldownMs+'"><small>80 ms para começar. Use 0 para contar assim que a área ficar livre.</small></div></div>'+
       '<div class="hero-actions"><button class="btn btn-primary" id="camera-start">'+icon('camera')+'Ativar câmera</button><button class="btn" id="camera-calibrate" disabled>Calibrar área livre</button><button class="btn" id="camera-pause" disabled>Pausar câmera</button></div>'+
-      '<p class="tagline production-section">Passe uma peça ou mão pelo retângulo e retire-a completamente antes da próxima passagem. Um objeto parado conta uma vez. Fechar ou sair desta tela pausa a câmera; a sessão permanece aberta para continuar depois.</p><details class="production-section"><summary>Lançamento manual</summary><p class="tagline">Use para registrar uma peça observada sem a câmera. A origem ficará identificada como Manual.</p><button class="btn btn-sm" id="camera-manual">Registrar +1 manual</button></details>',
+      '<p class="tagline production-section">Passe uma peça ou mão pelo retângulo. Deixe um pequeno espaço entre as peças para a câmera enxergar a área livre. Um objeto parado conta uma vez. Fechar ou sair desta tela pausa a câmera; a sessão permanece aberta para continuar depois.</p><details class="production-section"><summary>Lançamento manual</summary><p class="tagline">Use para registrar uma peça observada sem a câmera. A origem ficará identificada como Manual.</p><button class="btn btn-sm" id="camera-manual">Registrar +1 manual</button></details>',
       '<button class="btn" data-action="close-modal">Fechar / pausar</button><button class="btn btn-primary" id="camera-finish">Encerrar sessão</button>');
     const dialog=root.querySelector('.modal');dialog.classList.add('production-sensor-modal');dialog.tabIndex=-1;dialog.focus({preventScroll:true});dialog.scrollTop=0;
     const status=root.querySelector('#camera-status'),error=root.querySelector('#camera-error'),video=root.querySelector('video');
@@ -72,9 +76,10 @@
     const beginCalibration=()=>{
       if(!camera||camera.root!==root)return;
       const cooldown=Number(root.querySelector('#camera-cooldown').value);
-      if(!Number.isFinite(cooldown)||cooldown<300||cooldown>10000)throw new Error('Use um intervalo entre 300 e 10.000 ms.');
+      if(!Number.isFinite(cooldown)||cooldown<sensorDefaults.minCooldownMs||cooldown>sensorDefaults.maxCooldownMs)throw new Error('Use um intervalo entre 0 e 10.000 ms.');
       camera.detector=new this.PassageDetector({sensitivity:root.querySelector('#camera-sensitivity').value,cooldownMs:cooldown});
-      camera.calibrating=true;status.textContent='Calibrando. Mantenha a área de passagem livre por dois segundos.';
+      status.textContent='Calibrando. Mantenha a área de passagem livre por cerca de um segundo.';
+      root.querySelector('.camera-region').classList.remove('is-occupied');
       dialog.focus({preventScroll:true});root.querySelector('.modal-body').scrollTop=0;
     };
     start.addEventListener('click',guarded(async()=>{
@@ -91,7 +96,7 @@
           });
           if(!await ready)throw new Error('Esta sessão já está usando a câmera em outra aba. Pause a outra aba antes de continuar.');
         }
-        const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:640},height:{ideal:480}}});
+        const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:640},height:{ideal:480},frameRate:{ideal:60,max:60}}});
         if(camera!==state||!root.isConnected){stream.getTracks().forEach(t=>t.stop());return;}
         state.stream=stream;video.srcObject=stream;await video.play();
         if(camera!==state)return;
@@ -102,26 +107,32 @@
         if(navigator.wakeLock)try{state.wakeLock=await navigator.wakeLock.request('screen');if(camera!==state)await state.wakeLock.release();}catch{}
         const canvas=document.createElement('canvas');canvas.width=80;canvas.height=60;const ctx=canvas.getContext('2d',{willReadFrequently:true});
         const referenceCanvas=document.createElement('canvas');referenceCanvas.width=16;referenceCanvas.height=4;const referenceCtx=referenceCanvas.getContext('2d',{willReadFrequently:true});
-        const tick=()=>{
+        state.videoFrames=typeof video.requestVideoFrameCallback==='function';
+        const schedule=()=>{state.frameRequest=state.videoFrames?video.requestVideoFrameCallback(tick):requestAnimationFrame(tick);};
+        const tick=(time,metadata)=>{
           if(camera!==state)return;
           try {
             const live=this.data.production_sessions?.[id];
             if(!this.canProduce()||live?.status!=='open'||live.createdByUid!==this.uid){stop('Sessão encerrada ou acesso atualizado. A câmera foi pausada.');return;}
             if(this.productionSync.error){stop('Contagem pausada. Resolva a sincronização das peças pendentes antes de continuar.');return;}
-            if(state.detector&&video.readyState>=2) {
+            // Não repetir a mesma imagem: a confirmação exige quadros de vídeo distintos.
+            const decodedFrames=metadata?undefined:(video.getVideoPlaybackQuality?.().totalVideoFrames??video.webkitDecodedFrameCount);
+            const frameId=metadata?.presentedFrames??(decodedFrames>0?decodedFrames:metadata?.mediaTime??video.currentTime);
+            if(state.detector&&video.readyState>=2&&frameId!==state.lastFrameId) {
+              state.lastFrameId=frameId;
               const w=video.videoWidth,h=video.videoHeight;
               ctx.drawImage(video,w*.2,h*.25,w*.6,h*.5,0,0,80,60);
               referenceCtx.drawImage(video,0,0,w,h*.08,0,0,16,4);
               const pixels=referenceCtx.getImageData(0,0,16,4).data;let reference=0;for(let i=0;i<pixels.length;i+=4)reference+=(pixels[i]+pixels[i+1]+pixels[i+2])/3;reference/=pixels.length/4;
-              const result=state.detector.process(ctx.getImageData(0,0,80,60).data,performance.now(),reference);
+              const result=state.detector.process(ctx.getImageData(0,0,80,60).data,time,reference);
               if(result.count)this.queueProductionPiece(id,'camera');
               const messages={calibrating:'Calibrando · '+Math.round((result.progress||0)*100)+'%. Mantenha a área livre.',ready:'Sensor pronto. Passe uma peça pela área marcada.',occupied:'Passagem detectada. Retire o objeto para liberar a próxima peça.',lighting:'A iluminação mudou muito. Mantenha a câmera fixa e calibre novamente com a área livre.'};
               if(status.textContent!==messages[result.state])status.textContent=messages[result.state];root.querySelector('.camera-region').classList.toggle('is-occupied',result.state==='occupied');
             }
-            state.timer=setTimeout(tick,100);
+            schedule();
           }catch(err){error.textContent=cameraError(err);stop('Contagem pausada. Confira a mensagem antes de continuar.');}
         };
-        tick();
+        schedule();
       }catch(err){if(camera===state)stop('Câmera desativada. Corrija a permissão ou disponibilidade e tente novamente.');throw err;}
       finally{starting=false;if(!camera&&root.isConnected)start.disabled=false;}
     }));

@@ -36,7 +36,7 @@ test('Ruído, um quadro isolado e mudança uniforme de exposição não contam',
   assert.equal(detector.process(pixels(200),1200,80).count,false);
   assert.equal(detector.process(pixels(),1300,80).count,false);
   for(let t=1400;t<2500;t+=100)assert.equal(detector.process(pixels(100),t,100).count,false);
-  for(let t=2500;t<3500;t+=100)assert.equal(detector.process(pixels(200,.03),t,80).count,false);
+  for(let t=2500;t<3500;t+=100)assert.equal(detector.process(pixels(200,.003),t,80).count,false);
 });
 test('Retirada muito breve e passagens abaixo do intervalo não duplicam',()=>{
   const detector=calibrated({cooldownMs:1600});let total=0;
@@ -47,10 +47,10 @@ test('Retirada muito breve e passagens abaixo do intervalo não duplicam',()=>{
   assert.equal(total,1);
 });
 test('Calibração e sensibilidade têm efeito mensurável; pausa não completa candidato',()=>{
-  const normal=calibrated(),high=calibrated({sensitivity:'high'});
-  normal.process(pixels(130,.12),1200,80);high.process(pixels(130,.12),1200,80);
-  assert.equal(normal.process(pixels(130,.12),1300,80).count,false);
-  assert.equal(high.process(pixels(130,.12),1300,80).count,true);
+  const normal=calibrated({sensitivity:'normal'}),high=calibrated({sensitivity:'high'});
+  normal.process(pixels(130,.035),1200,80);high.process(pixels(130,.035),1200,80);
+  assert.equal(normal.process(pixels(130,.035),1300,80).count,false);
+  assert.equal(high.process(pixels(130,.035),1300,80).count,true);
   const detector=calibrated();detector.process(pixels(200),1200,80);
   assert.equal(detector.process(pixels(200),4000,80).count,false);
   detector.reset();assert.equal(detector.process(pixels(200),4100,80).state,'calibrating');
