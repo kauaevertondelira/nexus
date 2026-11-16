@@ -39,3 +39,8 @@
 @media(max-width:780px){.sidebar:not(.is-open){visibility:hidden}.sidebar.is-open{visibility:visible}}
 
 .production-sensor-modal{display:flex;flex-direction:column;overflow:hidden}.production-sensor-modal>.modal-header,.production-sensor-modal>.modal-footer{flex-shrink:0}.production-sensor-modal>.modal-body{overflow-y:auto;min-height:0}.production-sensor-modal .modal-header h2{overflow-wrap:anywhere}.production-sensor-modal .form-grid{margin-top:20px}.production-notice>span{flex:1;min-width:180px}
+
+/* Telemetria por máquina e lotes da IHM. */
+.iot-notice{margin-bottom:24px}.iot-machine-name{margin-top:8px}.iot-sensor-values{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}.iot-sensor-values strong{overflow-wrap:anywhere}.iot-orders{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:20px}.iot-order{border:1px solid var(--line);border-radius:8px;padding:20px}.iot-order>p{margin-top:10px}.iot-order .spaced{gap:12px;flex-wrap:wrap}.iot-order .production-total{font-size:2.5rem}.iot-order .chip{overflow-wrap:anywhere;white-space:normal}.sensor-card .badge{white-space:normal}.sensor-card .spaced{gap:12px}@media(max-width:600px){.iot-orders{grid-template-columns:1fr}}
+
+.iot-sensor-values strong small{display:inline-block;margin-left:5px;font:400 .7rem Inter,sans-serif;color:var(--muted);letter-spacing:0}

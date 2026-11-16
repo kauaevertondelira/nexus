@@ -88,11 +88,18 @@ public class MainActivity extends Activity {
         return sameOrigin(uri) && uri.getPath() != null && uri.getPath().startsWith(Uri.parse(site).getPath());
     }
 
+    private void loadCurrentSite() {
+        if (web != null) web.loadUrl(Uri.parse(site).buildUpon()
+            .appendQueryParameter("v", BuildConfig.VERSION_NAME).build().toString());
+    }
+
     @SuppressLint("SetJavaScriptEnabled") private void openSite() {
         destroyWeb();
         web = new WebView(this);
         WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true); settings.setDomStorageEnabled(true);
+        settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setUserAgentString(settings.getUserAgentString() + " NexusAndroid/" + BuildConfig.VERSION_NAME);
         settings.setAllowFileAccess(false); settings.setAllowContentAccess(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, false);
@@ -108,7 +115,7 @@ public class MainActivity extends Activity {
             @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 if (request.isForMainFrame()) new AlertDialog.Builder(MainActivity.this).setTitle("Não foi possível abrir a Nexus")
                     .setMessage("Confira a conexão e o endereço publicado do sistema.")
-                    .setPositiveButton("Tentar novamente", (d, w) -> { if (web != null) web.loadUrl(site); })
+                    .setPositiveButton("Tentar novamente", (d, w) -> loadCurrentSite())
                     .setNegativeButton("Editar endereço", (d, w) -> showSetup()).show();
             }
         });
@@ -136,7 +143,7 @@ public class MainActivity extends Activity {
             return insets.consumeSystemWindowInsets();
         });
         setContentView(web);
-        web.loadUrl(site);
+        loadCurrentSite();
     }
 
     private void grantCamera() {

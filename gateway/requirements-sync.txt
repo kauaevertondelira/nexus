@@ -1,0 +1,2 @@
+firebase-admin>=7.7.0,<8
+tzdata>=2025.2
