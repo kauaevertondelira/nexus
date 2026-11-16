@@ -1,3 +1,7 @@
+# Atualização 4.3.0 — dados do Python
+
+Comece por [INTEGRACAO-PYTHON-4.3.0.md](INTEGRACAO-PYTHON-4.3.0.md). A Central IoT recebe temperatura, vibração, rotação, fluido, OPs e paradas do Firestore por uma ponte que inicia junto com a IHM Python. As cinco máquinas foram vinculadas sem limpar o banco.
+
 # NEXUS / Industrial Operating System 4.2
 
 Gestão de máquinas industriais, manutenção e suprimentos em uma aplicação estática pronta para GitHub Pages. Abra `index.html` e escolha **Explorar demonstração**, ou publique a pasta completa e conecte sua conta Firebase.
@@ -7,6 +11,8 @@ Gestão de máquinas industriais, manutenção e suprimentos em uma aplicação 
 ## Correção 4.2.2 — sensibilidade e velocidade da produção
 
 O sensor inicia em sensibilidade Alta e intervalo de 80 ms, ajustável até 0 ms. A análise acompanha os quadros novos da câmera e confirma entrada e liberação em dois quadros, com pelo menos 20 ms entre eles. Peças pequenas e de menor contraste são detectadas com mais facilidade, e um objeto parado continua contando uma única vez. Veja [CORRECAO-PRODUCAO-4.2.2.md](CORRECAO-PRODUCAO-4.2.2.md) para atualizar e testar.
+
+O Android também foi atualizado para 4.2.2. A variante **parallel** instala ao lado do aplicativo antigo, cuja chave de assinatura não está disponível. Veja [ATUALIZACAO-APK-4.2.2.md](ATUALIZACAO-APK-4.2.2.md) para instalar e recompilar.
 
 ## Correção anterior 4.2.1 — entrada e navegação
 

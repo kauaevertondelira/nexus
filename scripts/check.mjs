@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const failures=[];let references=0;
-const sharedRuntime=['firebase-config','core','data','ui','profile','production-engine','production-data','production','views','motion','app'];
+const sharedRuntime=['firebase-config','core','data','ui','profile','production-engine','production-data','production','iot','views','motion','app'];
 const release=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version;
 const files=[];const walk=dir=>{for(const item of fs.readdirSync(dir,{withFileTypes:true})){if(['.git','node_modules','.gradle','build','results'].includes(item.name))continue;const p=path.join(dir,item.name);item.isDirectory()?walk(p):files.push(p);}};walk(root);
 const verify=(source,ref)=>{
