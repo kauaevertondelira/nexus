@@ -256,6 +256,5 @@
   window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;});
   window.addEventListener('online',()=>{N.online=true;});window.addEventListener('offline',()=>{N.online=false;document.dispatchEvent(new CustomEvent('nexus:connection'));});
   document.addEventListener('keydown',event=>{if(event.key==='Escape')N.toggleMenu(false);if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'&&N.user){event.preventDefault();N.globalSearch();}});
-  try{document.documentElement.dataset.theme=localStorage.getItem('nexus-theme')||'light';}catch{}
   document.addEventListener('DOMContentLoaded',()=>{N.initMotion?.();N.boot();});
 })(window.Nexus);

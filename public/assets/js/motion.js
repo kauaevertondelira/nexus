@@ -36,7 +36,7 @@
   };
   N.animateAuth=function(){
     syncPreference();if(reduced()||!window.gsap)return;
-    viewContext=gsap.context(()=>{gsap.from('.auth-brand-panel > *, .auth-form > *',{y:30,opacity:0,duration:.8,stagger:.065,ease:'power3.out',clearProps:'opacity,transform'});});
+    viewContext=gsap.context(()=>{gsap.from('.auth-brand-panel > *, .auth-form > h1, .auth-form > .eyebrow',{y:30,opacity:0,duration:.8,stagger:.065,ease:'power3.out',clearProps:'opacity,transform'});});
   };
   N.animateView=function(){
     viewContext?.revert();viewContext=null;
@@ -51,10 +51,6 @@
     syncPreference();this.registerPWA();const root=document.querySelector('#swup');if(!root)return;
     const container=root.querySelector('#hero-motor');
     if(!reduced()){
-      if(window.anime?.animate){
-        const title=anime.animate(root.querySelectorAll('.landing-wordmark span'),{translateY:['105%',0],rotate:[6,0],opacity:[0,1],duration:1100,delay:anime.stagger(75),ease:'outExpo'});
-        track(()=>title.revert());
-      }
       if(window.gsap){
         landingContext=gsap.context(()=>{
           gsap.from('.hero-copy > *',{y:32,opacity:0,duration:.9,delay:.18,stagger:.12,ease:'power3.out',clearProps:'opacity,transform'});
@@ -63,7 +59,6 @@
             gsap.registerPlugin(ScrollTrigger);
             root.querySelectorAll('.section-intro, .module-row, .principles article, .landing-end > *').forEach(el=>gsap.from(el,{y:38,opacity:0,duration:.75,ease:'power3.out',clearProps:'opacity,transform',scrollTrigger:{trigger:el,start:'top 94%',once:true}}));
             gsap.from('.landing-strip span',{y:16,opacity:0,stagger:.1,duration:.6,clearProps:'opacity,transform',scrollTrigger:{trigger:'.landing-strip',start:'top 96%',once:true}});
-            if(container)gsap.to(container,{y:30,ease:'none',scrollTrigger:{trigger:'.landing-hero',start:'top bottom',end:'bottom top',scrub:1}});
           }
         },root);
         document.fonts?.ready.then(()=>{if(root.isConnected)window.ScrollTrigger?.refresh();});
@@ -104,7 +99,6 @@
   };
   N.initMotion=function(){
     preference.addEventListener('change',()=>this.setMotionPreference(motionPreference));
-    document.addEventListener('pointerdown',event=>{const button=event.target.closest('.btn,.icon-btn');if(button&&!button.disabled&&!reduced()&&window.Motion?.animate)Motion.animate(button,{scale:[1,.94,1]},{duration:.32,ease:'easeOut'});});
     window.addEventListener('pagehide',()=>this.cleanupMotion());
     window.addEventListener('pageshow',event=>{if(event.persisted)this.boot();});
     if(window.Swup&&location.protocol!=='file:'){
