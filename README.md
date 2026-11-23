@@ -1,21 +1,3 @@
-# Nexus Industrial · 4.4.0
-
-A identidade da plataforma usa a harpia desenhada em tinta azul `#082867`. A capa e os títulos seguem a linguagem de uma revista técnica. O botão de tema alterna entre papel claro e azul-noite.
-
-Ao abrir o site, o N original dá lugar à harpia em 1,8 segundo. A abertura aparece uma vez por aba. Um toque ou uma tecla a encerra. A preferência de movimento reduzido do site ou do dispositivo dispensa a abertura.
-
-Para visualizar, execute `npm run preview` na pasta do projeto e abra o endereço indicado pelo terminal. Para publicar, use a mesma estrutura estática da versão anterior.
-
-<details><summary>Criação da marca</summary>
-
-A arte foi criada com o gerador de imagens integrado. A versão transparente utilizada pela interface está em `public/assets/images/nexus-logo.png`.
-
-**Prompt usado na criação**
-
-Use case: logo-brand. A single original printer’s colophon for NEXUS, a Brazilian industrial technical journal. Draw only a very compact harpy eagle head in side profile looking right, with its distinctive short fan of 3 upright swept crest feathers, strong hooked beak, and broad neck ruff. Restrained single-color woodcut / linocut, intelligent and calm, cut by hand. Bold interlocking dark navy (#082867) ink shapes with just a few broad clean negative-space cuts describing the eye, cheek and feathers. A memorable silhouette readable at 32 pixels. Transparent background, with the cuts also transparent. Square composition, centered, bird fills 88% of square. No writing, no monogram, no circle, no shield, no border, no texture outside the bird, no gradients, no drop shadow, no extra icons or mockup.
-
-</details>
-
 # Atualização 4.3.0 — dados do Python
 
 Comece por [INTEGRACAO-PYTHON-4.3.0.md](INTEGRACAO-PYTHON-4.3.0.md). A Central IoT recebe temperatura, vibração, rotação, fluido, OPs e paradas do Firestore por uma ponte que inicia junto com a IHM Python. As cinco máquinas foram vinculadas sem limpar o banco.
