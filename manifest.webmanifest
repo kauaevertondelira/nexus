@@ -7,8 +7,8 @@
   "start_url": "./public/pages/login.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f4f5ef",
-  "theme_color": "#204cff",
+  "background_color": "#f8f7f2",
+  "theme_color": "#082867",
   "categories": [
     "business",
     "productivity"
