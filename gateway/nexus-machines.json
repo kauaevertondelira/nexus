@@ -1,13 +1,5 @@
 {
   "projectId": "nexus-iot-senai",
   "databaseURL": "https://nexus-iot-senai-default-rtdb.firebaseio.com",
-  "sourceTimezone": "America/Sao_Paulo",
-  "legacyAssetId": "-Oz7Rlysexgko4VUqZpq",
-  "machines": [
-    {"assetId": "-Oz7Rlysexgko4VUqZpq", "deviceId": "PY-TORNO01", "name": "CNC01", "tag": "Torno 1", "area": "producao"},
-    {"assetId": "-P04muYZp_LGv_hvGIYC", "deviceId": "PY-PRENSA01", "name": "Prensa hidráulica", "tag": "Prensa 1", "area": "producao"},
-    {"assetId": "-P04n9oKVm4AaQIbFAf5", "deviceId": "PY-FORNO01", "name": "Forno Industrial 01", "tag": "Forno 1", "area": "producao"},
-    {"assetId": "-P04o1-Cm8Ps0otI6eYL", "deviceId": "PY-ESTEIRA01", "name": "Esteira 01", "tag": "Esteira 1", "area": "logistica"},
-    {"assetId": "ASS-a9195aaa", "deviceId": "PY-PRENSA04", "name": "Prensa Hidráulica 04", "tag": "PH-004", "area": "Produção"}
-  ]
+  "sourceTimezone": "America/Sao_Paulo"
 }

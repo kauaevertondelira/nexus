@@ -1,3 +1,39 @@
+# Integração com as IHMs Python (Firestore)
+
+Cada IHM Python (projeto `python-tcc`, `DATA_BACKEND=firebase`) grava a sua máquina em `maquinas/{MACHINE_ID}` no Firestore: cadastro, `historico_sensores`, `ordens_producao` e `paradas_maquina`. A ponte `nexus_sync.py` espelha isso para o Realtime Database que o site lê:
+
+| Firestore (Python) | Realtime Database (Nexus) |
+| --- | --- |
+| `maquinas/{id}` | `assets/{id}` (nome, tag, área, classe, limites; o resto continua editável no site) e `iot_device_config/PY-{ID}` |
+| `historico_sensores` | `telemetry/latest`, `telemetry/history` (últimas 100), `iot_alerts`, situação e temperatura/vibração do ativo |
+| `ordens_producao` | `telemetry/firestoreProduction/{id}` (lote atual) |
+| `paradas_maquina` | `telemetry/firestoreStops/{id}` |
+
+Máquinas novas aparecem sozinhas: basta iniciar outra IHM com outro `MACHINE_ID`. Uma máquina sem leitura há mais de 5 minutos aparece como **Parada**. Uma ponte atende todas as IHMs do projeto.
+
+```powershell
+pip install -r gateway/requirements-sync.txt
+python gateway/nexus_sync.py --credentials C:\chaves\nexus-iot-senai.json          # tempo real (deixe rodando)
+python gateway/nexus_sync.py --credentials C:\chaves\nexus-iot-senai.json --once   # uma sincronização
+```
+
+`nexus-machines.json` guarda só o projeto, a URL do Realtime Database e o fuso das IHMs; a lista de máquinas vem do Firestore.
+
+## Limpar e refazer o parque a partir do Firestore
+
+> Passo a passo para rodar no navegador (Google Cloud Shell), sem instalar nada: [../LIMPEZA-FIREBASE.md](../LIMPEZA-FIREBASE.md).
+
+`nexus_reset.py` deixa na Nexus somente as máquinas que existem em `maquinas/` e remove o que depende das outras: ativos, documentos e garantias; toda a IoT (recriada em seguida); ordens de serviço com checklists, horas, peças, comentários e atividade; planos preventivos e solicitações; máquinas das rotas de inspeção (rota vazia é removida com as execuções); produção por câmera. Usuários, estoque, fornecedores, compras, contratos e auditoria ficam.
+
+```powershell
+python gateway/nexus_reset.py --credentials C:\chaves\nexus-iot-senai.json            # mostra o plano, não altera nada
+python gateway/nexus_reset.py --credentials C:\chaves\nexus-iot-senai.json --aplicar  # pede "LIMPAR", salva backup e aplica
+```
+
+Antes de aplicar, o banco inteiro é salvo em `%USERPROFILE%\nexus-backups\rtdb-AAAAMMDD-HHMMSS.json` (ou `--backup`). Para desfazer, importe esse JSON no Console do Realtime Database (*⋮ → Importar JSON* na raiz). A alteração é uma única atualização atômica; depois dela a ponte sincroniza leituras, lotes e paradas uma vez.
+
+Inicie as IHMs com `DATA_BACKEND=firebase` **antes** da limpeza: sem nenhuma máquina no Firestore o script não faz nada.
+
 # Gateway de sensores opcional
 
 O site e os cadastros usam diretamente o Firebase Web. Esta ponte é necessária somente para integrar sensores que enviem leituras por HTTP. Ela executa em um servidor confiável, separado do GitHub Pages, usando Node 22+ e bibliotecas nativas. Não usa Firebase CLI nem depende de instalar pacotes.

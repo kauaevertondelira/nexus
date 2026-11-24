@@ -1,3 +1,7 @@
+# Atualização 4.4.0 — máquinas vindas do Python
+
+O parque de máquinas passa a ser definido pelas IHMs Python: cada IHM grava a sua máquina em `maquinas/{MACHINE_ID}` no Firestore, e a ponte `gateway/nexus_sync.py` cria o ativo e o dispositivo `PY-{ID}` na Nexus automaticamente, sem lista fixa. A ponte também atualiza a situação da máquina (operacional, crítica ou parada sem leitura há 5 min). Para remover as máquinas antigas e refazer o parque a partir do Firestore, use `gateway/nexus_reset.py` (faz backup antes). **Para limpar sem instalar nada no seu computador, siga [LIMPEZA-FIREBASE.md](LIMPEZA-FIREBASE.md)** (roda no Google Cloud Shell, pelo navegador). Detalhes da ponte em [gateway/README.md](gateway/README.md). As IHMs enviam uma leitura de sensores a cada 90 s para caber na cota gratuita do Firebase.
+
 # Atualização 4.3.0 — dados do Python
 
 Comece por [INTEGRACAO-PYTHON-4.3.0.md](INTEGRACAO-PYTHON-4.3.0.md). A Central IoT recebe temperatura, vibração, rotação, fluido, OPs e paradas do Firestore por uma ponte que inicia junto com a IHM Python. As cinco máquinas foram vinculadas sem limpar o banco.
