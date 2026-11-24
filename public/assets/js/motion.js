@@ -34,9 +34,39 @@
       else transitionTween=gsap.fromTo(target,{opacity:0,y:34},{opacity:1,y:0,duration:.65,ease:'power3.out',clearProps:'opacity,transform',onComplete:complete,onInterrupt:complete});
     });
   };
+  // Carrossel do painel do login: 3 fotos e 3 textos por aba, 20 s cada, em loop; troca de aba recomeça na primeira.
+  N.startAuthCarousel=function(){
+    const panel=document.querySelector('.auth-brand-panel');if(!panel||panel.dataset.carousel)return;panel.dataset.carousel='on';
+    const DUR=20000,COUNT=3,dots=[...panel.querySelectorAll('[data-dot]')],pauseBtn=panel.querySelector('[data-auth-pause]');
+    let mode=panel.dataset.mode||'login',idx=0,timer=0,startedAt=0,remaining=DUR,paused=false;
+    panel.style.setProperty('--slide-dur',DUR+'ms');
+    const show=()=>{
+      panel.dataset.mode=mode;panel.dataset.slide=String(idx);
+      panel.querySelectorAll('.auth-photo').forEach(p=>p.classList.toggle('is-active',p.dataset.set===mode&&Number(p.dataset.slide)===idx));
+      panel.querySelectorAll('[data-copy]').forEach(el=>{el.hidden=!(el.dataset.copy===mode&&Number(el.dataset.slide)===idx);});
+      dots.forEach((d,i)=>{d.classList.remove('is-active');d.classList.toggle('is-done',i<idx);d.removeAttribute('aria-current');});
+      void panel.offsetWidth; // reinicia a barra de progresso
+      dots[idx]?.classList.add('is-active');dots[idx]?.setAttribute('aria-current','true');
+    };
+    const schedule=ms=>{clearTimeout(timer);remaining=ms;if(paused)return;startedAt=Date.now();timer=setTimeout(()=>{idx=(idx+1)%COUNT;show();schedule(DUR);},ms);};
+    const setPaused=value=>{
+      if(value===paused)return;paused=value;panel.classList.toggle('is-paused',paused);
+      if(paused){clearTimeout(timer);remaining=Math.max(0,remaining-(Date.now()-startedAt));}else schedule(remaining);
+      if(pauseBtn){pauseBtn.textContent=paused?'▶':'❚❚';pauseBtn.setAttribute('aria-pressed',String(paused));pauseBtn.setAttribute('aria-label',paused?'Retomar troca de imagens':'Pausar troca de imagens');}
+    };
+    const onClick=event=>{
+      const dot=event.target.closest('[data-dot]');if(dot){idx=Number(dot.dataset.dot);show();schedule(DUR);return;}
+      if(event.target.closest('[data-auth-pause]'))setPaused(!paused);
+    };
+    panel.addEventListener('click',onClick);
+    N.authSetMode=m=>{if(m===mode)return;mode=m;idx=0;show();schedule(DUR);};
+    show();schedule(DUR);
+    track(()=>{clearTimeout(timer);panel.removeEventListener('click',onClick);delete panel.dataset.carousel;N.authSetMode=null;});
+  };
   N.animateAuth=function(){
+    this.startAuthCarousel();
     syncPreference();if(reduced()||!window.gsap)return;
-    viewContext=gsap.context(()=>{gsap.from('.auth-brand-panel > *, .auth-form > *',{y:30,opacity:0,duration:.8,stagger:.065,ease:'power3.out',clearProps:'opacity,transform'});});
+    viewContext=gsap.context(()=>{gsap.from('.auth-brand-panel > :not(.auth-photos), .auth-form > *',{y:30,opacity:0,duration:.8,stagger:.065,ease:'power3.out',clearProps:'opacity,transform'});});
   };
   N.animateView=function(){
     viewContext?.revert();viewContext=null;
@@ -50,15 +80,18 @@
   N.initLanding=function(){
     syncPreference();this.registerPWA();const root=document.querySelector('#swup');if(!root)return;
     const container=root.querySelector('#hero-motor');
+    const introPlaying=document.documentElement.classList.contains('intro-on');
     if(!reduced()){
-      if(window.anime?.animate){
+      if(window.anime?.animate&&!introPlaying){
         const title=anime.animate(root.querySelectorAll('.landing-wordmark span'),{translateY:['105%',0],rotate:[6,0],opacity:[0,1],duration:1100,delay:anime.stagger(75),ease:'outExpo'});
         track(()=>title.revert());
       }
       if(window.gsap){
         landingContext=gsap.context(()=>{
-          gsap.from('.hero-copy > *',{y:32,opacity:0,duration:.9,delay:.18,stagger:.12,ease:'power3.out',clearProps:'opacity,transform'});
-          gsap.from('.stage-label',{y:12,opacity:0,duration:.8,delay:.5,stagger:.15,clearProps:'opacity,transform'});
+          if(!introPlaying){
+            gsap.from('.hero-copy > *',{y:32,opacity:0,duration:.9,delay:.18,stagger:.12,ease:'power3.out',clearProps:'opacity,transform'});
+            gsap.from('.stage-label',{y:12,opacity:0,duration:.8,delay:.5,stagger:.15,clearProps:'opacity,transform'});
+          }
           if(window.ScrollTrigger){
             gsap.registerPlugin(ScrollTrigger);
             root.querySelectorAll('.section-intro, .module-row, .principles article, .landing-end > *').forEach(el=>gsap.from(el,{y:38,opacity:0,duration:.75,ease:'power3.out',clearProps:'opacity,transform',scrollTrigger:{trigger:el,start:'top 94%',once:true}}));
@@ -86,11 +119,17 @@
     }
     if(container&&location.protocol!=='file:'){
       const generation=++sceneGeneration;
-      module().then(m=>{
+      const startMotor=()=>{
         if(generation!==sceneGeneration||!container.isConnected)return;
-        const scene=m.createMotor(container,{reduced:reduced()});this.heroDispose=()=>{scene.dispose();};
-        if(!reduced()&&window.ScrollTrigger){const trigger=ScrollTrigger.create({trigger:container,start:'top bottom',end:'bottom top',onUpdate:self=>scene.setProgress(self.progress)});track(()=>trigger.kill());}
-      }).catch(error=>{if(container.isConnected)container.querySelector('.schematic-fallback')?.removeAttribute('hidden');console.info('Ilustração estática do motor ativa.',error.message);});
+        module().then(m=>{
+          if(generation!==sceneGeneration||!container.isConnected)return;
+          const scene=m.createMotor(container,{reduced:reduced()});this.heroDispose=()=>{scene.dispose();};
+          if(!reduced()&&window.ScrollTrigger){const trigger=ScrollTrigger.create({trigger:container,start:'top bottom',end:'bottom top',onUpdate:self=>scene.setProgress(self.progress)});track(()=>trigger.kill());}
+        }).catch(error=>{if(container.isConnected)container.querySelector('.schematic-fallback')?.removeAttribute('hidden');console.info('Ilustração estática do motor ativa.',error.message);});
+      };
+      // Durante a abertura o Three.js (1,4 MB) travaria a animação: o motor 3D entra depois dela.
+      if(introPlaying){document.addEventListener('nexus:intro-done',startMotor,{once:true});track(()=>document.removeEventListener('nexus:intro-done',startMotor));}
+      else startMotor();
     }
   };
   N.startTwin=async function(){
