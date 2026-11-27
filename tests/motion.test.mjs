@@ -31,8 +31,8 @@ test('Sistema e movimento reduzido continuam disponíveis sem forçar animaçõe
 test('Troca de página aguarda a animação GSAP em vez de substituir o conteúdo imediatamente',async()=>{
   const m=motion({saved:'full'});let completed=false;
   const navigation=m.N.transitionPage('out').then(()=>{completed=true;});await Promise.resolve();assert.equal(completed,false);
-  assert.equal(m.pending.length,1);assert.ok(m.pending[0].duration>=.3);m.pending[0].onComplete();await navigation;assert.equal(completed,true);
-  const entering=m.N.transitionPage('in');assert.ok(m.pending[1].duration>=.6);m.pending[1].onComplete();await entering;
+  assert.equal(m.pending.length,1);assert.ok(m.pending[0].duration>0&&m.pending[0].duration<=.2);m.pending[0].onComplete();await navigation;assert.equal(completed,true);
+  const entering=m.N.transitionPage('in');assert.ok(m.pending[1].duration>0&&m.pending[1].duration<=.3);m.pending[1].onComplete();await entering;
 });
 test('Transição interrompida libera a navegação anterior; sem GSAP ou movimento, continua acessível',async()=>{
   const m=motion({saved:'full'});const first=m.N.transitionPage('out');const next=m.N.transitionPage('in');await first;m.pending[1].onComplete();await next;

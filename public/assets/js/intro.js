@@ -31,7 +31,7 @@
   if(reduced||!window.gsap){
     ropes.forEach(r=>{r.style.opacity='1';});
     rise.setAttribute('y',TOP);rise.setAttribute('height',BASE-TOP);logo.style.opacity='1';
-    setTimeout(finish,reduced?700:900);return;
+    setTimeout(finish,reduced?120:180);return;
   }
 
   const g=window.gsap;
@@ -56,7 +56,7 @@
   const page=document.querySelector('#swup');
   if(page){
     tl.fromTo(page,{scale:1.06,transformOrigin:'50% 0%'},{scale:1,duration:1.3,ease:'power3.out',clearProps:'transform',immediateRender:false},3.25);
-    const words=page.querySelectorAll('.landing-wordmark span'),copy=page.querySelectorAll('.hero-copy > *'),labels=page.querySelectorAll('.stage-label');
+    const words=page.querySelectorAll('.landing-wordmark span'),copy=page.querySelectorAll('.hero-copy > *'),labels=page.querySelectorAll('.hero-carousel-footer');
     if(words.length)tl.fromTo(words,{yPercent:105,opacity:0},{yPercent:0,opacity:1,duration:1,stagger:.06,ease:'expo.out',clearProps:'transform,opacity'},3.45);
     if(copy.length)tl.fromTo(copy,{y:32,opacity:0},{y:0,opacity:1,duration:.85,stagger:.1,ease:'power3.out',clearProps:'transform,opacity'},3.55);
     if(labels.length)tl.fromTo(labels,{y:12,opacity:0},{y:0,opacity:1,duration:.7,stagger:.12,clearProps:'transform,opacity'},3.7);
@@ -71,7 +71,7 @@
       if(finished)return;
       // Sem "lag smoothing": em máquina lenta a abertura segue o relógio real (pode pular quadros) em vez de parecer parada.
       g.ticker.lagSmoothing(0);
-      tl.play(0);
+      tl.timeScale(2.4).play(0);
       // Aba em segundo plano pausa o requestAnimationFrame: a página nunca fica escondida.
       setTimeout(()=>{if(!finished)tl.progress(1);},8000);
     }));

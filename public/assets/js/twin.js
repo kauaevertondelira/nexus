@@ -18,17 +18,6 @@ function rendererFor(container,transparent=false){
   return {renderer,resize};
 }
 function dispose(scene,renderer){scene.traverse(o=>{o.geometry?.dispose();if(o.material){const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{m.map?.dispose();m.dispose();});}});renderer.dispose();renderer.domElement.remove();}
-export function createMotor(container,{reduced=false}={}){
-  const {renderer,resize}=rendererFor(container,true),scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(35,1,.1,100);camera.position.set(5.3,3.8,6.5);camera.lookAt(0,.9,0);
-  const model=motorModel();model.rotation.y=-.15;scene.add(model);scene.add(new THREE.HemisphereLight(0xffffff,0x1b4fc4,3));const key=new THREE.DirectionalLight(0xffffff,4);key.position.set(3,6,5);scene.add(key);const rim=new THREE.DirectionalLight(0xf5b700,3);rim.position.set(-4,2,-4);scene.add(rim);
-  let frame,last=0,elapsed=0,visible=true,progress=.5,disposed=false;const pointer={x:0,y:0},rotor=model.getObjectByName('rotor');
-  const move=event=>{const rect=container.getBoundingClientRect();pointer.x=(event.clientX-rect.left)/rect.width-.5;pointer.y=(event.clientY-rect.top)/rect.height-.5;};
-  const leave=()=>{pointer.x=0;pointer.y=0;};
-  if(!reduced){container.addEventListener('pointermove',move);container.addEventListener('pointerleave',leave);}
-  const draw=time=>{if(disposed)return;if(!reduced)frame=requestAnimationFrame(draw);if(!visible||document.hidden){last=time;return;}if(time-last<16)return;const delta=Math.min((time-last)/1000,.05);last=time;if(!reduced){elapsed+=delta;model.rotation.y=-.15+elapsed*.38+pointer.x*.35+(progress-.5)*.7;model.rotation.x+=(pointer.y*.16-model.rotation.x)*.08;model.position.y=Math.sin(elapsed*1.3)*.075;if(rotor)rotor.rotation.x=elapsed*8;}renderer.render(scene,camera);};
-  const obs=resize((w,h)=>{camera.aspect=w/h;camera.updateProjectionMatrix();renderer.render(scene,camera);});const vis=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;});vis.observe(container);frame=requestAnimationFrame(draw);document.querySelector('.schematic-fallback')?.setAttribute('hidden','');
-  return {setProgress(value){progress=value;},dispose(){disposed=true;cancelAnimationFrame(frame);obs.disconnect();vis.disconnect();container.removeEventListener('pointermove',move);container.removeEventListener('pointerleave',leave);dispose(scene,renderer);}};
-}
 function label(text){const canvas=document.createElement('canvas');canvas.width=256;canvas.height=64;const context=canvas.getContext('2d');context.fillStyle='#041330cc';context.fillRect(0,0,256,64);context.textAlign='center';context.textBaseline='middle';context.font='500 30px Arial';context.fillStyle='#e6ecf8';context.fillText(String(text).slice(0,18),128,32);const texture=new THREE.CanvasTexture(canvas);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,depthTest:false}));sprite.scale.set(2.3,.575,1);return sprite;}
 export function createFactory(container,assets,onSelect){
   const {renderer,resize}=rendererFor(container),scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(38,1,.1,200),groups=new Map();

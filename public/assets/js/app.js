@@ -1,13 +1,33 @@
 (function(N){
   'use strict';
-  const e=N.escape;let frame,bootSequence=0,notificationsSeen=new Set(),installPrompt;
+  const e=N.escape;let frame,bootSequence=0,notificationsSeen=new Set(),installPrompt,sidebarUI,sidebarModule;
+  let sidebarCollapsed=false;try{sidebarCollapsed=localStorage.getItem('nexus-sidebar-collapsed')==='1';}catch{}
+  const sidebarArrow='<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg>';
+  N.syncSidebar=function(){
+    const shell=document.querySelector('.app-shell');if(!shell)return;
+    shell.classList.toggle('sidebar-collapsed',sidebarCollapsed);
+    const label=sidebarCollapsed?'Expandir barra lateral':'Recolher barra lateral';
+    document.querySelectorAll('[data-action="sidebar-toggle"]').forEach(button=>{button.setAttribute('aria-label',label);button.setAttribute('aria-expanded',String(!sidebarCollapsed));button.setAttribute('title',label);});
+    sidebarUI?.update(sidebarCollapsed);
+  };
+  N.toggleSidebar=function(){
+    sidebarCollapsed=!sidebarCollapsed;try{localStorage.setItem('nexus-sidebar-collapsed',sidebarCollapsed?'1':'0');}catch{}
+    this.syncSidebar();
+  };
+  N.enhanceSidebar=function(){
+    const host=document.querySelector('[data-sidebar-control]');if(!host)return;
+    sidebarModule??=import(new URL('public/assets/vendor/nexus-ui/sidebar.js?v='+this.version,this.base).href);
+    sidebarModule.then(module=>{if(host.isConnected){sidebarUI=module.mountSidebarToggle(host,sidebarCollapsed);}}).catch(()=>{sidebarModule=null;});
+  };
   N.renderShell=function(){
+    sidebarUI?.dispose();sidebarUI=null;this.hideSidebarTooltip?.();
     const groups=['Operação','Manutenção','Inteligência','Suprimentos','Gestão','Sistema'];
     const hidden=['ativo-detalhes','os-detalhes','perfil'];
-    const links=groups.map(group=>{const entries=Object.entries(this.routes).filter(([page,data])=>data[1]===group&&!hidden.includes(page)&&this.canAccess(page));if(!entries.length)return '';return '<div class="nav-group"><span class="nav-group-title">'+e(group)+'</span>'+entries.map(([page,data])=>'<a class="nav-link '+((page===this.route||(page==='ativos'&&this.route==='ativo-detalhes')||(page==='os'&&this.route==='os-detalhes'))?'active':'')+'" '+(page===this.route?'aria-current="page" ':'')+'data-swup href="'+this.href(page)+'">'+this.icon(data[2])+'<span>'+e(data[0])+'</span></a>').join('')+'</div>';}).join('');
+    const links=groups.map(group=>{const entries=Object.entries(this.routes).filter(([page,data])=>data[1]===group&&!hidden.includes(page)&&this.canAccess(page));if(!entries.length)return '';return '<div class="nav-group"><span class="nav-group-title">'+e(group)+'</span>'+entries.map(([page,data])=>'<a class="nav-link '+((page===this.route||(page==='ativos'&&this.route==='ativo-detalhes')||(page==='os'&&this.route==='os-detalhes'))?'active':'')+'" aria-label="'+e(data[0])+'" data-tooltip="'+e(data[0])+'" '+(page===this.route?'aria-current="page" ':'')+'data-swup href="'+this.href(page)+'">'+this.icon(data[2])+'<span>'+e(data[0])+'</span></a>').join('')+'</div>';}).join('');
     const avatar=this.avatarContent();
     const plant=this.entries('companies')[0]?.name||this.user.company||'Minha unidade';
-    document.querySelector('#swup').innerHTML='<div class="app-shell"><aside class="sidebar" id="sidebar"><a class="brand" data-swup href="'+this.href('menu')+'"><span class="brand-mark" aria-hidden="true"></span>NEXUS</a><div class="plant-selector">'+this.icon('machine')+'<div><strong>'+e(plant)+'</strong><small>Manutenção & operação</small></div></div><nav aria-label="Módulos do sistema">'+links+'</nav><div class="sidebar-footer"><button class="sidebar-support" data-action="support">'+this.icon('help')+'Central de suporte</button><div class="sidebar-person"><a class="avatar" data-swup href="'+this.href('perfil')+'" aria-label="Meu perfil">'+avatar+'</a><div class="grow"><a data-swup href="'+this.href('perfil')+'"><strong>'+e(this.user.name)+'</strong></a><small>'+e(this.user.role)+'</small></div><button class="icon-btn" data-action="logout" aria-label="Sair do sistema">'+this.icon('logout')+'</button></div></div></aside><div class="app-workspace"><header class="topbar"><div class="flex"><button class="icon-btn menu-button" data-action="mobile-menu" aria-label="Abrir navegação" aria-controls="sidebar" aria-expanded="false">'+this.icon('menu')+'</button><div class="breadcrumb"><span>'+e(this.routes[this.route]?.[1]||'Sistema')+'</span><span aria-hidden="true">/</span><strong>'+e(this.routes[this.route]?.[0]||'NEXUS')+'</strong></div></div><div class="topbar-actions"><span class="status-connection '+(this.mode==='demo'?'demo':this.online?'online':'offline')+'" id="connection-status"><span class="dot"></span>'+(this.mode==='demo'?'Demonstração local':this.online?'Firebase conectado':'Sem conexão')+'</span><button class="icon-btn" data-action="global-search" aria-label="Buscar em todos os módulos">'+this.icon('search')+'</button><button class="icon-btn" data-action="theme" aria-label="Alternar tema">'+this.icon('moon')+'</button><a class="icon-btn" data-swup href="'+this.href('notificacoes')+'" aria-label="Abrir notificações">'+this.icon('bell')+'</a><a class="avatar" data-swup href="'+this.href('perfil')+'" aria-label="Abrir perfil">'+avatar+'</a></div></header>'+(this.mode==='demo'?'<div class="demo-banner"><span><strong>DEMONSTRAÇÃO</strong> · Dados fictícios salvos apenas neste navegador.</span><a href="'+this.href('login')+'" data-action="leave-demo">Entrar com minha conta</a></div>':'')+'<main class="workspace" id="conteudo"><div id="view-body"></div><footer class="workspace-footer"><span>NEXUS / INDUSTRIAL OPERATING SYSTEM</span><span>'+(this.mode==='demo'?'DEMO':'REALTIME DATABASE')+'</span></footer></main></div></div>';
+    document.querySelector('#swup').innerHTML='<div class="app-shell"><aside class="sidebar" id="sidebar" aria-label="Navegação da Nexus"><div class="sidebar-header"><a class="brand" aria-label="Nexus, visão global" data-swup href="'+this.href('menu')+'"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">NEXUS</span></a><div data-sidebar-control><button type="button" class="sidebar-toggle" data-action="sidebar-toggle" aria-label="Recolher barra lateral" aria-controls="sidebar-nav" aria-expanded="true">'+sidebarArrow+'</button></div><button type="button" class="icon-btn sidebar-mobile-close" data-action="mobile-close" aria-label="Fechar navegação">'+this.icon('close')+'</button></div><div class="plant-selector">'+this.icon('machine')+'<div><strong>'+e(plant)+'</strong><small>Manutenção & operação</small></div></div><nav id="sidebar-nav" class="sidebar-nav" aria-label="Módulos do sistema">'+links+'</nav><div class="sidebar-footer"><button class="sidebar-support" data-action="support" aria-label="Central de suporte" data-tooltip="Central de suporte">'+this.icon('help')+'<span>Central de suporte</span></button><div class="sidebar-person"><a class="avatar" data-swup href="'+this.href('perfil')+'" aria-label="Meu perfil">'+avatar+'</a><div class="grow"><a data-swup href="'+this.href('perfil')+'"><strong>'+e(this.user.name)+'</strong></a><small>'+e(this.user.role)+'</small></div><button class="icon-btn" data-action="logout" aria-label="Sair do sistema">'+this.icon('logout')+'</button></div></div></aside><div class="app-workspace"><header class="topbar"><div class="flex"><button class="icon-btn menu-button" data-action="mobile-menu" aria-label="Abrir navegação" aria-controls="sidebar" aria-expanded="false">'+this.icon('menu')+'</button><div class="breadcrumb"><span>'+e(this.routes[this.route]?.[1]||'Sistema')+'</span><span aria-hidden="true">/</span><strong>'+e(this.routes[this.route]?.[0]||'NEXUS')+'</strong></div></div><div class="topbar-actions"><span class="status-connection '+(this.mode==='demo'?'demo':this.online?'online':'offline')+'" id="connection-status"><span class="dot"></span>'+(this.mode==='demo'?'Demonstração local':this.online?'Firebase conectado':'Sem conexão')+'</span><button class="icon-btn" data-action="global-search" aria-label="Buscar em todos os módulos">'+this.icon('search')+'</button><button class="icon-btn" data-action="theme" aria-label="Alternar tema">'+this.icon('moon')+'</button><a class="icon-btn" data-swup href="'+this.href('notificacoes')+'" aria-label="Abrir notificações">'+this.icon('bell')+'</a><a class="avatar" data-swup href="'+this.href('perfil')+'" aria-label="Abrir perfil">'+avatar+'</a></div></header>'+(this.mode==='demo'?'<div class="demo-banner"><span><strong>DEMONSTRAÇÃO</strong> · Dados fictícios salvos apenas neste navegador.</span><a href="'+this.href('login')+'" data-action="leave-demo">Entrar com minha conta</a></div>':'')+'<main class="workspace" id="conteudo"><div id="view-body"></div><footer class="workspace-footer"><span>NEXUS / Gestão industrial</span><span>'+(this.mode==='demo'?'Demonstração':'Dados em tempo real')+'</span></footer></main></div></div>';
+    this.syncSidebar();this.enhanceSidebar();
   };
   N.refresh=function(animate=false){
     if(!document.querySelector('#view-body')||!this.user)return;
@@ -16,13 +36,14 @@
       if(!viewBody.isConnected||this.route!==route||!this.user)return;
       const active=document.activeElement,id=active?.id,selection=active?.tagName==='INPUT'&&['search','text'].includes(active.type)?[active.selectionStart,active.selectionEnd]:null;
       const view=this.views[this.route];this.exportRows=[];this.exportColumns=[];if(this.route==='mapa')this.twinDispose?.();
-      try{const notice=this.mode==='firebase'&&Object.keys(this.readErrors||{}).length?'<div class="notice warning" style="margin-bottom:22px" role="status">Algumas coleções não puderam ser carregadas. Reconecte ou confira as permissões antes de interpretar indicadores ou exportar um backup.</div>':'';document.querySelector('#view-body').innerHTML=notice+(view?view.call(this):this.empty('Página indisponível','Use o menu para navegar.'));}catch(error){console.error('Falha na página',error);document.querySelector('#view-body').innerHTML='<div class="notice error">'+e('Não foi possível exibir esta página. '+this.errorText(error))+'</div>';} 
+      try{const notice=this.mode==='firebase'&&Object.keys(this.readErrors||{}).length?'<div class="notice warning" style="margin-bottom:22px" role="status">Algumas coleções não puderam ser carregadas. Reconecte ou confira as permissões antes de interpretar indicadores ou exportar uma cópia.</div>':'';document.querySelector('#view-body').innerHTML=notice+(view?view.call(this):this.empty('Página indisponível','Use o menu para navegar.'));}catch(error){console.error('Falha na página',error);document.querySelector('#view-body').innerHTML='<div class="notice error">'+e('Não foi possível exibir esta página. '+this.errorText(error))+'</div>';} 
       if(id&&document.querySelector('#'+CSS.escape(id))){const field=document.querySelector('#'+CSS.escape(id));field.focus({preventScroll:true});if(selection)field.setSelectionRange(...selection);}
       if(animate)this.animateView?.();if(this.route==='mapa')this.startTwin?.();
     });
   };
   N.errorScreen=function(title,text){document.querySelector('#swup').innerHTML='<main class="boot-state" id="conteudo"><a class="brand" href="'+this.base.href+'"><span class="brand-mark" aria-hidden="true"></span>NEXUS</a>'+this.icon('shield')+'<h1>'+e(title)+'</h1><p>'+e(text)+'</p><div class="hero-actions"><a class="btn btn-primary" href="'+this.href('login')+'">Voltar ao acesso</a><button class="btn" data-action="retry">Tentar novamente</button><a class="btn" href="'+this.href('login','?demo=1')+'">Explorar demonstração</a></div></main>';};
   N.boot=async function(){
+    sidebarUI?.dispose();sidebarUI=null;this.hideSidebarTooltip?.();
     const sequence=++bootSequence,container=document.querySelector('#swup');if(!container)return;
     this.stopProductionWatch?.();this.cleanupMotion?.();this.resetProfileDraft?.();this.closeModal(false);this.search='';this.filter='all';this.route=container.dataset.page||'index';this.currentOrder=null;this.currentAsset=null;if(this.route==='producao')this.productionAssetId=new URLSearchParams(location.search).get('asset')||'';
     if(this.route==='index'){this.initLanding?.();return;}
@@ -99,10 +120,10 @@
     const fields=[f('role','Cargo','select',{options:this.roles.map(r=>[r,r]),default:u.role,full:true}),f('accessStatus','Situação do acesso','select',{options:[['active','Aprovado'],['pending','Aguardando aprovação'],['blocked','Bloqueado']],default:u.accessStatus||'active',full:true})];
     this.simpleForm('Acesso · '+u.name,fields,async data=>{if(id===this.uid&&(data.get('role')!=='Administrador'||data.get('accessStatus')!=='active'))throw new Error('Sua própria conta administrativa precisa permanecer aprovada e com cargo Administrador.');await this.save('users',id,{role:String(data.get('role')),accessStatus:String(data.get('accessStatus'))});this.toast('Acesso atualizado.');},'O cargo define módulos e ações. Confira a pessoa antes de aprovar o acesso.');
   };
-  N.backup=function(){if(!this.isAdmin())return;const data={};[...this.collections,'users','audit_logs','backup_jobs'].forEach(path=>{if(this.data[path])data[path]=this.data[path];});this.download('nexus-backup-'+this.dateInput()+'.json',JSON.stringify({product:'nexus-industrial',schemaVersion:4,exportedAt:new Date().toISOString(),mode:this.mode,data},null,2));this.audit('Exportou backup operacional','backup_jobs');this.toast('Backup exportado.');};
+  N.backup=function(){if(!this.isAdmin())return;const data={};[...this.collections,'users','audit_logs','backup_jobs'].forEach(path=>{if(this.data[path])data[path]=this.data[path];});this.download('nexus-backup-'+this.dateInput()+'.json',JSON.stringify({product:'nexus-industrial',schemaVersion:4,exportedAt:new Date().toISOString(),mode:this.mode,data},null,2));this.audit('Exportou cópia de segurança','backup_jobs');this.toast('Cópia de segurança exportada.');};
   N.restore=function(){
     if(!this.isAdmin())return;
-    const root=this.modal('Restaurar registros','<p class="detail-description" style="margin-bottom:20px">Escolha um backup JSON da Nexus. Cadastros, documentos, checklists, horas, peças, comentários e inspeções serão mesclados por identificador. Contas, auditoria, atividades imutáveis e telemetria permanecem preservadas.</p><label class="form-field"><span class="label">Arquivo de backup</span><input class="input" type="file" id="backup-file" accept=".json,application/json"></label><p class="form-error" id="backup-error" role="alert"></p><div id="backup-preview" style="margin-top:22px"></div>','<button class="btn" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="restore-confirm" disabled>Restaurar registros</button>');
+    const root=this.modal('Restaurar registros','<p class="detail-description" style="margin-bottom:20px">Escolha uma cópia de segurança JSON da Nexus. Cadastros, documentos, etapas, horas, peças, comentários e inspeções serão mesclados por identificador. Contas, auditoria, atividades imutáveis e telemetria permanecem preservadas.</p><label class="form-field"><span class="label">Arquivo da cópia de segurança</span><input class="input" type="file" id="backup-file" accept=".json,application/json"></label><p class="form-error" id="backup-error" role="alert"></p><div id="backup-preview" style="margin-top:22px"></div>','<button class="btn" data-action="close-modal">Cancelar</button><button class="btn btn-primary" id="restore-confirm" disabled>Restaurar registros</button>');
     let updates={};
     root.querySelector('#backup-file').addEventListener('change',async event=>{
       const file=event.target.files?.[0];root.querySelector('#restore-confirm').disabled=true;
@@ -143,6 +164,7 @@
       case 'production-new':this.newProductionSession(id);break;
       case 'production-camera':this.openProductionCamera(id);break;
       case 'production-sync':await this.flushProduction();if(this.productionSync.error)throw new Error(this.productionSync.error);this.toast(this.pendingProduction().length?'Há peças aguardando conexão.':'Fila de produção sincronizada.');break;
+      case 'sidebar-toggle':this.toggleSidebar();break;
       case 'motion-toggle':this.setMotionPreference(document.documentElement.dataset.motion==='reduced'?'full':'reduced');break;
       case 'profile-photo-choose':document.querySelector('#profile-photo')?.click();break;
       case 'profile-photo-remove':this.removeProfilePhoto();break;
@@ -161,7 +183,7 @@
       case 'request-reject':this.confirm('Rejeitar solicitação','Marcar esta solicitação como rejeitada?',async()=>{await this.save('maintenance_requests',id,{status:'rejected'});this.toast('Solicitação rejeitada.');this.refresh();});break;
       case 'order-start':await this.changeOrder(id,{status:'in_progress',startedAt:Date.now()},'Serviço iniciado');this.toast('Serviço iniciado.');break;
       case 'order-finish':{
-        const pending=Object.values(this.data.work_order_checklists?.[id]||{}).some(c=>!c.done);if(pending)throw new Error('Complete todas as etapas do checklist antes de concluir.');
+        const pending=Object.values(this.data.work_order_checklists?.[id]||{}).some(c=>!c.done);if(pending)throw new Error('Complete todas as etapas do procedimento antes de concluir.');
         this.simpleForm('Concluir ordem de serviço',[f('note','Descreva a execução e o resultado','textarea',{required:true,minLength:5,max:300,full:true}),f('hours','Parada total do equipamento (h)','number',{required:true,min:0,step:'0.25',default:this.data.work_orders?.[id]?.downtimeHours||0})],async data=>{await this.changeOrder(id,{status:'completed',completionNote:String(data.get('note')).trim(),downtimeHours:Number(data.get('hours')),completedAt:Date.now(),completedByUid:this.uid,completedByName:this.user.name},'Ordem concluída e resultado registrado');this.toast('Ordem concluída.');});break;
       }
       case 'order-check-add':this.simpleForm('Adicionar etapa',[f('title','Etapa do procedimento','text',{required:true,max:180,full:true})],async data=>{await this.save('work_order_checklists/'+id,'',{title:String(data.get('title')).trim(),done:false});this.toast('Etapa adicionada.');});break;
@@ -194,7 +216,33 @@
       case 'pwa-install':if(installPrompt){await installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;}else this.toast('Use o menu do navegador → Instalar aplicativo. A opção aparece em navegadores compatíveis, com HTTPS.','warning');break;
     }
   };
-  N.toggleMenu=function(open){document.querySelector('.mobile-scrim')?.remove();const sidebar=document.querySelector('#sidebar');if(!sidebar)return;open=open??!sidebar.classList.contains('is-open');sidebar.classList.toggle('is-open',open);document.querySelector('[data-action=mobile-menu]')?.setAttribute('aria-expanded',String(open));if(open){const scrim=document.createElement('button');scrim.className='mobile-scrim';scrim.dataset.action='mobile-close';scrim.setAttribute('aria-label','Fechar navegação');document.body.append(scrim);}};
+  N.toggleMenu=function(open){
+    document.querySelector('.mobile-scrim')?.remove();const sidebar=document.querySelector('#sidebar');if(!sidebar)return;
+    const wasOpen=sidebar.classList.contains('is-open');open=open??!wasOpen;
+    sidebar.classList.toggle('is-open',open);
+    const trigger=document.querySelector('[data-action="mobile-menu"]');trigger?.setAttribute('aria-expanded',String(open));
+    const workspace=document.querySelector('.app-workspace');if(workspace)workspace.inert=open;
+    if(open){
+      const scrim=document.createElement('button');scrim.className='mobile-scrim';scrim.dataset.action='mobile-close';scrim.setAttribute('aria-label','Fechar navegação');scrim.tabIndex=-1;document.body.append(scrim);
+      sidebar.querySelector('.sidebar-mobile-close')?.focus({preventScroll:true});
+    }else if(wasOpen&&matchMedia('(max-width:780px)').matches)trigger?.focus({preventScroll:true});
+  };
+  N.hideSidebarTooltip=function(){document.querySelector('#sidebar-tooltip')?.remove();document.querySelectorAll('[aria-describedby="sidebar-tooltip"]').forEach(el=>el.removeAttribute('aria-describedby'));};
+  const showSidebarTooltip=event=>{
+    const target=event.target.closest('[data-tooltip]');
+    if(!target||!target.closest('.sidebar-collapsed')||!matchMedia('(min-width:781px)').matches)return;
+    N.hideSidebarTooltip();
+    const tooltip=document.createElement('div'),rect=target.getBoundingClientRect();
+    tooltip.id='sidebar-tooltip';tooltip.className='sidebar-tooltip';tooltip.setAttribute('role','tooltip');tooltip.textContent=target.dataset.tooltip;
+    tooltip.style.left=(document.querySelector('.sidebar').getBoundingClientRect().right+10)+'px';tooltip.style.top=(rect.top+rect.height/2)+'px';
+    target.setAttribute('aria-describedby',tooltip.id);document.body.append(tooltip);
+  };
+  document.addEventListener('pointerover',showSidebarTooltip);
+  document.addEventListener('focusin',showSidebarTooltip);
+  document.addEventListener('pointerout',event=>{if(event.target.closest('[data-tooltip]'))N.hideSidebarTooltip();});
+  document.addEventListener('focusout',()=>N.hideSidebarTooltip());
+  document.addEventListener('scroll',()=>N.hideSidebarTooltip(),{capture:true,passive:true});
+  window.addEventListener('resize',()=>{N.hideSidebarTooltip();if(matchMedia('(min-width:781px)').matches&&document.querySelector('.sidebar.is-open'))N.toggleMenu(false);});
   N.loginSubmit=async function(form){
     const error=document.querySelector('#auth-error'),button=form.querySelector('[type=submit]'),data=new FormData(form),email=String(data.get('email')||'').trim(),password=String(data.get('password')||''),tab=form.dataset.tab||'login';button.disabled=true;error.textContent='';
     try{
@@ -255,7 +303,17 @@
   document.addEventListener('nexus:connection',()=>{const target=document.querySelector('#connection-status');if(target){target.className='status-connection '+(N.mode==='demo'?'demo':N.online?'online':'offline');target.innerHTML='<span class="dot"></span>'+(N.mode==='demo'?'Demonstração local':N.online?'Firebase conectado':'Sem conexão');}});
   window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;});
   window.addEventListener('online',()=>{N.online=true;});window.addEventListener('offline',()=>{N.online=false;document.dispatchEvent(new CustomEvent('nexus:connection'));});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape')N.toggleMenu(false);if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'&&N.user){event.preventDefault();N.globalSearch();}});
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){N.toggleMenu(false);N.hideSidebarTooltip();}
+    const sidebar=document.querySelector('.sidebar.is-open');
+    if(event.key==='Tab'&&sidebar){
+      const items=[...sidebar.querySelectorAll('a[href],button:not([disabled])')].filter(el=>el.getClientRects().length);
+      const first=items[0],last=items.at(-1);
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+    }
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'&&N.user){event.preventDefault();N.globalSearch();}
+  });
   try{document.documentElement.dataset.theme=localStorage.getItem('nexus-theme')||'light';}catch{}
   document.addEventListener('DOMContentLoaded',()=>{N.initMotion?.();N.boot();});
 })(window.Nexus);
