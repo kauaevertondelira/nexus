@@ -1,4 +1,8 @@
-# Atualização visual 4.5.0
+# Atualização visual 4.5.1
+
+O cabeçalho da página inicial fica sobre o carrossel, com uma vinheta azul. Branco e azul escuro definem a nova paleta. As orientações de configuração do Firebase e publicação no GitHub Pages saíram da Central de suporte.
+
+## Versão 4.5.0
 
 A abertura agora usa um carrossel de fotografias industriais, com pausa, seleção manual e respeito a movimento reduzido. O motor 3D da abertura foi removido. A seta junto à marca recolhe a barra lateral para ícones e salva a preferência. No celular, a navegação abre como um painel com fechamento por botão ou Escape.
 
