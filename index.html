@@ -10,28 +10,28 @@
 <link rel="apple-touch-icon" href="./public/assets/images/icon-192.png">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="preload" href="./public/assets/fonts/space-grotesk-500.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="./public/assets/css/nexus.css?v=4.4.0">
+<link rel="stylesheet" href="./public/assets/vendor/nexus-ui/styles.css?v=4.5.0">
+<link rel="stylesheet" href="./public/assets/css/nexus.css?v=4.5.0">
 <script>(function(){try{var d=document.documentElement,m=localStorage.getItem('nexus-motion'),r=m==='reduced'||(m!=='full'&&matchMedia('(prefers-reduced-motion: reduce)').matches);if(!sessionStorage.getItem('nexus-intro')){d.classList.add('intro-on');if(r)d.classList.add('intro-reduced');setTimeout(function(){d.classList.remove('intro-on')},12000);}}catch(e){}})();</script>
-<script src="./public/assets/vendor/anime/anime.umd.min.js?v=4.4.0" defer></script>
-<script src="./public/assets/vendor/motion/motion.js?v=4.4.0" defer></script>
-<script src="./public/assets/vendor/gsap/gsap.min.js?v=4.4.0" defer></script>
-<script src="./public/assets/vendor/gsap/ScrollTrigger.min.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/intro.js?v=4.4.0" defer></script>
-<script src="./public/assets/vendor/swup/Swup.umd.js?v=4.4.0" defer></script>
-<script src="./public/assets/vendor/jspdf/jspdf.umd.min.js?v=4.4.0" defer></script>
-<script src="./public/assets/vendor/qrcode/qrcode.min.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/firebase-config.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/core.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/data.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/ui.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/profile.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/production-engine.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/production-data.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/production.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/iot.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/views.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/motion.js?v=4.4.0" defer></script>
-<script src="./public/assets/js/app.js?v=4.4.0" defer></script>
+<script src="./public/assets/vendor/motion/motion.js?v=4.5.0" defer></script>
+<script src="./public/assets/vendor/lenis/lenis.min.js?v=4.5.0" defer></script>
+<script src="./public/assets/vendor/gsap/gsap.min.js?v=4.5.0" defer></script>
+<script src="./public/assets/vendor/gsap/ScrollTrigger.min.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/intro.js?v=4.5.0" defer></script>
+<script src="./public/assets/vendor/swup/Swup.umd.js?v=4.5.0" defer></script>
+<script src="./public/assets/vendor/qrcode/qrcode.min.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/firebase-config.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/core.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/data.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/ui.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/profile.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/production-engine.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/production-data.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/production.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/iot.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/views.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/motion.js?v=4.5.0" defer></script>
+<script src="./public/assets/js/app.js?v=4.5.0" defer></script>
 </head><body><a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 <div class="intro" id="intro"><button class="intro-skip" type="button" data-intro-skip>Pular abertura</button>
 <div class="intro-stage" aria-hidden="true"><svg class="intro-svg" viewBox="0 0 1080 1080">
@@ -41,9 +41,38 @@
 </svg></div></div><div id="swup" data-page="index" class="transition-main landing">
 <div class="landing-progress" aria-hidden="true"></div><header class="landing-header"><a class="brand" data-swup href="./index.html" aria-label="Nexus Industrial, início"><span class="brand-mark" aria-hidden="true"></span>NEXUS<small>Industrial</small></a><nav class="landing-nav" aria-label="Navegação principal"><a href="#plataforma">Plataforma</a><a href="#modulos">Módulos</a><a href="#operacao">Operação</a></nav><div class="landing-header-actions"><button type="button" class="btn btn-pill motion-toggle" data-action="motion-toggle" aria-pressed="true">Reduzir movimento</button><a class="btn btn-pill" data-swup href="public/pages/login.html">Acessar sistema</a></div></header>
 <div class="landing-wordmark" aria-hidden="true"><span>N</span><span>E</span><span>X</span><span>U</span><span>S</span></div>
-<div class="landing-meta"><span>Industrial operating system</span><span>Manutenção. Dados. Movimento.</span></div>
-<main id="conteudo"><section class="landing-hero" id="inicio" aria-labelledby="hero-title"><div class="hero-copy"><h1 id="hero-title">A indústria não para.<br><em>Sua gestão acompanha.</em></h1><p>Da condição de uma máquina à próxima decisão. Ativos, manutenção e operação conectados no mesmo lugar.</p><div class="hero-actions"><a class="btn btn-acid btn-pill" data-swup href="public/pages/menu.html?demo=1">Explorar a Nexus</a><a class="btn btn-pill" data-swup href="public/pages/login.html">Entrar na minha conta</a></div></div><div class="hero-stage" id="hero-motor" aria-label="Visualização ilustrativa de um motor industrial"><div class="schematic-fallback" aria-hidden="true"><svg viewBox="0 0 520 320" fill="none" stroke="currentColor" stroke-width="2"><path d="m90 112 180-64 135 72-180 66Z M90 112v95l135 72 180-64v-95M225 186v93M405 155l55 30v34l-55-29M130 225v28l35 19 30-11M300 253v26l35 19 30-11"/><path d="m110 105 135 73v92m-113-173 135 73v92m-113-173 135 73v92m-113-173 135 73v92m-113-173 135 73v92m-113-173 135 73v92m-113-173 135 73v92m-113-173 135 73v92" opacity=".45"/><path d="m220 77 45-16 60 32v36l-45 16-60-32ZM220 77l60 32 45-16M280 109v36" fill="#204cff"/><circle cx="436" cy="202" r="12"/></svg></div><div class="stage-label"><strong>01 / MOTOR INDUSTRIAL</strong><span>Visualização ilustrativa em 3D</span></div><div class="stage-label stage-label-right"><strong>ENGINEERED TO KEEP MOVING</strong><span>Ativos + manutenção + dados</span></div></div></section>
-<div class="landing-strip" aria-label="Pilares do sistema"><span><b>01</b> Ativos em contexto</span><span><b>02</b> Manutenção com método</span><span><b>03</b> Estoque sob controle</span><span><b>04</b> Operação conectada</span></div>
+<div class="landing-meta"><span>Gestão industrial conectada</span><span>Manutenção. Dados. Movimento.</span></div>
+<main id="conteudo">
+<section class="landing-hero" id="inicio" aria-labelledby="hero-title" data-hero-carousel role="region" aria-roledescription="carrossel" aria-label="Máquinas e processos industriais">
+  <div class="hero-photos" aria-hidden="true">
+    <div class="hero-photo is-active" data-hero-slide data-caption="Robótica e automação" data-credit="BMW Werk Leipzig · CC BY-SA 2.0 DE" data-source="https://commons.wikimedia.org/wiki/File:BMW_Leipzig_MEDIA_050719_Download_Karosseriebau_max.jpg">
+      <img src="./public/assets/images/industrial/robotica-1280.webp" srcset="./public/assets/images/industrial/robotica-768.webp 768w, ./public/assets/images/industrial/robotica-1280.webp 1280w" sizes="100vw" width="1280" height="854" alt="" fetchpriority="high" decoding="async">
+    </div>
+    <div class="hero-photo" data-hero-slide data-caption="Usinagem de precisão" data-credit="David English · CC BY-SA 4.0" data-source="https://commons.wikimedia.org/wiki/File:3_Jaw_Chuck_in_Use.jpg">
+      <img data-src="./public/assets/images/industrial/usinagem-1280.webp" data-srcset="./public/assets/images/industrial/usinagem-768.webp 768w, ./public/assets/images/industrial/usinagem-1280.webp 1280w" width="1280" height="720" alt="" decoding="async">
+    </div>
+    <div class="hero-photo" data-hero-slide data-caption="Tecnologia no chão de fábrica" data-credit="Whoisjohngalt · CC BY-SA 4.0" data-source="https://commons.wikimedia.org/wiki/File:Tsugami_CNC_Lathe.jpg">
+      <img data-src="./public/assets/images/industrial/maquina-cnc-1280.webp" data-srcset="./public/assets/images/industrial/maquina-cnc-768.webp 768w, ./public/assets/images/industrial/maquina-cnc-1280.webp 1280w" width="1280" height="960" alt="" decoding="async">
+    </div>
+  </div>
+  <div class="hero-copy">
+    <span class="hero-kicker"><span class="dot" aria-hidden="true"></span> Sua operação, em sintonia</span>
+    <h1 id="hero-title">A indústria não para.<br>Sua gestão acompanha.</h1>
+    <p>Máquinas, manutenção e pessoas conectadas. Clareza para cuidar da operação e decidir o próximo passo.</p>
+    <div class="hero-actions"><a class="btn btn-acid btn-pill" data-swup href="public/pages/menu.html?demo=1">Explorar a Nexus <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a><a class="btn btn-pill" data-swup href="public/pages/login.html">Entrar na minha conta</a></div>
+  </div>
+  <div class="hero-carousel-footer">
+    <div class="hero-image-label"><span data-hero-count>01 / 03</span><strong data-hero-caption>Robótica e automação</strong><small><a data-hero-credit href="https://commons.wikimedia.org/wiki/File:BMW_Leipzig_MEDIA_050719_Download_Karosseriebau_max.jpg" target="_blank" rel="noopener">BMW Werk Leipzig · CC BY-SA 2.0 DE</a></small></div>
+    <div class="hero-carousel-controls" role="group" aria-label="Controles das imagens de fundo">
+      <button type="button" data-hero-prev aria-label="Imagem anterior"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
+      <div class="hero-dots"><button type="button" data-hero-dot="0" aria-label="Mostrar robótica e automação" aria-pressed="true"></button><button type="button" data-hero-dot="1" aria-label="Mostrar usinagem de precisão" aria-pressed="false"></button><button type="button" data-hero-dot="2" aria-label="Mostrar tecnologia no chão de fábrica" aria-pressed="false"></button></div>
+      <button type="button" data-hero-next aria-label="Próxima imagem"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
+      <button type="button" data-hero-pause aria-label="Pausar carrossel" aria-pressed="false"><svg class="icon" data-pause-icon viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg></button>
+    </div>
+  </div>
+  <span class="sr-only" data-hero-status role="status" aria-live="polite" aria-atomic="true"></span>
+</section>
+<div class="landing-strip" aria-label="Pilares do sistema"><span><b aria-hidden="true"></b> Ativos em contexto</span><span><b aria-hidden="true"></b> Manutenção com método</span><span><b aria-hidden="true"></b> Estoque sob controle</span><span><b aria-hidden="true"></b> Operação conectada</span></div>
 <section class="landing-section" id="plataforma"><div class="section-intro"><span class="eyebrow">01 / A PLATAFORMA</span><div><h2>Uma máquina nunca trabalha sozinha.<br>Nem a sua informação.</h2><p>A Nexus conecta a ficha técnica ao serviço, o serviço à peça e a condição do ativo ao planejamento. Cada equipe acessa os processos que fazem parte do seu trabalho.</p></div></div>
 <div id="modulos">
 <a class="module-row" data-swup href="public/pages/ativos.html?demo=1"><span class="module-number">01</span><h3>Ativos & manutenção</h3><p>Ficha técnica, ordens de serviço, procedimentos, apontamentos e histórico.</p><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h16M12 4v16"/></svg></a>

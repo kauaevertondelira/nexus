@@ -1,3 +1,9 @@
+# Atualização visual 4.5.0
+
+A abertura agora usa um carrossel de fotografias industriais, com pausa, seleção manual e respeito a movimento reduzido. O motor 3D da abertura foi removido. A seta junto à marca recolhe a barra lateral para ícones e salva a preferência. No celular, a navegação abre como um painel com fechamento por botão ou Escape.
+
+Os textos da interface foram traduzidos e as transições ficaram mais curtas. Motion, GSAP, Swup, Lenis e o botão shadcn/ui estão integrados com arquivos locais. O site continua pronto para publicação estática; os arquivos compilados estão incluídos. Veja [ATUALIZACAO-VISUAL-4.5.0.md](ATUALIZACAO-VISUAL-4.5.0.md) para alterações, validação e manutenção.
+
 # Atualização 4.4.0 — máquinas vindas do Python
 
 O parque de máquinas passa a ser definido pelas IHMs Python: cada IHM grava a sua máquina em `maquinas/{MACHINE_ID}` no Firestore, e a ponte `gateway/nexus_sync.py` cria o ativo e o dispositivo `PY-{ID}` na Nexus automaticamente, sem lista fixa. A ponte também atualiza a situação da máquina (operacional, crítica ou parada sem leitura há 5 min). Para remover as máquinas antigas e refazer o parque a partir do Firestore, use `gateway/nexus_reset.py` (faz backup antes). **Para limpar sem instalar nada no seu computador, siga [LIMPEZA-FIREBASE.md](LIMPEZA-FIREBASE.md)** (roda no Google Cloud Shell, pelo navegador). Detalhes da ponte em [gateway/README.md](gateway/README.md). As IHMs enviam uma leitura de sensores a cada 90 s para caber na cota gratuita do Firebase.
@@ -6,7 +12,7 @@ O parque de máquinas passa a ser definido pelas IHMs Python: cada IHM grava a s
 
 Comece por [INTEGRACAO-PYTHON-4.3.0.md](INTEGRACAO-PYTHON-4.3.0.md). A Central IoT recebe temperatura, vibração, rotação, fluido, OPs e paradas do Firestore por uma ponte que inicia junto com a IHM Python. As cinco máquinas foram vinculadas sem limpar o banco.
 
-# NEXUS / Industrial Operating System 4.2
+# NEXUS / Gestão industrial 4.2
 
 Gestão de máquinas industriais, manutenção e suprimentos em uma aplicação estática pronta para GitHub Pages. Abra `index.html` e escolha **Explorar demonstração**, ou publique a pasta completa e conecte sua conta Firebase.
 
@@ -56,11 +62,11 @@ O visual combina tipografia ampla, azul cobalto, detalhes em verde ácido e uma 
 
 ## Movimento e navegação
 
-Anime.js anima a marca; GSAP + ScrollTrigger coordenam as entradas e o movimento durante a rolagem; Motion (motion.dev) controla a barra de leitura e as interações dos módulos. Swup navega entre arquivos HTML reais. Three.js desenha o motor com resposta ao ponteiro e à rolagem e a planta esquemática nos ativos. Os efeitos, observadores e cenas são encerrados antes da troca de página e recriados ao retornar. Fontes e bibliotecas visuais estão incluídas no projeto, com versões fixas e avisos em [THIRD-PARTY.md](THIRD-PARTY.md).
+GSAP coordena a abertura e as transições; Motion controla o progresso de leitura e as interações. Lenis suaviza a rolagem na página inicial, com encerramento ao sair dela. Swup mantém a navegação entre os arquivos HTML. O botão de recolher usa shadcn/ui em uma ilha React carregada apenas na área de trabalho. Three.js é reservado ao mapa esquemático dos ativos e não é solicitado na abertura. Os efeitos, observadores e temporizadores são encerrados antes da troca de página. As fontes e bibliotecas visuais são locais, com versões fixas e avisos em [THIRD-PARTY.md](THIRD-PARTY.md).
 
 Os dados e formulários continuam disponíveis com movimento reduzido ou sem WebGL. A animação é complementar. Todas as páginas têm uma mensagem estática de recuperação caso o JavaScript falhe. O SDK Firebase é carregado por CDN somente quando se usa uma conta real; a demonstração funciona separadamente em armazenamento local.
 
-Na landing, **Ativar animações** permite escolher movimento completo mesmo quando o dispositivo pede movimento reduzido. A escolha fica salva neste navegador. Em **Meu perfil → Aparência → Animações**, há as opções completo, reduzido e seguir o dispositivo. O motor gira continuamente, com eixo em rotação e resposta ao ponteiro; as trocas de página aguardam a saída e a entrada animadas pelo GSAP. A marca ao lado de NEXUS usa a logo fornecida, preservada em `public/assets/images/nexus-logo.png`.
+Na landing, **Ativar animações** permite escolher movimento completo mesmo quando o dispositivo pede movimento reduzido. A escolha fica salva neste navegador. Em **Meu perfil → Aparência → Animações**, há as opções completo, reduzido e seguir o dispositivo. O carrossel alterna fotos a cada 7,5 segundos e pode ser pausado. A troca automática é suspensa com movimento reduzido, foco nos controles, aba oculta ou seção fora da tela; as transições de página usam GSAP. A marca ao lado de NEXUS usa a logo fornecida, preservada em `public/assets/images/nexus-logo.png`.
 
 ## Dados e permissões
 
@@ -112,6 +118,6 @@ O browser fala diretamente com Authentication e Realtime Database. O [gateway op
 
 ## Verificação opcional para desenvolvedores
 
-Com Node 22 ou superior, `npm test` verifica rotas, referências, imports, sintaxe, cache e lógica. `npm run preview` abre um servidor local em `http://127.0.0.1:4173/nexus/`. Esses comandos usam bibliotecas nativas e os arquivos incluídos, sem instalar dependências. Eles não são necessários para publicar pelo Desktop.
+Com Node 22 ou superior, `npm test` verifica rotas, referências, imports, sintaxe, cache e lógica. `npm run preview` abre um servidor local em `http://127.0.0.1:4173/nexus/`. Esses comandos usam bibliotecas nativas e os arquivos incluídos. Para alterar a ilha shadcn/ui ou atualizar as cópias locais das bibliotecas, use `npm ci` e `npm run build:ui`. Eles não são necessários para publicar pelo Desktop.
 
 O workflow em `.github/workflows/verificar-pages.yml` executa essa auditoria a cada atualização no GitHub. Veja o registro de entrega em [VALIDACAO.md](VALIDACAO.md). Login, permissões e gravações reais devem ser conferidos após publicar as regras no seu projeto Firebase.

@@ -1,0 +1,17 @@
+/* Somente utilitários do shadcn/ui; sem reset global na aplicação existente. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@source "./components/button.tsx";
+@source "./sidebar.tsx";
+
+@theme inline {
+  --color-primary: var(--blue);
+  --color-primary-foreground: #fff;
+  --color-accent: var(--light-blue);
+  --color-accent-foreground: var(--blue);
+  --color-secondary: var(--paper);
+  --color-secondary-foreground: var(--ink);
+  --color-ring: var(--blue);
+  --color-input: var(--line);
+  --color-destructive: var(--red);
+}

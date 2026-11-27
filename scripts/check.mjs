@@ -22,7 +22,7 @@ for(const source of files){const extension=path.extname(source);if(!['.html','.c
    for(const match of text.matchAll(/\b(?:src|href)\s*=\s*["']([^"']+)["']/g))verify(source,match[1]);
    const runtime=[...text.matchAll(/<script\b([^>]*?)\bsrc=["']([^"']*\/assets\/js\/([^/"'?]+)\.js(?:\?[^"']*)?)["']([^>]*)>/g)];
    if(runtime.some(match=>match[3]==='app')){
-     if(runtime.map(match=>match[3]).join('|')!==sharedRuntime.join('|'))failures.push(path.relative(root,source)+': runtime compartilhado ausente ou fora de ordem; navegação Swup mantém os scripts da página inicial.');
+     if(runtime.filter(match=>match[3]!=='intro').map(match=>match[3]).join('|')!==sharedRuntime.join('|'))failures.push(path.relative(root,source)+': runtime compartilhado ausente ou fora de ordem; navegação Swup mantém os scripts da página inicial.');
      for(const match of runtime){if(!/\bdefer\b/.test(match[1]+match[4])||!match[2].endsWith('?v='+release))failures.push(path.relative(root,source)+': script precisa de defer e versão '+release+': '+match[2]);}
    }
    if(!/<html[^>]+lang="pt-BR"/.test(text))failures.push(path.relative(root,source)+': idioma ausente');
