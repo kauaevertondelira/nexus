@@ -3,7 +3,7 @@
   const script = document.currentScript;
   const base = new URL('../../../', script.src);
   const N = window.Nexus = {
-    base, version: '4.5.0', uid: '', user: null, mode: '', data: {}, unsubscribers: [],
+    base, version: '4.5.1', uid: '', user: null, mode: '', data: {}, unsubscribers: [],
     route: '', online: navigator.onLine, sync: 'idle', search: '', filter: 'all', layout: 'table',
     href: (page, query = '') => new URL('public/pages/' + page + '.html' + query, base).href,
     escape: value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
@@ -95,7 +95,7 @@
   N.orderState = value => ({open:'Aberta',new:'Aberta',pending:'Aberta',scheduled:'Programada',planned:'Programada',in_progress:'Em execução',progress:'Em execução',completed:'Concluída',done:'Concluída',closed:'Concluída',cancelled:'Cancelada'}[value] || value || 'Aberta');
   N.orderDone = value => ['completed','done','closed','cancelled'].includes(value);
   N.statusText = value => ({online:'Operacional',offline:'Parada',danger:'Crítica',low:'Baixa',normal:'Normal',urgent:'Alta',critical:'Crítica',warning:'Atenção',ok:'Conforme',attention:'Atenção',new:'Nova',approved:'Aprovada',converted:'Convertida',rejected:'Rejeitada',cancelled:'Cancelada',submitted:'Em aprovação',ordered:'Pedido emitido',received:'Recebida',pending:'Pendente',active:'Ativo',blocked:'Bloqueado',completed:'Concluída',success:'Concluído'}[value] || N.orderState(value));
-  N.tone = value => ['danger','critical','offline','rejected','blocked'].includes(value) ? 'red' : ['warning','attention','urgent','new','submitted','pending','open'].includes(value) ? 'amber' : ['online','ok','completed','done','approved','active','received','success'].includes(value) ? 'green' : 'blue';
+  N.tone = value => ['danger','critical','offline','rejected','blocked'].includes(value) ? 'red' : ['warning','attention','urgent','new','submitted','pending','open'].includes(value) ? 'warning' : ['online','ok','completed','done','approved','active','received','success'].includes(value) ? 'green' : 'blue';
   N.badge = (value, text) => '<span class="badge badge-' + N.tone(value) + '">' + N.escape(text || N.statusText(value)) + '</span>';
   N.risk = function(a) { const temp = this.num(a.temp), warning=this.num(a.tempWarning)||70, critical=this.num(a.tempCritical)||85; return Math.min(100, (a.status==='offline'?65:a.status==='danger'?55:5) + (temp>=critical?35:temp>=warning?20:0) + (a.criticality==='A'?10:0)); };
   N.metrics = function() {

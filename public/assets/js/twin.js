@@ -1,6 +1,6 @@
 import * as THREE from '../vendor/three/three.module.min.js';
 
-const colors={online:0xf5b700,danger:0xff816b,offline:0x7d8aa6};
+const colors={online:0xadc6ff,danger:0xff879f,offline:0x7d8aa6};
 function box(w,h,d,mat,x=0,y=0,z=0){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);return m;}
 function cylinder(radius,length,material,x=0,y=0,z=0){const m=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,length,40),material);m.rotation.z=Math.PI/2;m.position.set(x,y,z);return m;}
 function motorModel(scale=1){

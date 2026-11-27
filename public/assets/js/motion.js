@@ -134,7 +134,7 @@
     if(reduced())return;
     if(window.gsap){
       landingContext=gsap.context(()=>{
-        if(!introPlaying)gsap.from('.landing-wordmark, .hero-copy > *',{y:16,opacity:0,duration:.6,stagger:.07,ease:'power3.out',clearProps:'opacity,transform'});
+        if(!introPlaying)gsap.from('.hero-copy > *',{y:16,opacity:0,duration:.6,stagger:.07,ease:'power3.out',clearProps:'opacity,transform'});
         if(window.ScrollTrigger){
           gsap.registerPlugin(ScrollTrigger);
           root.querySelectorAll('.section-intro, .module-row, .principles article, .landing-end > *').forEach(el=>gsap.from(el,{y:18,opacity:0,duration:.45,ease:'power3.out',clearProps:'opacity,transform',scrollTrigger:{trigger:el,start:'top 97%',once:true}}));

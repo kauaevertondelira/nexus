@@ -48,15 +48,14 @@
     .fromTo(logo,{scale:.94,transformOrigin:'50% 100%'},{scale:1,duration:1.05,ease:'power3.out',immediateRender:false},1.55)
   // 4. pausa e a cortina sobe em arco revelando a página
     .to(stage,{y:'-10vh',duration:.9,ease:'power3.in'},3.05)
-    // fio amarelo na borda em arco, para a cortina se destacar do topo azul do site
-    .set(intro,{borderBottom:'3px solid #f5b700'},3.1)
+    .set(intro,{borderBottom:'3px solid #d6e3ff'},3.1)
     .fromTo(intro,{yPercent:0,borderBottomLeftRadius:'0% 0vh',borderBottomRightRadius:'0% 0vh'},
       {yPercent:-100,borderBottomLeftRadius:'50% 22vh',borderBottomRightRadius:'50% 22vh',duration:1,ease:'power4.inOut',immediateRender:false},3.1)
     .call(()=>{html.classList.remove('intro-on');intro.style.display='none';},null,4.1);
   const page=document.querySelector('#swup');
   if(page){
     tl.fromTo(page,{scale:1.06,transformOrigin:'50% 0%'},{scale:1,duration:1.3,ease:'power3.out',clearProps:'transform',immediateRender:false},3.25);
-    const words=page.querySelectorAll('.landing-wordmark span'),copy=page.querySelectorAll('.hero-copy > *'),labels=page.querySelectorAll('.hero-carousel-footer');
+    const words=page.querySelectorAll('.landing-wordmark span'),copy=page.querySelectorAll('.hero-copy > :not(.landing-wordmark)'),labels=page.querySelectorAll('.hero-carousel-footer');
     if(words.length)tl.fromTo(words,{yPercent:105,opacity:0},{yPercent:0,opacity:1,duration:1,stagger:.06,ease:'expo.out',clearProps:'transform,opacity'},3.45);
     if(copy.length)tl.fromTo(copy,{y:32,opacity:0},{y:0,opacity:1,duration:.85,stagger:.1,ease:'power3.out',clearProps:'transform,opacity'},3.55);
     if(labels.length)tl.fromTo(labels,{y:12,opacity:0},{y:0,opacity:1,duration:.7,stagger:.12,clearProps:'transform,opacity'},3.7);

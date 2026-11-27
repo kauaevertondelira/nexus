@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 
 export const siteURL='https://nexus.test/nexus/';
 const root=path.resolve(process.env.NEXUS_SITE_ROOT||fileURLToPath(new URL('../',import.meta.url)));
-const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.png':'image/png','.woff2':'font/woff2'};
+const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.woff2':'font/woff2'};
 
 // Arquivos locais servidos na memória do navegador. HTTPS mantém o mesmo fluxo
 // Swup da publicação, sem depender de servidor, credenciais ou acesso ao Firebase.

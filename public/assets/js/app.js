@@ -142,8 +142,6 @@
       'Abrir uma O.S.':'Abra Ordens de serviço → Nova ordem. Selecione o equipamento, descreva o serviço, defina prioridade, prazo e responsável. Na ficha da ordem, registre checklist, horas e peças. Para concluir, complete as etapas e descreva o resultado.',
       'Entender o risco':'A pontuação combina condição cadastrada, temperatura e criticidade. O resultado orienta a fila de inspeção. Ele não prevê falhas nem substitui a avaliação técnica. Confirme as medições na Central IoT e nas inspeções.',
       'Movimentar estoque':'Abra Estoque MRO → Movimentar no item. Informe entrada ou saída, quantidade e justificativa. O saldo é validado em uma transação. O registro de peças em uma O.S. não baixa automaticamente o estoque físico.',
-      'Configurar o Firebase':'A configuração Web está em public/assets/js/firebase-config.js. No Console Firebase, ative E-mail/Senha, autorize o domínio do GitHub Pages e publique database.rules.json em Realtime Database → Regras. Contas novas aguardam aprovação de um administrador.',
-      'Publicar no GitHub Pages':'Copie todo o conteúdo de nexus/ para a raiz do seu repositório. Pelo GitHub Desktop, faça Commit e Push origin. No GitHub, Settings → Pages → Deploy from a branch → main → /(root). Preserve public/ e .nojekyll. O guia completo está em LEIA-ME-PUBLICACAO.md.',
       'Conectar sensores':'Vincule um dispositivo na Central IoT. O gateway confiável escreve em telemetry/latest/ID-DO-DISPOSITIVO com temperature, vibration, energyKwh e receivedAt. A interface acompanha essas leituras. Não coloque credenciais de servidor no site.'
     };
     const show=tab=>{const content=root.querySelector('#support-content');root.querySelectorAll('[data-support-tab]').forEach(b=>b.classList.toggle('selected',b.dataset.supportTab===tab));
@@ -206,7 +204,7 @@
         await this.sdk();await this.auth.sendPasswordResetEmail(email);this.toast('Se o e-mail estiver cadastrado, você receberá as instruções de recuperação.');break;
       }
       case 'complete-profile':await this.sdk();await this.authReady();if(!this.auth.currentUser)throw new Error('Entre com e-mail e senha. Se sua conta estiver sem perfil, o formulário abrirá em seguida.');this.showCompleteProfile();break;
-      case 'theme':{const html=document.documentElement;html.classList.add('theme-switching');clearTimeout(this.themeTimer);this.themeTimer=setTimeout(()=>html.classList.remove('theme-switching'),360);html.dataset.theme=html.dataset.theme==='dark'?'light':'dark';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=html.dataset.theme==='dark'?'#050e22':'#082867';try{localStorage.setItem('nexus-theme',html.dataset.theme);}catch{}break;}
+      case 'theme':{const html=document.documentElement;html.classList.add('theme-switching');clearTimeout(this.themeTimer);this.themeTimer=setTimeout(()=>html.classList.remove('theme-switching'),360);html.dataset.theme=html.dataset.theme==='dark'?'light':'dark';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=html.dataset.theme==='dark'?'#050e22':'#ffffff';try{localStorage.setItem('nexus-theme',html.dataset.theme);}catch{}break;}
       case 'support':this.support();break;case 'global-search':this.globalSearch();break;
       case 'mobile-menu':this.toggleMenu();break;case 'mobile-close':this.toggleMenu(false);break;
       case 'logout':case 'leave-demo':sessionStorage.removeItem('nexus-mode');this.disconnect();if(this.auth?.currentUser)await this.auth.signOut();this.go('login');break;
