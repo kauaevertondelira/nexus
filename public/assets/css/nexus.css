@@ -55,23 +55,24 @@ html.theme-switching,html.theme-switching *,html.theme-switching *:before,html.t
 .auth-photo{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transform:scale(1.05);transition:opacity .8s ease,transform 1.4s cubic-bezier(.16,1,.3,1)}
 .auth-photo.is-active{opacity:1;transform:none}
 .auth-photo[data-img=fabrica]{background-image:url('../images/login/fabrica-960.jpg');background-position:30% center}
-.auth-photo[data-img=fresadora]{background-image:url('../images/login/fresadora-1280.jpg');background-position:40% center}
+.auth-photo[data-img=torno-cnc]{background-image:url('../images/login/torno-cnc-1280.jpg');background-position:55% center}
 .auth-photo[data-img=torno]{background-image:url('../images/login/torno-1280.jpg');background-position:35% center}
 .auth-photo[data-img=automacao]{background-image:url('../images/login/automacao-960.jpg');background-position:45% center}
 .auth-photo[data-img=robos]{background-image:url('../images/login/robos-1280.jpg');background-position:40% center}
 .auth-photo[data-img=armazem]{background-image:url('../images/login/armazem-1280.jpg');background-position:62% center}
 @media(min-width:1400px){.auth-photo[data-img=fabrica]{background-image:url('../images/login/fabrica-1280.jpg')}.auth-photo[data-img=automacao]{background-image:url('../images/login/automacao-1600.jpg')}}
 /* Carrossel: 3 tracinhos de progresso (20 s cada) e botão de pausa, discretos sobre a vinheta */
-.auth-carousel{display:flex;align-items:center;gap:6px;margin-top:26px}
-.auth-dot{position:relative;width:34px;height:24px;padding:0;border:0;background:transparent;cursor:pointer}
-.auth-dot:before,.auth-dot:after{content:'';position:absolute;left:0;top:50%;height:3px;margin-top:-1.5px;border-radius:2px}
-.auth-dot:before{right:0;background:#ffffff3d}.auth-dot:after{width:0;background:var(--signal)}
+.auth-carousel{position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:3;display:flex;align-items:center;gap:6px;width:min(300px,calc(100% - 200px))}
+.auth-carousel .auth-dot{flex:1}
+.auth-dot{position:relative;width:34px;height:18px;padding:0;border:0;background:transparent;cursor:pointer}
+.auth-dot:before,.auth-dot:after{content:'';position:absolute;left:0;top:50%;height:2px;margin-top:-1px;border-radius:2px}
+.auth-dot:before{right:0;background:#ffffff59}.auth-dot:after{width:0;background:#ffffffe6}
 .auth-dot.is-active:after{animation:auth-progress var(--slide-dur,20s) linear forwards}
 .auth-dot.is-done:after{width:100%}
 .auth-brand-panel.is-paused .auth-dot.is-active:after{animation-play-state:paused}
 @keyframes auth-progress{from{width:0}to{width:100%}}
 html[data-motion=reduced] .auth-dot.is-active:after{width:100%}
-.auth-pause{margin-left:8px;min-width:32px;height:28px;padding:0 8px;border:1px solid #ffffff40;border-radius:20px;background:transparent;color:#f2f4f8;font:600 .6875rem Inter,sans-serif;letter-spacing:.04em}.auth-pause:hover{background:#ffffff14}
+.auth-pause{margin-left:6px;min-width:26px;height:22px;padding:0 6px;border:0;border-radius:20px;background:#ffffff2e;backdrop-filter:blur(6px);color:#f2f4f8;font:600 .5625rem Inter,sans-serif;letter-spacing:.04em}.auth-pause:hover{background:#ffffff47}
 .auth-dot:focus-visible,.auth-pause:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
 .auth-photos:before,.auth-photos:after{content:'';position:absolute;left:0;right:0;z-index:1;pointer-events:none}
 .auth-photos:before{top:0;height:34%;background:linear-gradient(180deg,#041330f0 0%,#041330a6 45%,#04133000 100%)}

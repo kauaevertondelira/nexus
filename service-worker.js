@@ -61,7 +61,7 @@ const SHELL=[
   "./public/assets/images/login/fabrica-1280.jpg",
   "./public/assets/images/login/automacao-960.jpg",
   "./public/assets/images/login/automacao-1600.jpg",
-  "./public/assets/images/login/fresadora-1280.jpg",
+  "./public/assets/images/login/torno-cnc-1280.jpg",
   "./public/assets/images/login/torno-1280.jpg",
   "./public/assets/images/login/robos-1280.jpg",
   "./public/assets/images/login/armazem-1280.jpg",
